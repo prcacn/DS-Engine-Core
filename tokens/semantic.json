@@ -1,0 +1,47 @@
+{
+  "color": {
+    "action": {
+      "primary":   "{color.brand.600}",
+      "secondary": "{color.brand.500}",
+      "disabled":  "{color.neutral.200}"
+    },
+    "text": {
+      "primary":    "{color.neutral.900}",
+      "secondary":  "{color.neutral.500}",
+      "on-primary": "{color.neutral.0}",
+      "disabled":   "{color.neutral.400}"
+    },
+    "surface": {
+      "primary":   "{color.neutral.0}",
+      "secondary": "{color.neutral.50}"
+    },
+    "border": {
+      "default": "{color.neutral.200}",
+      "subtle":  "{color.neutral.100}"
+    },
+    "feedback": {
+      "success": "{color.feedback.success}",
+      "error":   "{color.feedback.error}",
+      "warning": "{color.feedback.warning}",
+      "info":    "{color.feedback.info}"
+    },
+    "overlay": "rgba(0, 0, 0, 0.40)",
+    "icon": {
+      "primary":   "{color.neutral.700}",
+      "secondary": "{color.neutral.400}"
+    }
+  },
+  "size": {
+    "header":     { "default": "56px" },
+    "button":     { "small": "36px", "medium": "48px", "large": "56px" },
+    "input":      { "default": "52px" },
+    "card-item":  { "default": "72px" },
+    "filter-bar": { "default": "48px" }
+  },
+  "radius": {
+    "button": "{size.radius.button}",
+    "input":  "{size.radius.input}",
+    "modal":  "{size.radius.modal}",
+    "card":   "{size.radius.md}"
+  }
+}

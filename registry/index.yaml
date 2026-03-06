@@ -1,0 +1,188 @@
+# registry/index.yaml
+# Índice semántico del Simple DS
+# Mapea intenciones en lenguaje natural a componentes concretos
+# Mantener actualizado cuando se añadan nuevos componentes o intenciones
+
+components:
+
+  navigation-header:
+    intenciones:
+      - "cabecera de pantalla"
+      - "barra de navegación"
+      - "botón de volver"
+      - "título de pantalla"
+      - "header con acciones"
+      - "barra superior"
+    contextos:
+      - todas las pantallas secundarias
+      - pantallas de detalle
+      - formularios
+      - listados
+    excluir_en:
+      - modales
+      - pantalla principal con tabs
+      - onboarding con flujo lineal
+
+  button-primary:
+    intenciones:
+      - "acción principal"
+      - "confirmar"
+      - "enviar"
+      - "guardar"
+      - "continuar"
+      - "siguiente paso"
+      - "submit de formulario"
+      - "aceptar"
+      - "botón de avanzar"
+    contextos:
+      - formularios
+      - confirmaciones
+      - onboarding
+      - checkout
+      - fin de flujo
+    excluir_en:
+      - navegación entre secciones
+      - headers
+      - listados sin acción principal
+
+  button-secondary:
+    intenciones:
+      - "acción secundaria"
+      - "cancelar"
+      - "volver"
+      - "omitir"
+      - "alternativa a la acción principal"
+      - "rechazar"
+      - "no confirmar"
+    contextos:
+      - confirmaciones
+      - formularios con cancel
+      - pantallas con dos opciones
+    excluir_en:
+      - pantallas con una sola acción
+      - headers
+      - listados
+
+  card-item:
+    intenciones:
+      - "item de lista"
+      - "elemento de listado"
+      - "fila de información"
+      - "item navegable"
+      - "resultado de búsqueda"
+      - "elemento con título y valor"
+      - "item de producto"
+      - "fondo de inversión en lista"
+      - "transacción en lista"
+      - "item con badge"
+    contextos:
+      - listados
+      - resultados de búsqueda
+      - favoritos
+      - histórico
+    excluir_en:
+      - formularios
+      - navegación
+      - pantallas de detalle como único elemento
+
+  input-text:
+    intenciones:
+      - "campo de texto"
+      - "campo de formulario"
+      - "campo de entrada"
+      - "escribir información"
+      - "introducir dato"
+      - "campo de email"
+      - "campo de contraseña"
+      - "búsqueda avanzada"
+      - "campo requerido"
+    contextos:
+      - formularios
+      - login
+      - registro
+      - búsqueda
+      - edición de perfil
+    excluir_en:
+      - listados
+      - pantallas de solo lectura
+      - navigation-header (usar search action)
+
+  filter-bar:
+    intenciones:
+      - "filtros de listado"
+      - "categorías de filtrado"
+      - "chips de filtro"
+      - "tabs de filtro"
+      - "filtrar por tipo"
+      - "filtrar resultados"
+      - "selector de categoría"
+      - "barra de filtros"
+    contextos:
+      - listados con categorías
+      - resultados filtrables
+      - catálogos
+    excluir_en:
+      - formularios
+      - pantallas de detalle
+      - confirmaciones
+      - listados con menos de 2 categorías
+
+  empty-state:
+    intenciones:
+      - "lista vacía"
+      - "sin resultados"
+      - "no hay datos"
+      - "sin contenido"
+      - "estado vacío"
+      - "no hay elementos"
+      - "sin conexión"
+      - "resultado de filtro vacío"
+    contextos:
+      - listados sin items
+      - búsquedas sin resultados
+      - primeras visitas
+      - errores de carga
+    excluir_en:
+      - formularios
+      - pantallas con contenido
+      - carga en progreso
+
+  modal-bottom-sheet:
+    intenciones:
+      - "confirmación en modal"
+      - "hoja inferior"
+      - "bottom sheet"
+      - "confirmación sin salir de pantalla"
+      - "menú de opciones contextual"
+      - "acciones de item"
+      - "formulario corto en overlay"
+      - "diálogo de confirmación"
+    contextos:
+      - confirmaciones de acciones
+      - menús contextuales de items
+      - formularios cortos
+      - información adicional sin cambiar pantalla
+    excluir_en:
+      - flujos de más de 2 pasos
+      - formularios largos
+      - contenido comparativo con fondo
+
+# ─── PATRONES DE PANTALLA ────────────────────────────────────────────────────
+# Para referencia rápida. La definición completa está en /patterns/
+
+screen_patterns:
+  lista-con-filtros:
+    componentes_clave: [navigation-header, filter-bar, card-item, empty-state]
+    casos_de_uso: listados filtrables de cualquier entidad
+
+  formulario-simple:
+    componentes_clave: [navigation-header, input-text, button-primary, button-secondary]
+    casos_de_uso: captura de datos del usuario
+
+  confirmacion:
+    componentes_clave: [navigation-header, modal-bottom-sheet, button-primary, button-secondary]
+    casos_de_uso: confirmación de acciones importantes
+
+  detalle:
+    componentes_clave: [navigation-header, card-item, button-primary]
+    casos_de_uso: vista de detalle de un item
