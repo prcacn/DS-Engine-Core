@@ -36,3 +36,4 @@ Pantalla o modal de confirmación de una acción importante. Se usa cuando la ac
 ## Incompatibilidades
 - No usar filter-bar ni input-text en confirmaciones
 - No anidar modal-bottom-sheet dentro de otro modal
+- No usar mas de un button-primary

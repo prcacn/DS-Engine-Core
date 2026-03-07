@@ -1,0 +1,234 @@
+// DS IA-Ready Engine — Figma Plugin V1
+// Thin HTTP client. Toda la lógica vive en el Engine (Railway).
+
+const ENGINE_URL = 'https://ds-ia-ready-engine-production.up.railway.app';
+const ENGINE_API_KEY = 'dev-key-local-2025';
+const FIGMA_FILE_KEY = 'aMiE3zUmsF6QtqycDarsqi';
+
+// Node IDs de los componentes en el Simple DS
+const COMPONENT_NODE_IDS = {
+  'navigation-header':  '1:3',
+  'button-primary':     '1:9',
+  'button-secondary':   '1:11',
+  'card-item':          '1:13',
+  'input-text':         '1:21',
+  'filter-bar':         '1:24',
+  'empty-state':        '1:31',
+  'modal-bottom-sheet': '1:36',
+};
+
+// ─── MENSAJES DESDE LA UI ────────────────────────────────────────────────────
+
+figma.ui.onmessage = async (msg) => {
+  if (msg.type === 'generate') {
+    await handleGenerate(msg.brief, msg.patternOverride);
+  }
+  if (msg.type === 'ping') {
+    await handlePing();
+  }
+  if (msg.type === 'cancel') {
+    figma.closePlugin();
+  }
+};
+
+// ─── PING — verificar que el engine responde ─────────────────────────────────
+
+async function handlePing() {
+  try {
+    const res = await fetch(`${ENGINE_URL}/health`);
+    const data = await res.json();
+    figma.ui.postMessage({ type: 'ping-result', ok: true, data });
+  } catch (e) {
+    figma.ui.postMessage({ type: 'ping-result', ok: false, error: e.message });
+  }
+}
+
+// ─── GENERATE — llamar al engine y pintar en Figma ──────────────────────────
+
+async function handleGenerate(brief, patternOverride) {
+  figma.ui.postMessage({ type: 'status', text: '🔄 Llamando al engine...' });
+
+  // 1. Llamar al engine
+  let engineResponse;
+  try {
+    const body = { brief };
+    if (patternOverride) body.pattern = patternOverride;
+
+    const res = await fetch(`${ENGINE_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': ENGINE_API_KEY,
+      },
+      body: JSON.stringify(body),
+    });
+
+    engineResponse = await res.json();
+
+    if (engineResponse.error) {
+      figma.ui.postMessage({ type: 'error', text: engineResponse.message || engineResponse.error });
+      return;
+    }
+  } catch (e) {
+    figma.ui.postMessage({ type: 'error', text: `Error de red: ${e.message}` });
+    return;
+  }
+
+  figma.ui.postMessage({
+    type: 'status',
+    text: `✓ Plan generado (${engineResponse.status}) — pintando pantalla...`,
+  });
+
+  // 2. Pintar en Figma
+  try {
+    const screenNode = await paintScreen(engineResponse);
+
+    figma.ui.postMessage({
+      type: 'success',
+      screenId: engineResponse.screen_id,
+      pattern: engineResponse.pattern,
+      confidence: engineResponse.confidence,
+      components: engineResponse.components,
+      nodeId: screenNode.id,
+    });
+
+    // Seleccionar y hacer scroll al nodo creado
+    figma.currentPage.selection = [screenNode];
+    figma.viewport.scrollAndZoomIntoView([screenNode]);
+
+  } catch (e) {
+    figma.ui.postMessage({ type: 'error', text: `Error pintando: ${e.message}` });
+  }
+}
+
+// ─── PAINT SCREEN ────────────────────────────────────────────────────────────
+
+async function paintScreen(engineResponse) {
+  const { screen_id, pattern, components } = engineResponse;
+
+  // Buscar posición libre en el canvas
+  const existingFrames = figma.currentPage.children;
+  let xOffset = 0;
+  if (existingFrames.length > 0) {
+    const lastFrame = existingFrames[existingFrames.length - 1];
+    xOffset = lastFrame.x + lastFrame.width + 80;
+  }
+
+  // Crear frame de pantalla (390x844 — iPhone 14)
+  const screenFrame = figma.createFrame();
+  screenFrame.name = `${screen_id} — ${pattern}`;
+  screenFrame.resize(390, 844);
+  screenFrame.x = xOffset;
+  screenFrame.y = 0;
+  screenFrame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+  screenFrame.clipsContent = true;
+
+  // Añadir label con metadata
+  const label = figma.createText();
+  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+  label.characters = `${screen_id} | ${pattern} | ${engineResponse.status} ${(engineResponse.confidence?.global * 100).toFixed(0)}%`;
+  label.fontSize = 11;
+  label.fills = [{ type: 'SOLID', color: { r: 0.5, g: 0.5, b: 0.5 } }];
+  label.x = screenFrame.x;
+  label.y = -24;
+  figma.currentPage.appendChild(label);
+
+  // Ordenar componentes por order
+  const sorted = [...components].sort((a, b) => a.order - b.order);
+
+  let yPos = 0;
+
+  for (const comp of sorted) {
+    const nodeId = comp.node_id || COMPONENT_NODE_IDS[comp.component];
+    if (!nodeId) continue;
+
+    try {
+      // Importar componente por node ID
+      const componentNode = await figma.importComponentByKeyAsync(
+        await getComponentKey(nodeId)
+      ).catch(() => null);
+
+      if (componentNode) {
+        const instance = componentNode.createInstance();
+        instance.name = comp.component;
+        instance.x = 0;
+        instance.y = yPos;
+        instance.resize(390, instance.height);
+        screenFrame.appendChild(instance);
+        yPos += instance.height;
+      } else {
+        // Fallback: crear placeholder
+        yPos += createPlaceholder(screenFrame, comp, yPos);
+      }
+    } catch (e) {
+      // Fallback: placeholder si no se puede importar
+      yPos += createPlaceholder(screenFrame, comp, yPos);
+    }
+  }
+
+  figma.currentPage.appendChild(screenFrame);
+  return screenFrame;
+}
+
+// ─── GET COMPONENT KEY ────────────────────────────────────────────────────────
+// Convierte node ID (e.g. "1:3") a component key para importación
+
+async function getComponentKey(nodeId) {
+  // En el archivo Simple DS, intentamos obtener el nodo directamente
+  try {
+    const node = await figma.getNodeByIdAsync(nodeId);
+    if (node && (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET')) {
+      return node.key;
+    }
+    // Si es un COMPONENT_SET, devolver la primera variante
+    if (node && node.type === 'COMPONENT_SET') {
+      return node.defaultVariant?.key || node.children[0]?.key;
+    }
+  } catch (e) {
+    // noop
+  }
+  return null;
+}
+
+// ─── CREATE PLACEHOLDER ───────────────────────────────────────────────────────
+
+function createPlaceholder(parent, comp, yPos) {
+  const HEIGHT_MAP = {
+    'navigation-header': 56,
+    'filter-bar': 48,
+    'card-item': 72,
+    'button-primary': 52,
+    'button-secondary': 52,
+    'input-text': 56,
+    'empty-state': 200,
+    'modal-bottom-sheet': 300,
+  };
+
+  const height = HEIGHT_MAP[comp.component] || 60;
+
+  const rect = figma.createRectangle();
+  rect.name = comp.component;
+  rect.x = 0;
+  rect.y = yPos;
+  rect.resize(390, height);
+  rect.fills = [{ type: 'SOLID', color: { r: 0.95, g: 0.95, b: 0.97 } }];
+  rect.cornerRadius = 4;
+  parent.appendChild(rect);
+
+  // Label del placeholder
+  const text = figma.createText();
+  figma.loadFontAsync({ family: 'Inter', style: 'Regular' }).then(() => {
+    text.characters = comp.component;
+    text.fontSize = 12;
+    text.fills = [{ type: 'SOLID', color: { r: 0.4, g: 0.4, b: 0.5 } }];
+    text.x = 16;
+    text.y = yPos + (height - 16) / 2;
+    parent.appendChild(text);
+  });
+
+  return height;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+figma.showUI(__html__, { width: 400, height: 560, title: 'DS IA-Ready Engine' });

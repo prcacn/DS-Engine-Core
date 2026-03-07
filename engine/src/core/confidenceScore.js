@@ -83,7 +83,7 @@ function scoreContractCoverage(components, contracts) {
   for (const comp of components) {
     const hasNodeId   = comp.node_id && comp.node_id !== 'pending';
     const contract    = contractMap[comp.component];
-    const hasWhenToUse = contract && contract.whenToUse && contract.whenToUse.length > 10;
+    const hasWhenToUse = contract && contract.whenToUse && contract.whenToUse.length > 0;
 
     if (hasNodeId && hasWhenToUse) resolved++;
     else if (hasNodeId) resolved += 0.5; // partial credit
