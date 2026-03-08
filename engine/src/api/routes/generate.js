@@ -1,4 +1,3 @@
-// api/routes/generate.js — Fase 3+ (violations)
 const express = require('express');
 const router = express.Router();
 const { parseIntent } = require('../../core/intentParser');
@@ -6,7 +5,7 @@ const { calculateScore } = require('../../core/confidenceScore');
 const { loadContracts } = require('../../loaders/contractLoader');
 const { loadPatterns } = require('../../loaders/patternLoader');
 
-const INTENT_TO_PATTERN = { 'lista-con-filtros': 'lista-con-filtros', 'formulario-simple': 'formulario-simple', 'confirmacion': 'confirmacion', 'detalle': 'detalle' };
+const INTENT_TO_PATTERN = { 'lista-con-filtros': 'lista-con-filtros', 'formulario-simple': 'formulario-simple', 'confirmacion': 'confirmacion', 'detalle': 'detalle', 'dashboard': 'dashboard' };
 
 function resolveVariant(component, intent) {
   if (component === 'navigation-header') return ['detalle','formulario-simple','confirmacion'].includes(intent.intent_type) ? 'with-back' : 'default';
@@ -26,10 +25,11 @@ function buildSmartProps(contract, intent, componentName) {
 
 function resolveOptional(component, intent, brief) {
   const b = brief.toLowerCase();
-  if (component === 'button-primary') return { include: intent.intent_type === 'lista-con-filtros' && (b.includes('crear') || b.includes('nuevo') || b.includes('añadir')), confidence: 0.75 };
+  if (component === 'button-primary') return { include: (intent.intent_type === 'lista-con-filtros' || intent.intent_type === 'dashboard') && (b.includes('crear') || b.includes('nuevo') || b.includes('añadir')), confidence: 0.75 };
   if (component === 'modal-bottom-sheet') return { include: (intent.constraints && intent.constraints.needs_confirmation) || (intent.constraints && intent.constraints.is_destructive), confidence: 0.85 };
   if (component === 'button-secondary') return { include: intent.intent_type === 'confirmacion' || (intent.constraints && intent.constraints.needs_confirmation), confidence: 0.90 };
-  if (component === 'card-item') return { include: intent.intent_type === 'confirmacion', confidence: 0.75 };
+  if (component === 'card-item') return { include: intent.intent_type === 'confirmacion' || intent.intent_type === 'dashboard', confidence: 0.80 };
+  if (component === 'filter-bar') return { include: intent.intent_type === 'dashboard' && (brief.toLowerCase().includes('período') || brief.toLowerCase().includes('filtro') || brief.toLowerCase().includes('fecha')), confidence: 0.70 };
   return { include: false, confidence: 0 };
 }
 
@@ -69,8 +69,7 @@ function buildViolationsSummary(intentViolations, components) {
       violations.push({ source: 'brief', rule: v.rule, detail: v.detail, severity: v.severity, action: 'El engine ignoró esta parte del brief para mantener la gobernanza del DS' });
     });
   }
-  const names = components.map(function(c) { return c.component; });
-  const primaryCount = names.filter(function(n) { return n === 'button-primary'; }).length;
+  const primaryCount = components.filter(function(c) { return c.component === 'button-primary'; }).length;
   if (primaryCount > 1) violations.push({ source: 'composition', rule: 'max-1-button-primary', detail: 'El plan contiene ' + primaryCount + ' button-primary. Solo se permite 1.', severity: 'error', action: 'Revisar manualmente' });
   return violations;
 }
@@ -84,7 +83,7 @@ router.post('/', async function(req, res, next) {
     const contracts = loadContracts();
     const patterns = loadPatterns();
     const intent = forcedPattern
-      ? { intent_type: forcedPattern, confidence: 0.99, domain: 'manual', constraints: {}, reasoning: 'Pattern forzado', brief_violations: [] }
+      ? { intent_type: forcedPattern, confidence: 0.99, domain: 'manual', constraints: {}, reasoning: 'Pattern forzado', brief_violations: [], missing_components: [] }
       : await parseIntent(brief);
     const patternName = INTENT_TO_PATTERN[intent.intent_type] || 'lista-con-filtros';
     const patternData = patterns[patternName];
@@ -93,13 +92,14 @@ router.post('/', async function(req, res, next) {
     const components = reorderComponents(resolveExclusivity(rawResult.components, brief));
     const confidence = calculateScore({ pattern: patternName, components, intent, contracts: Object.values(contracts) });
     const violations = buildViolationsSummary(intent.brief_violations || [], components);
+    const missing_components = intent.missing_components || [];
     const screenId = 'gen_' + Date.now();
-    console.log('  ✓ Plan: ' + components.length + ' componentes, status: ' + confidence.status + ', violations: ' + violations.length);
+    console.log('  ✓ Plan: ' + components.length + ' componentes, status: ' + confidence.status + (violations.length > 0 ? ', violations: ' + violations.length : '') + (missing_components.length > 0 ? ', missing: ' + missing_components.length : ''));
     res.json({
       screen_id: screenId, brief: brief.trim(), pattern: patternName, intent,
-      status: confidence.status, confidence, violations, components,
+      status: confidence.status, confidence, violations, missing_components, components,
       composition_rules: rawResult.compositionRules,
-      meta: { engine_version: '1.0.0', phase: 'Fase 3+ — Violations', generated_at: new Date().toISOString() }
+      meta: { engine_version: '1.0.0', phase: 'Fase 3+ — Violations + Missing + Dashboard', generated_at: new Date().toISOString() }
     });
   } catch (err) { next(err); }
 });

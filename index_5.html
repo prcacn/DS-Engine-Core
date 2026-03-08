@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DS Engine — Screen Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0c0f;
+      --surface:   #111318;
+      --surface2:  #191d24;
+      --border:    #232830;
+      --border2:   #2e3540;
+      --accent:    #4f46e5;
+      --accent2:   #6366f1;
+      --green:     #22c55e;
+      --yellow:    #eab308;
+      --red:       #ef4444;
+      --txt:       #e2e8f0;
+      --txt2:      #64748b;
+      --txt3:      #94a3b8;
+      --mono:      'Space Mono', monospace;
+      --sans:      'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,70,229,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,70,229,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,12,15,0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-mark {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: grid; place-items: center;
+    }
+    .logo-mark svg { width: 16px; height: 16px; }
+    .logo-name { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: 0.05em; }
+    .logo-name span { color: var(--txt2); font-weight: 400; }
+
+    .status-bar { display: flex; align-items: center; gap: 20px; }
+    .status-pill { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--txt2); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .version-tag { font-family: var(--mono); font-size: 10px; color: var(--txt2); border: 1px solid var(--border2); padding: 2px 8px; border-radius: 4px; }
+
+    /* 3-column layout */
+    main {
+      display: grid;
+      grid-template-columns: 380px 1fr 320px;
+      min-height: calc(100vh - 56px);
+    }
+
+    /* ─── LEFT: INPUT ───────────────────────────── */
+    .panel-input {
+      border-right: 1px solid var(--border);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--txt2);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--txt);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 14px;
+      resize: none;
+      min-height: 90px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea::placeholder { color: var(--txt2); }
+    textarea:focus { border-color: var(--accent); }
+
+    .char-count { text-align: right; font-family: var(--mono); font-size: 10px; color: var(--txt2); margin-top: 4px; }
+
+    .examples-title { font-size: 11px; color: var(--txt2); font-family: var(--mono); margin-bottom: 8px; }
+    .examples { display: flex; flex-direction: column; gap: 5px; }
+    .example-chip {
+      background: transparent;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 7px 11px;
+      font-size: 12px;
+      color: var(--txt3);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      font-family: var(--sans);
+    }
+    .example-chip:hover { border-color: var(--accent); color: var(--txt); background: rgba(79,70,229,0.06); }
+
+    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .setting-item { display: flex; flex-direction: column; gap: 5px; }
+    .setting-label { font-size: 10px; color: var(--txt2); font-family: var(--mono); }
+    input[type="text"], select {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--txt);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 7px 9px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    input[type="text"]:focus, select:focus { border-color: var(--accent); }
+    select option { background: var(--surface2); }
+
+    .divider { height: 1px; background: var(--border); }
+
+    .btn-figma {
+      background: transparent;
+      border: 1px solid #1e1f26;
+      border-radius: 8px;
+      color: var(--txt3);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 11px 20px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: -6px;
+    }
+    .btn-figma:hover:not(:disabled) { border-color: #a259ff; color: white; background: rgba(162,89,255,0.1); }
+    .btn-figma:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-figma svg { opacity: 0.6; }
+    .btn-figma:hover:not(:disabled) svg { opacity: 1; }
+
+    .btn-generate {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 13px 20px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      position: relative; overflow: hidden;
+    }
+    .btn-generate::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 50%); }
+    .btn-generate:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .spinner { width:13px; height:13px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* ─── CENTER: PHONE PREVIEW ──────────────────── */
+    .panel-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 32px 24px;
+      border-right: 1px solid var(--border);
+      gap: 20px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(79,70,229,0.05) 0%, transparent 70%);
+    }
+
+    .preview-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--txt2);
+      align-self: flex-start;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      width: 100%;
+    }
+
+    /* Phone shell */
+    .phone-shell {
+      width: 320px;
+      background: #1a1d24;
+      border-radius: 40px;
+      border: 2px solid var(--border2);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-notch {
+      height: 28px;
+      background: #111318;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .phone-notch-pill {
+      width: 80px; height: 10px;
+      background: #0a0c0f;
+      border-radius: 10px;
+    }
+
+    .phone-screen {
+      background: #f8fafc;
+      min-height: 580px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-home-bar {
+      height: 28px;
+      background: #1a1d24;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .phone-home-pill {
+      width: 100px; height: 4px;
+      background: var(--border2);
+      border-radius: 4px;
+    }
+
+    /* ─── SCREEN COMPONENTS ──────────────────────── */
+
+    /* Navigation Header */
+    .sc-header {
+      background: white;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      justify-content: space-between;
+      border-bottom: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+    .sc-header-back {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sc-header-back svg { width:20px; height:20px; }
+    .sc-header-title { font-size: 17px; font-weight: 700; color: #0f172a; font-family: var(--sans); }
+    .sc-header-action {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Filter Bar */
+    .sc-filter-bar {
+      background: white;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      border-bottom: 1px solid #e2e8f0;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .sc-chip {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: var(--sans);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .sc-chip-active { background: #4f46e5; color: white; font-weight: 500; }
+    .sc-chip-default { background: #f1f5f9; color: #64748b; }
+
+    /* Card Item */
+    .sc-card-list { flex: 1; overflow: hidden; background: white; }
+    .sc-card-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      animation: fadeIn 0.3s forwards;
+      opacity: 0;
+    }
+    @keyframes fadeIn { to { opacity: 1; } }
+    .sc-card-left { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .sc-card-title { font-size: 14px; font-weight: 500; color: #0f172a; font-family: var(--sans); }
+    .sc-card-subtitle { font-size: 12px; color: #64748b; font-family: var(--sans); }
+    .sc-card-right { display: flex; align-items: center; gap: 8px; }
+    .sc-card-value { font-size: 14px; font-weight: 700; color: #0f172a; font-family: var(--sans); }
+    .sc-card-chevron { color: #94a3b8; font-size: 14px; }
+
+    /* Input Text */
+    .sc-form { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; background: white; }
+    .sc-input-wrap { display: flex; flex-direction: column; gap: 4px; }
+    .sc-input-label { font-size: 11px; font-weight: 500; color: #64748b; font-family: var(--sans); }
+    .sc-input-field {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: #94a3b8;
+      font-family: var(--sans);
+    }
+    .sc-input-field.focused { border-color: #4f46e5; }
+
+    /* Buttons */
+    .sc-btn-area { padding: 16px; display: flex; flex-direction: column; gap: 8px; background: white; }
+    .sc-btn-primary {
+      background: #4f46e5;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: white;
+      font-family: var(--sans);
+    }
+    .sc-btn-secondary {
+      background: white;
+      border: 1.5px solid #4f46e5;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: #4f46e5;
+      font-family: var(--sans);
+    }
+
+    /* Empty State */
+    .sc-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      gap: 12px;
+      background: white;
+    }
+    .sc-empty-icon {
+      width: 64px; height: 64px;
+      background: #f1f5f9;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+    }
+    .sc-empty-title { font-size: 16px; font-weight: 600; color: #0f172a; font-family: var(--sans); text-align: center; }
+    .sc-empty-desc { font-size: 13px; color: #64748b; font-family: var(--sans); text-align: center; line-height: 1.5; }
+    .sc-empty-action { font-size: 14px; color: #4f46e5; font-weight: 600; font-family: var(--sans); margin-top: 4px; }
+
+    /* Modal */
+    .sc-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: flex-end;
+    }
+    .sc-modal {
+      width: 100%;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      padding: 12px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
+    }
+    .sc-modal-handle { width: 36px; height: 4px; background: #e2e8f0; border-radius: 4px; }
+    .sc-modal-title { font-size: 17px; font-weight: 700; color: #0f172a; font-family: var(--sans); text-align: center; }
+    .sc-modal-desc { font-size: 14px; color: #64748b; font-family: var(--sans); text-align: center; line-height: 1.5; }
+    .sc-modal-btns { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+
+    /* Screen container */
+    .sc-screen {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      background: #f8fafc;
+    }
+
+    /* Empty preview */
+    .preview-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 580px;
+      gap: 12px;
+      opacity: 0.3;
+    }
+    .preview-empty p { font-family: var(--mono); font-size: 11px; color: var(--txt2); text-align: center; }
+
+    /* ─── RIGHT: ANALYSIS ────────────────────────── */
+    .panel-analysis {
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .confidence-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .confidence-score {
+      font-family: var(--mono);
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .progress-bar-outer { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .progress-bar-inner { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+    .signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .signal { background: var(--surface2); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .signal-name { font-family: var(--mono); font-size: 9px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.08em; }
+    .signal-val { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+    .signal-weight { font-family: var(--mono); font-size: 9px; color: var(--txt2); }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .status-badge.AUTO_APPROVE { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--green); }
+    .status-badge.REVIEW_FLAGGED { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: var(--yellow); }
+    .status-badge.NEEDS_REVIEW { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--red); }
+
+    .components-list { display: flex; flex-direction: column; gap: 6px; }
+    .comp-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideIn 0.3s forwards;
+      opacity: 0;
+    }
+    @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
+    .comp-row { transform: translateY(6px); }
+
+    .comp-order { font-family: var(--mono); font-size: 10px; color: var(--txt2); width: 18px; flex-shrink: 0; }
+    .comp-info { flex: 1; }
+    .comp-name { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--txt); }
+    .comp-variant { font-family: var(--mono); font-size: 10px; color: var(--txt2); }
+
+    .badge { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: 700; }
+    .badge.required { background: rgba(79,70,229,0.15); color: var(--accent2); }
+    .badge.optional { background: var(--surface2); color: var(--txt2); }
+    .badge.resolved { background: rgba(34,197,94,0.1); color: var(--green); }
+    .badge.pending { background: rgba(239,68,68,0.1); color: var(--red); }
+
+    .weak-signals {
+      background: rgba(234,179,8,0.05);
+      border: 1px solid rgba(234,179,8,0.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .weak-signal-title { font-family: var(--mono); font-size: 9px; color: var(--yellow); text-transform: uppercase; letter-spacing: 0.08em; }
+    .weak-signal-item { font-size: 12px; color: var(--txt3); display: flex; gap: 6px; }
+    .weak-signal-item::before { content: '→'; font-family: var(--mono); color: var(--yellow); font-size: 10px; flex-shrink: 0; }
+
+    .intent-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .intent-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .intent-row:last-child { border-bottom: none; }
+    .intent-key { font-family: var(--mono); font-size: 10px; color: var(--txt2); }
+    .intent-val { font-family: var(--mono); font-size: 11px; color: var(--txt); font-weight: 700; }
+    .tag { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 3px; font-family: var(--mono); font-size: 10px; font-weight: 700; }
+    .tag.true { background: rgba(34,197,94,0.15); color: var(--green); }
+    .tag.false { background: rgba(100,116,139,0.15); color: var(--txt2); }
+
+    .block-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--txt2); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
+
+    @media (max-width: 1100px) {
+      main { grid-template-columns: 340px 1fr; }
+      .panel-analysis { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="2" width="5" height="5" rx="1" fill="white"/>
+          <rect x="9" y="2" width="5" height="5" rx="1" fill="rgba(255,255,255,0.5)"/>
+          <rect x="2" y="9" width="5" height="5" rx="1" fill="rgba(255,255,255,0.5)"/>
+          <rect x="9" y="9" width="5" height="5" rx="1" fill="white"/>
+        </svg>
+      </div>
+      <div class="logo-name">DS ENGINE <span>/ Screen Generator</span></div>
+    </div>
+    <div class="status-bar">
+      <div class="status-pill">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">conectando...</span>
+      </div>
+      <div class="version-tag">v1.0.0 · Fase 3</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT: INPUT -->
+    <div class="panel-input">
+      <div class="panel-title">// input</div>
+
+      <div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--txt2);margin-bottom:6px">brief</div>
+        <textarea id="briefInput" placeholder="Describe la pantalla en lenguaje natural..." rows="4" maxlength="300"></textarea>
+        <div class="char-count"><span id="charCount">0</span>/300</div>
+      </div>
+
+      <div>
+        <div class="examples-title">// ejemplos rápidos</div>
+        <div class="examples">
+          <button class="example-chip" onclick="setExample(this)">quiero ver mis fondos de inversión</button>
+          <button class="example-chip" onclick="setExample(this)">el usuario necesita iniciar sesión</button>
+          <button class="example-chip" onclick="setExample(this)">confirmar antes de borrar la cuenta</button>
+          <button class="example-chip" onclick="setExample(this)">ver el detalle de una transacción</button>
+          <button class="example-chip" onclick="setExample(this)">listado de productos con filtro</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div>
+        <div class="examples-title" style="margin-bottom:10px">// config</div>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <div class="setting-label">engine url</div>
+            <input type="text" id="engineUrl" value="https://ds-ia-ready-engine-production.up.railway.app">
+          </div>
+          <div class="setting-item">
+            <div class="setting-label">api key</div>
+            <input type="text" id="apiKey" value="dev-key-local-2025">
+          </div>
+          <div class="setting-item">
+            <div class="setting-label">pattern override</div>
+            <select id="patternSelect">
+              <option value="">auto-detect</option>
+              <option value="lista-con-filtros">lista-con-filtros</option>
+              <option value="formulario-simple">formulario-simple</option>
+              <option value="confirmacion">confirmacion</option>
+              <option value="detalle">detalle</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <div class="setting-label">anthropic api key</div>
+            <input type="password" id="anthropicKey" placeholder="sk-ant-api03-...">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="generateBtn" onclick="generate()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">GENERATE_SCREEN</span>
+      </button>
+      <button class="btn-figma" id="figmaBtn" onclick="exportToFigma()" disabled>
+        <svg width="14" height="14" viewBox="0 0 38 57" fill="none">
+          <path d="M19 28.5C19 23.8056 22.8056 20 27.5 20C32.1944 20 36 23.8056 36 28.5C36 33.1944 32.1944 37 27.5 37C22.8056 37 19 33.1944 19 28.5Z" fill="white"/>
+          <path d="M2 46.5C2 41.8056 5.80558 38 10.5 38H19V46.5C19 51.1944 15.1944 55 10.5 55C5.80558 55 2 51.1944 2 46.5Z" fill="white"/>
+          <path d="M19 2V20H27.5C32.1944 20 36 16.1944 36 11.5C36 6.80558 32.1944 3 27.5 3L19 2Z" fill="white" opacity="0.7"/>
+          <path d="M2 11.5C2 16.1944 5.80558 20 10.5 20H19V3H10.5C5.80558 3 2 6.80558 2 11.5Z" fill="white" opacity="0.7"/>
+          <path d="M2 28.5C2 33.1944 5.80558 37 10.5 37H19V20H10.5C5.80558 20 2 23.8056 2 28.5Z" fill="white" opacity="0.7"/>
+        </svg>
+        <span id="figmaBtnText">EXPORT TO FIGMA</span>
+        <div class="spinner" id="figmaSpinner"></div>
+      </button>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--txt2);text-align:center">⌘+Enter para generar</div>
+    </div>
+
+    <!-- CENTER: PHONE PREVIEW -->
+    <div class="panel-preview">
+      <div class="preview-label">// screen preview</div>
+
+      <div class="phone-shell">
+        <div class="phone-notch">
+          <div class="phone-notch-pill"></div>
+        </div>
+        <div class="phone-screen" id="phoneScreen">
+          <div class="preview-empty" id="previewEmpty">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <rect x="4" y="4" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/>
+              <rect x="22" y="4" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/>
+              <rect x="4" y="22" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/>
+              <rect x="22" y="22" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/>
+            </svg>
+            <p>El preview aparecerá<br>aquí tras generar</p>
+          </div>
+        </div>
+        <div class="phone-home-bar">
+          <div class="phone-home-pill"></div>
+        </div>
+      </div>
+
+      <!-- Pattern badge below phone -->
+      <div id="patternBadge" style="display:none">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--txt2);text-align:center;margin-top:4px" id="patternBadgeText"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: ANALYSIS -->
+    <div class="panel-analysis" id="analysisPanel">
+      <div class="panel-title">// analysis</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--txt2);opacity:0.5;margin-top:40px;text-align:center">
+        Genera una pantalla<br>para ver el análisis
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Char count
+  document.getElementById('briefInput').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length;
+  });
+
+  function setExample(el) {
+    const input = document.getElementById('briefInput');
+    input.value = el.textContent.trim();
+    document.getElementById('charCount').textContent = input.value.length;
+    input.focus();
+  }
+
+  // Health check
+  async function checkHealth() {
+    const url = document.getElementById('engineUrl').value;
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    try {
+      const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(3000) });
+      if (r.ok) { dot.style.background = '#22c55e'; txt.textContent = 'engine online'; }
+      else { dot.style.background = '#eab308'; txt.textContent = 'engine degraded'; }
+    } catch { dot.style.background = '#ef4444'; txt.textContent = 'engine offline'; }
+  }
+  checkHealth();
+  setInterval(checkHealth, 10000);
+
+  // Enter shortcut
+  document.getElementById('briefInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate();
+  });
+
+  // ─── GENERATE ──────────────────────────────────
+  async function generate() {
+    const brief = document.getElementById('briefInput').value.trim();
+    if (!brief) { document.getElementById('briefInput').focus(); return; }
+
+    const url     = document.getElementById('engineUrl').value;
+    const apiKey  = document.getElementById('apiKey').value;
+    const pattern = document.getElementById('patternSelect').value;
+    const btn     = document.getElementById('generateBtn');
+
+    btn.disabled = true;
+    document.getElementById('spinner').style.display = 'block';
+    document.getElementById('btnText').textContent = 'GENERATING...';
+
+    try {
+      const body = { brief };
+      if (pattern) body.pattern = pattern;
+
+      const res = await fetch(`${url}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) { const e = await res.json(); renderError(e); return; }
+      const data = await res.json();
+      renderScreen(data);
+      renderAnalysis(data);
+
+    } catch (err) {
+      renderError({ error: 'NetworkError', message: 'No se pudo conectar con el engine en ' + url });
+    } finally {
+      btn.disabled = false;
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('btnText').textContent = 'GENERATE_SCREEN';
+    }
+  }
+
+  // ─── RENDER PHONE SCREEN ───────────────────────
+  function renderScreen(data) {
+    document.getElementById('figmaBtn').disabled = false;
+    const screen = document.getElementById('phoneScreen');
+    const components = data.components;
+    const intent = data.intent || {};
+    const domain = (intent.domain || 'pantalla').charAt(0).toUpperCase() + (intent.domain || 'pantalla').slice(1);
+    const hasFilters = intent.constraints?.has_filters;
+    const isDestructive = intent.constraints?.is_destructive;
+
+    let html = '<div class="sc-screen">';
+
+    // Render each component in order
+    for (const comp of components) {
+      html += renderComponent(comp, { domain, hasFilters, isDestructive, data });
+    }
+
+    html += '</div>';
+    screen.innerHTML = html;
+
+    // Badge
+    document.getElementById('patternBadgeText').textContent = data.pattern + ' · ' + data.components.length + ' componentes';
+    document.getElementById('patternBadge').style.display = 'block';
+  }
+
+  function renderComponent(comp, ctx) {
+    const { domain, hasFilters, isDestructive, data } = ctx;
+
+    switch(comp.component) {
+      case 'navigation-header':
+        return `
+          <div class="sc-header">
+            <div class="sc-header-back">
+              ${comp.variant === 'with-back' || comp.variant !== 'default' ? `
+                <svg viewBox="0 0 20 20" fill="none" stroke="#0f172a" stroke-width="2">
+                  <path d="M12 4L6 10L12 16"/>
+                </svg>` : `<div style="width:20px"></div>`}
+            </div>
+            <div class="sc-header-title">${comp.props?.title || domain}</div>
+            <div class="sc-header-action">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="#0f172a">
+                <circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/>
+              </svg>
+            </div>
+          </div>`;
+
+      case 'filter-bar':
+        return `
+          <div class="sc-filter-bar">
+            <div class="sc-chip sc-chip-active">Todos</div>
+            <div class="sc-chip sc-chip-default">Categoría</div>
+            <div class="sc-chip sc-chip-default">Tipo</div>
+            ${hasFilters ? '<div class="sc-chip sc-chip-default">Más</div>' : ''}
+          </div>`;
+
+      case 'card-item':
+        // Show 4 example items
+        const items = [
+          { title: domain + ' Alpha', sub: 'Actualizado hoy', val: '+3.2%', valColor: '#16a34a' },
+          { title: domain + ' Beta', sub: 'Hace 2 días', val: '€1.240', valColor: '#0f172a' },
+          { title: domain + ' Gamma', sub: 'Hace 1 semana', val: '-0.8%', valColor: '#dc2626' },
+          { title: domain + ' Delta', sub: 'Hace 2 semanas', val: '€580', valColor: '#0f172a' },
+        ];
+        return `<div class="sc-card-list">
+          ${items.map((item, i) => `
+            <div class="sc-card-item" style="animation-delay:${i*80}ms">
+              <div class="sc-card-left">
+                <div class="sc-card-title">${item.title}</div>
+                <div class="sc-card-subtitle">${item.sub}</div>
+              </div>
+              <div class="sc-card-right">
+                <div class="sc-card-value" style="color:${item.valColor}">${item.val}</div>
+                <div class="sc-card-chevron">›</div>
+              </div>
+            </div>`).join('')}
+        </div>`;
+
+      case 'input-text':
+        // Show 2-3 input fields based on context
+        const fields = data.pattern === 'formulario-simple'
+          ? [
+              { label: 'Email', placeholder: 'tu@email.com' },
+              { label: 'Contraseña', placeholder: '••••••••' },
+            ]
+          : [{ label: 'Campo', placeholder: 'Introduce el valor...' }];
+        return `<div class="sc-form">
+          ${fields.map(f => `
+            <div class="sc-input-wrap">
+              <div class="sc-input-label">${f.label}</div>
+              <div class="sc-input-field">${f.placeholder}</div>
+            </div>`).join('')}
+        </div>`;
+
+      case 'empty-state':
+        return `
+          <div class="sc-empty" style="flex:1">
+            <div class="sc-empty-icon">🔍</div>
+            <div class="sc-empty-title">${comp.props?.title || 'Sin resultados'}</div>
+            <div class="sc-empty-desc">Prueba ajustando los filtros para ver más resultados</div>
+            <div class="sc-empty-action">${comp.props?.action_label || 'Limpiar filtros'}</div>
+          </div>`;
+
+      case 'button-primary':
+        return `
+          <div class="sc-btn-area" style="padding-top:8px">
+            <div class="sc-btn-primary">${comp.props?.label || 'Continuar'}</div>
+          </div>`;
+
+      case 'button-secondary':
+        return `
+          <div class="sc-btn-area" style="padding-top:0">
+            <div class="sc-btn-secondary">${comp.props?.label || 'Cancelar'}</div>
+          </div>`;
+
+      case 'modal-bottom-sheet':
+        return `
+          <div class="sc-modal-overlay" style="position:relative;margin-top:auto">
+            <div class="sc-modal">
+              <div class="sc-modal-handle"></div>
+              <div class="sc-modal-title">${isDestructive ? 'Confirmar acción' : comp.props?.title || 'Información'}</div>
+              <div class="sc-modal-desc">${isDestructive ? 'Esta acción es irreversible. ¿Estás seguro de que quieres continuar?' : 'Descripción de la acción o información adicional para el usuario.'}</div>
+              <div class="sc-modal-btns">
+                <div class="sc-btn-primary">${isDestructive ? 'Sí, eliminar' : 'Confirmar'}</div>
+                <div class="sc-btn-secondary">Cancelar</div>
+              </div>
+            </div>
+          </div>`;
+
+      default:
+        return `<div style="padding:12px 16px;font-family:var(--sans);font-size:12px;color:#64748b;background:white;border-bottom:1px solid #f1f5f9">${comp.component}</div>`;
+    }
+  }
+
+  // ─── RENDER ANALYSIS ────────────────────────────
+  function renderAnalysis(data) {
+    const conf = data.confidence;
+    const score = conf.global;
+    const pct = Math.round(score * 100);
+    const scoreColor = score >= 0.80 ? '#22c55e' : score >= 0.60 ? '#eab308' : '#ef4444';
+
+    const signals = conf.signals || {
+      contract_coverage: conf.contract_coverage || 0,
+      intent_clarity:    conf.intent_detection || 0,
+      precedent:         0.30,
+      rule_compliance:   1.0,
+    };
+
+    const signalDefs = [
+      { key:'contract_coverage', label:'CONTRACT', weight:'30%' },
+      { key:'intent_clarity',    label:'INTENT',   weight:'25%' },
+      { key:'precedent',         label:'PRECEDENT', weight:'25%' },
+      { key:'rule_compliance',   label:'RULES',    weight:'20%' },
+    ];
+
+    const signalsHTML = signalDefs.map(s => {
+      const v = signals[s.key] ?? 0;
+      const p = Math.round(v*100);
+      const c = v >= 0.7 ? '#22c55e' : v >= 0.5 ? '#eab308' : '#ef4444';
+      return `<div class="signal">
+        <div class="signal-name">${s.label}</div>
+        <div class="progress-bar-outer"><div class="progress-bar-inner" style="width:${p}%;background:${c}"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="signal-val" style="color:${c}">${p}%</div>
+          <div class="signal-weight">${s.weight}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const compsHTML = data.components.map((c, i) => `
+      <div class="comp-row" style="animation-delay:${i*50}ms">
+        <div class="comp-order">${String(c.order).padStart(2,'0')}</div>
+        <div class="comp-info">
+          <div class="comp-name">${c.component}</div>
+          <div class="comp-variant">${c.variant}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+          <div class="badge ${c.required?'required':'optional'}">${c.required?'req':'opt'}</div>
+          <div class="badge ${c.node_id==='pending'?'pending':'resolved'}">${c.node_id==='pending'?'pending':c.node_id}</div>
+        </div>
+      </div>`).join('');
+
+    const weakHTML = conf.weak_signals?.length ? `
+      <div class="weak-signals">
+        <div class="weak-signal-title">⚠ señales débiles</div>
+        ${conf.weak_signals.map(s=>`<div class="weak-signal-item">${s}</div>`).join('')}
+      </div>` : '';
+
+    const constraintsHTML = data.intent?.constraints ? Object.entries(data.intent.constraints)
+      .filter(([k]) => k !== 'estimated_items')
+      .map(([k,v]) => `<div class="intent-row"><div class="intent-key">${k}</div><div class="tag ${v}">${v}</div></div>`)
+      .join('') : '';
+
+    document.getElementById('analysisPanel').innerHTML = `
+      <div class="panel-title">// analysis</div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="status-badge ${data.status}">${data.status.replace('_',' ')}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--txt2)">${data.pattern}</div>
+      </div>
+
+      <div class="confidence-block">
+        <div class="block-title">// confidence</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div class="confidence-score" style="color:${scoreColor}">${pct}</div>
+          <div style="font-family:var(--mono);font-size:14px;color:var(--txt2)">%</div>
+        </div>
+        <div class="progress-bar-outer" style="height:5px">
+          <div class="progress-bar-inner" style="width:${pct}%;background:${scoreColor}"></div>
+        </div>
+        <div class="signals-grid">${signalsHTML}</div>
+      </div>
+
+      ${weakHTML}
+
+      <div>
+        <div class="block-title">// components · ${data.components.length}</div>
+        <div class="components-list">${compsHTML}</div>
+      </div>
+
+      <div class="intent-block">
+        <div class="block-title">// intent</div>
+        <div class="intent-row">
+          <div class="intent-key">type</div>
+          <div class="intent-val">${data.intent?.intent_type||'—'}</div>
+        </div>
+        <div class="intent-row">
+          <div class="intent-key">domain</div>
+          <div class="intent-val">${data.intent?.domain||'—'}</div>
+        </div>
+        <div class="intent-row">
+          <div class="intent-key">confidence</div>
+          <div class="intent-val">${Math.round((data.intent?.confidence||0)*100)}%</div>
+        </div>
+        ${constraintsHTML}
+      </div>
+
+      <div style="font-family:var(--mono);font-size:9px;color:var(--txt2);padding-top:4px;border-top:1px solid var(--border)">
+        ${data.screen_id} · ${new Date(data.meta?.generated_at).toLocaleTimeString('es-ES')}
+      </div>
+    `;
+  }
+
+  // ─── EXPORT TO FIGMA via Claude API ─────────────
+  async function exportToFigma() {
+    if (!lastResult) return;
+
+    const anthropicKey = document.getElementById('anthropicKey').value.trim();
+    if (!anthropicKey) {
+      showFigmaStatus('error', 'Falta la Anthropic API Key en config');
+      return;
+    }
+
+    const btn = document.getElementById('figmaBtn');
+    const txt = document.getElementById('figmaBtnText');
+    const sp  = document.getElementById('figmaSpinner');
+
+    btn.disabled = true;
+    txt.textContent = 'PAINTING...';
+    sp.style.display = 'block';
+    showFigmaStatus('loading', 'Enviando a Claude para pintar en Figma...');
+
+    const plan = lastResult;
+    const componentNodeIds = {
+      'navigation-header':  '1:3',
+      'button-primary':     '1:9',
+      'button-secondary':   '1:11',
+      'card-item':          '1:13',
+      'input-text':         '1:21',
+      'filter-bar':         '1:24',
+      'empty-state':        '1:31',
+      'modal-bottom-sheet': '1:36',
+    };
+    const componentHeights = {
+      'navigation-header':  56,
+      'filter-bar':         48,
+      'card-item':          72,
+      'input-text':         72,
+      'button-primary':     64,
+      'button-secondary':   64,
+      'empty-state':        255,
+      'modal-bottom-sheet': 257,
+    };
+
+    const figmaScript = buildFigmaScript(plan, componentNodeIds, componentHeights);
+
+    const prompt = `You are a Figma automation assistant. Execute this exact Figma plugin script to paint a screen in the DS Simple file (key: aMiE3zUmsF6QtqycDarsqi).
+
+Use the figma-console MCP tool figma_execute with this code:
+
+\`\`\`javascript
+${figmaScript}
+\`\`\`
+
+After executing, return a JSON object with:
+- ok: boolean
+- screenId: the created frame's node ID
+- figmaUrl: https://www.figma.com/design/aMiE3zUmsF6QtqycDarsqi/Simple?node-id=<screenId with : replaced by ->
+
+Screen to paint: ${plan.screen_id} / ${plan.pattern}
+Components: ${plan.components.map(c => c.component).join(', ')}
+Status: ${plan.status} (${Math.round((plan.confidence?.global||0)*100)}% confidence)`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        showFigmaStatus('error', err.error?.message || `API error ${res.status}`);
+        return;
+      }
+
+      const data = await res.json();
+      const responseText = data.content?.map(b => b.text || '').join('') || '';
+
+      // Try to extract figmaUrl from response
+      const urlMatch = responseText.match(/https:\/\/www\.figma\.com\/design\/[^\s"'<>)]+/);
+      const figmaUrl = urlMatch ? urlMatch[0] : 'https://www.figma.com/design/aMiE3zUmsF6QtqycDarsqi/Simple';
+
+      showFigmaStatus('success', 'Pantalla pintada en Figma', figmaUrl);
+
+    } catch(err) {
+      showFigmaStatus('error', 'Error de red: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      txt.textContent = 'EXPORT TO FIGMA';
+      sp.style.display = 'none';
+    }
+  }
+
+  function buildFigmaScript(plan, nodeIds, heights) {
+    const components = JSON.stringify(plan.components);
+    const nIds = JSON.stringify(nodeIds);
+    const hMap = JSON.stringify(heights);
+    const score = Math.round((plan.confidence?.global||0)*100);
+
+    return `(async () => {
+  const page = figma.currentPage;
+  const NIDS = ${nIds};
+  const HEIGHTS = ${hMap};
+  const comps = ${components};
+  let maxX = 0;
+  page.children.forEach(n => { if (n.x + (n.width||0) > maxX) maxX = n.x + (n.width||0); });
+  const sx = maxX + 80;
+  const screen = figma.createFrame();
+  screen.name = "${plan.screen_id} / ${plan.pattern}";
+  screen.resize(390, 844);
+  screen.x = sx; screen.y = 0;
+  screen.fills = [{type:'SOLID',color:{r:0.97,g:0.98,b:0.99}}];
+  screen.clipsContent = true;
+  await figma.loadFontAsync({family:"Inter",style:"Regular"});
+  const lbl = figma.createText();
+  lbl.fontName = {family:"Inter",style:"Regular"};
+  lbl.characters = "${plan.screen_id}  ·  ${plan.pattern}  ·  ${plan.status}  ${score}%";
+  lbl.fontSize = 11;
+  lbl.fills = [{type:'SOLID',color:{r:0.4,g:0.44,b:0.5}}];
+  lbl.x = sx; lbl.y = -22;
+  page.appendChild(lbl);
+  let y = 0;
+  for (const c of comps) {
+    const nid = NIDS[c.component];
+    if (!nid) continue;
+    try {
+      const node = await figma.getNodeByIdAsync(nid);
+      if (!node || node.type !== 'COMPONENT') continue;
+      const inst = node.createInstance();
+      inst.name = String(c.order).padStart(2,'0') + '/' + c.component;
+      inst.x = 0; inst.y = y;
+      inst.resize(390, HEIGHTS[c.component]||56);
+      screen.appendChild(inst);
+      y += HEIGHTS[c.component]||56;
+    } catch(e) {}
+  }
+  const badge = figma.createFrame();
+  badge.name = "_governance";
+  badge.resize(390,24); badge.x=0; badge.y=820;
+  badge.fills=[{type:'SOLID',color:{r:0.04,g:0.05,b:0.07},opacity:0.75}];
+  screen.appendChild(badge);
+  figma.viewport.scrollAndZoomIntoView([screen]);
+  return {ok:true, screenId:screen.id};
+})()`;
+  }
+
+  function showFigmaStatus(type, msg, url) {
+    // Remove existing status
+    const existing = document.getElementById('figmaStatus');
+    if (existing) existing.remove();
+
+    const el = document.createElement('div');
+    el.id = 'figmaStatus';
+    const colors = { loading: '#64748b', success: '#22c55e', error: '#ef4444' };
+    const icons  = { loading: '◌', success: '✓', error: '✗' };
+    el.style.cssText = `font-family:var(--mono);font-size:11px;color:${colors[type]};padding:10px 12px;background:${colors[type]}11;border:1px solid ${colors[type]}33;border-radius:6px;margin-top:8px;display:flex;flex-direction:column;gap:4px`;
+    el.innerHTML = `<span>${icons[type]} ${msg}</span>`;
+
+    if (url) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.style.cssText = `color:#a259ff;text-decoration:none;font-size:10px`;
+      a.textContent = '→ Abrir en Figma';
+      el.appendChild(a);
+    }
+
+    document.getElementById('figmaBtn').parentNode.insertBefore(el, document.getElementById('figmaBtn').nextSibling);
+  }
+
+  function renderError(err) {
+    document.getElementById('analysisPanel').innerHTML = `
+      <div class="panel-title">// analysis</div>
+      <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;margin-top:8px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#ef4444;margin-bottom:6px">✗ ${err.error||'Error'}</div>
+        <div style="font-size:13px;color:var(--txt3)">${err.message||'Error desconocido'}</div>
+      </div>`;
+  }
+</script>
+</body>
+</html>
