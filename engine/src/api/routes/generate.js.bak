@@ -11,11 +11,7 @@ const INTENT_TO_PATTERN = {
   'lista-con-filtros': 'lista-con-filtros',
   'formulario-simple': 'formulario-simple',
   'confirmacion':      'confirmacion',
-  'detalle':           'detalle',
-  'onboarding':        'onboarding',
-  'perfil-usuario':    'perfil-usuario',
-  'error-estado':      'error-estado',
-  'notificaciones':    'notificaciones',
+  'detalle':           'detalle'
 };
 
 // ─── PARSEAR CANTIDADES DEL BRIEF ─────────────────────────────────────────────
@@ -60,20 +56,6 @@ function extractQuantities(brief) {
     'inputs':           'input-text',
     'campo':            'input-text',
     'campos':           'input-text',
-    'notificación':     'notification-banner',
-    'notificaciones':   'notification-banner',
-    'alerta':           'notification-banner',
-    'alertas':          'notification-banner',
-    'banner':           'notification-banner',
-    'tab':              'tab-bar',
-    'tabs':             'tab-bar',
-    'sección':          'list-header',
-    'secciones':        'list-header',
-    'badge':            'badge',
-    'chip':             'badge',
-    'chips':            'badge',
-    'etiqueta':         'badge',
-    'etiquetas':        'badge',
   };
 
   // Patrón: (número|palabra) + (término de componente)
@@ -140,14 +122,10 @@ function buildSmartProps(contract, intent, componentName) {
 function resolveOptional(component, intent, brief) {
   const b = brief.toLowerCase();
   const rules = {
-    'button-primary':         function() { return { include: intent.intent_type === 'lista-con-filtros' && (b.includes('crear') || b.includes('nuevo') || b.includes('añadir')), confidence: 0.75 }; },
-    'modal-bottom-sheet':     function() { return { include: (intent.constraints && intent.constraints.needs_confirmation) || (intent.constraints && intent.constraints.is_destructive), confidence: 0.85 }; },
-    'button-secondary':       function() { return { include: intent.intent_type === 'confirmacion' || (intent.constraints && intent.constraints.needs_confirmation), confidence: 0.90 }; },
-    'card-item':              function() { return { include: intent.intent_type === 'confirmacion', confidence: 0.75 }; },
-    'tab-bar':                function() { return { include: ['lista-con-filtros','detalle','perfil-usuario','notificaciones'].includes(intent.intent_type), confidence: 0.85 }; },
-    'notification-banner':    function() { return { include: intent.intent_type === 'notificaciones' || b.includes('notificacion') || b.includes('alerta'), confidence: 0.80 }; },
-    'list-header':            function() { return { include: ['perfil-usuario','notificaciones','lista-con-filtros'].includes(intent.intent_type), confidence: 0.75 }; },
-    'badge':                  function() { return { include: b.includes('badge') || b.includes('estado') || b.includes('variacion') || b.includes('precio'), confidence: 0.70 }; },
+    'button-primary':     function() { return { include: intent.intent_type === 'lista-con-filtros' && (b.includes('crear') || b.includes('nuevo') || b.includes('añadir')), confidence: 0.75 }; },
+    'modal-bottom-sheet': function() { return { include: (intent.constraints && intent.constraints.needs_confirmation) || (intent.constraints && intent.constraints.is_destructive), confidence: 0.85 }; },
+    'button-secondary':   function() { return { include: intent.intent_type === 'confirmacion' || (intent.constraints && intent.constraints.needs_confirmation), confidence: 0.90 }; },
+    'card-item':          function() { return { include: intent.intent_type === 'confirmacion', confidence: 0.75 }; },
   };
   return rules[component] ? rules[component]() : { include: false, confidence: 0 };
 }
@@ -160,7 +138,7 @@ function buildCompositionPlan(brief, intent, patternData, contracts) {
   const quantities = extractQuantities(brief);
 
   // Componentes que NO se repiten nunca, aunque el usuario lo pida
-  const SINGLETON_COMPONENTS = ['navigation-header', 'filter-bar', 'modal-bottom-sheet', 'tab-bar'];
+  const SINGLETON_COMPONENTS = ['navigation-header', 'filter-bar', 'modal-bottom-sheet'];
 
   // Componentes que el filter-bar reemplaza conceptualmente cuando se piden "filtros"
   // filter-bar es UN solo componente que contiene los chips — no se repite

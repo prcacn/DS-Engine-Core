@@ -1,7 +1,7 @@
 // DS IA-Ready Engine — Figma Plugin V1
 // Thin HTTP client. Toda la lógica vive en el Engine (Railway).
 
-var ENGINE_URL = 'https://ds-ia-ready-engine-production.up.railway.app';
+var ENGINE_URL = 'http://localhost:3000';
 var ENGINE_API_KEY = 'dev-key-local-2025';
 
 var COMPONENT_NODE_IDS = {
@@ -73,12 +73,10 @@ function handleGenerate(brief, patternOverride) {
   .then(function(engineResponse) {
     if (engineResponse.error) {
       figma.ui.postMessage({ type: 'error', text: engineResponse.message || engineResponse.error });
-      return;
+      return Promise.resolve(null);
     }
 
-    var statusText = 'Plan generado (' + engineResponse.status + ') — pintando pantalla...';
-    figma.ui.postMessage({ type: 'status', text: statusText });
-
+    figma.ui.postMessage({ type: 'status', text: 'Plan generado (' + engineResponse.status + ') — pintando pantalla...' });
     return paintScreen(engineResponse);
   })
   .then(function(result) {
@@ -89,6 +87,8 @@ function handleGenerate(brief, patternOverride) {
       pattern: result.pattern,
       confidence: result.confidence,
       components: result.components,
+      violations: result.violations,
+      missing_components: result.missing_components,
       nodeId: result.nodeId,
     });
     figma.currentPage.selection = [result.frame];
@@ -104,15 +104,17 @@ function handleGenerate(brief, patternOverride) {
 function paintScreen(engineResponse) {
   var pattern = engineResponse.pattern;
   var components = engineResponse.components;
-  var screenId = 'gen_' + Date.now();
+  var screenId = engineResponse.screen_id || ('gen_' + Date.now());
 
-  // Posición libre en el canvas
+  // Posición libre en el canvas (a la derecha del último frame)
   var existingFrames = figma.currentPage.children;
   var xOffset = 0;
-  if (existingFrames.length > 0) {
-    var lastFrame = existingFrames[existingFrames.length - 1];
-    xOffset = lastFrame.x + lastFrame.width + 80;
+  for (var i = 0; i < existingFrames.length; i++) {
+    var n = existingFrames[i];
+    var right = n.x + (n.width || 0);
+    if (right > xOffset) xOffset = right;
   }
+  xOffset += 80;
 
   // Frame de pantalla
   var screenFrame = figma.createFrame();
@@ -122,38 +124,46 @@ function paintScreen(engineResponse) {
   screenFrame.y = 0;
   screenFrame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
   screenFrame.clipsContent = true;
+  figma.currentPage.appendChild(screenFrame);
 
   // Ordenar por order
   var sorted = components.slice().sort(function(a, b) { return a.order - b.order; });
 
-  var yPos = 0;
-  var paintPromises = sorted.map(function(comp) {
-    return paintComponent(screenFrame, comp, yPos).then(function(height) {
-      yPos += height;
+  // ─── LOOP SECUENCIAL ─────────────────────────────────────────────────
+  // Cada componente espera al anterior antes de pintarse.
+  // Así yPos se acumula correctamente y los componentes se apilan en vertical.
+  var promise = Promise.resolve(0); // yPos inicial = 0
+
+  sorted.forEach(function(comp) {
+    promise = promise.then(function(yPos) {
+      return paintComponent(screenFrame, comp, yPos).then(function(height) {
+        return yPos + height; // devuelve el nuevo yPos para el siguiente
+      });
     });
   });
 
-  return Promise.all(paintPromises).then(function() {
-    figma.currentPage.appendChild(screenFrame);
-
-    // Label metadata
+  return promise.then(function() {
+    // Label de metadatos encima del frame
     return figma.loadFontAsync({ family: 'Inter', style: 'Regular' }).then(function() {
-      var confidenceGlobal = engineResponse.confidence && engineResponse.confidence.global ? engineResponse.confidence.global : 0;
+      var confidenceGlobal = engineResponse.confidence && engineResponse.confidence.global
+        ? engineResponse.confidence.global : 0;
       var label = figma.createText();
       label.characters = screenId + ' | ' + pattern + ' | ' + engineResponse.status + ' ' + Math.round(confidenceGlobal * 100) + '%';
       label.fontSize = 11;
       label.fills = [{ type: 'SOLID', color: { r: 0.5, g: 0.5, b: 0.5 } }];
       label.x = screenFrame.x;
-      label.y = -24;
+      label.y = screenFrame.y - 24;
       figma.currentPage.appendChild(label);
 
       return {
         frame: screenFrame,
         nodeId: screenFrame.id,
-        screenId: engineResponse.screen_id,
+        screenId: screenId,
         pattern: pattern,
         confidence: engineResponse.confidence,
         components: components,
+        violations: engineResponse.violations || [],
+        missing_components: engineResponse.missing_components || [],
       };
     });
   });
@@ -165,7 +175,7 @@ function paintComponent(parent, comp, yPos) {
   var nodeId = comp.node_id || COMPONENT_NODE_IDS[comp.component];
   var height = HEIGHT_MAP[comp.component] || 60;
 
-  if (!nodeId) {
+  if (!nodeId || nodeId === 'pending') {
     createPlaceholder(parent, comp, yPos, height);
     return Promise.resolve(height);
   }
@@ -177,22 +187,27 @@ function paintComponent(parent, comp, yPos) {
         return height;
       }
 
-      if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
-        var sourceNode = node.type === 'COMPONENT_SET' ? node.defaultVariant || node.children[0] : node;
-        if (sourceNode && sourceNode.type === 'COMPONENT') {
-          var instance = sourceNode.createInstance();
-          instance.x = 0;
-          instance.y = yPos;
-          instance.resize(390, instance.height);
-          parent.appendChild(instance);
-          return instance.height;
-        }
+      var sourceNode = null;
+      if (node.type === 'COMPONENT') {
+        sourceNode = node;
+      } else if (node.type === 'COMPONENT_SET') {
+        sourceNode = node.defaultVariant || node.children[0];
+      }
+
+      if (sourceNode && sourceNode.type === 'COMPONENT') {
+        var instance = sourceNode.createInstance();
+        instance.x = 0;
+        instance.y = yPos;                    // ← posición correcta, acumulada
+        instance.resize(390, height);          // ← forzamos el height del HEIGHT_MAP
+        parent.appendChild(instance);
+        return height;
       }
 
       createPlaceholder(parent, comp, yPos, height);
       return height;
     })
-    .catch(function() {
+    .catch(function(e) {
+      console.error('[DS Engine] paintComponent error:', comp.component, e.message);
       createPlaceholder(parent, comp, yPos, height);
       return height;
     });
@@ -202,7 +217,7 @@ function paintComponent(parent, comp, yPos) {
 
 function createPlaceholder(parent, comp, yPos, height) {
   var rect = figma.createRectangle();
-  rect.name = comp.component;
+  rect.name = comp.component + ' (placeholder)';
   rect.x = 0;
   rect.y = yPos;
   rect.resize(390, height);

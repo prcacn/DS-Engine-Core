@@ -1,0 +1,127 @@
+/* ==========================================================================
+   Simple DS — Design Tokens
+   Generated from Figma variables
+   Collections: Primitives · Semantic · Spacing · Spacing Semantic
+   ========================================================================== */
+
+:root {
+
+  /* ─── COLOR PRIMITIVES ─────────────────────────────────────────────────── */
+
+  /* Blue */
+  --blue-50: #EEF2FF;
+  --blue-100: #E0E7FF;
+  --blue-500: #6366F1;
+  --blue-600: #4F46E5;
+  --blue-700: #4338CA;
+
+  /* Neutral */
+  --neutral-0: #FFFFFF;
+  --neutral-50: #F8FAFC;
+  --neutral-100: #F1F5F9;
+  --neutral-200: #E2E8F0;
+  --neutral-300: #CBD5E1;
+  --neutral-400: #94A3B8;
+  --neutral-500: #64748B;
+  --neutral-700: #334155;
+  --neutral-900: #0F172A;
+
+  /* Green · Red · Amber · Sky */
+  --green-100: #DCFCE7;
+  --green-600: #16A34A;
+  --red-100: #FEE2E2;
+  --red-600: #DC2626;
+  --amber-100: #FEF9C3;
+  --amber-600: #D97706;
+  --sky-100: #DBEAFE;
+  --sky-600: #2563EB;
+
+  /* ─── SPACING PRIMITIVES ──────────────────────────────────────────────── */
+
+  /* Scale (base 4px) */
+  --space-0: 0;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 10px;
+  --space-6: 12px;
+  --space-7: 16px;
+  --space-8: 20px;
+  --space-9: 24px;
+  --space-10: 32px;
+  --space-11: 40px;
+  --space-12: 48px;
+
+  /* Border radius */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ─── COLOR SEMANTIC ───────────────────────────────────────────────────── */
+
+  /* Surface */
+  --color-surface-primary: var(--neutral-0);
+  --color-surface-secondary: var(--neutral-50);
+  --color-surface-tertiary: var(--neutral-100);
+
+  /* Text */
+  --color-text-primary: var(--neutral-900);
+  --color-text-secondary: var(--neutral-500);
+  --color-text-tertiary: var(--neutral-400);
+  --color-text-inverse: var(--neutral-0);
+  --color-text-brand: var(--blue-600);
+
+  /* Brand */
+  --color-brand-primary: var(--blue-600);
+  --color-brand-secondary: var(--blue-500);
+  --color-brand-subtle: var(--blue-50);
+  --color-brand-hover: var(--blue-700);
+
+  /* Border */
+  --color-border-default: var(--neutral-200);
+  --color-border-subtle: var(--neutral-100);
+  --color-border-strong: var(--neutral-300);
+  --color-border-brand: var(--blue-600);
+
+  /* Feedback */
+  --color-feedback-success-bg: var(--green-100);
+  --color-feedback-success-text: var(--green-600);
+  --color-feedback-error-bg: var(--red-100);
+  --color-feedback-error-text: var(--red-600);
+  --color-feedback-warning-bg: var(--amber-100);
+  --color-feedback-warning-text: var(--amber-600);
+  --color-feedback-info-bg: var(--sky-100);
+  --color-feedback-info-text: var(--sky-600);
+
+  /* ─── SPACING SEMANTIC ─────────────────────────────────────────────────── */
+
+  /* padding */
+  --padding-component-xs: var(--space-2);
+  --padding-component-sm: var(--space-3);
+  --padding-component-md: var(--space-7);
+  --padding-component-lg: var(--space-9);
+  --padding-vertical-xs: var(--space-1);
+  --padding-vertical-sm: var(--space-3);
+  --padding-vertical-md: var(--space-4);
+  --padding-vertical-lg: var(--space-6);
+
+  /* gap */
+  --gap-xs: var(--space-1);
+  --gap-sm: var(--space-2);
+  --gap-md: var(--space-4);
+  --gap-lg: var(--space-6);
+  --gap-xl: var(--space-7);
+
+  /* radius */
+  --radius-component-none: var(--radius-none);
+  --radius-component-sm: var(--radius-sm);
+  --radius-component-md: var(--radius-md);
+  --radius-component-lg: var(--radius-lg);
+  --radius-component-xl: var(--radius-xl);
+  --radius-component-full: var(--radius-full);
+
+}
