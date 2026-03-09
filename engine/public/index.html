@@ -512,23 +512,39 @@
   autoLoadConfig();
 
   async function autoLoadConfig() {
-    // Usa el propio origen de la página — funciona en localhost Y Railway automáticamente
-    var origins = [window.location.origin];
-    if (window.location.protocol === 'file:' || window.location.hostname !== 'localhost') {
-      origins.push('http://localhost:3000');
+    // Detectar entorno: Railway (production) vs localhost (dev) vs file://
+    var RAILWAY_URL = 'https://ds-ia-ready-engine-production.up.railway.app';
+    var isRailway = window.location.hostname.includes('railway.app');
+    var isLocalhost = window.location.hostname === 'localhost';
+    var isFile = window.location.protocol === 'file:';
+
+    // En Railway → usar la URL de Railway directamente
+    // En localhost → usar localhost:3000 primero, Railway como fallback
+    // En file:// → usar Railway como principal
+    var origins = [];
+    if (isRailway) {
+      origins = [window.location.origin];
+      document.getElementById('engineUrl').value = window.location.origin;
+    } else if (isLocalhost) {
+      origins = ['http://localhost:3000', RAILWAY_URL];
+    } else {
+      // file:// u otros
+      origins = [RAILWAY_URL, 'http://localhost:3000'];
+      document.getElementById('engineUrl').value = RAILWAY_URL;
     }
+
     for (var i = 0; i < origins.length; i++) {
       try {
-        var res = await fetch(origins[i] + '/config', { signal: AbortSignal.timeout(2000) });
+        var res = await fetch(origins[i] + '/health', { signal: AbortSignal.timeout(3000) });
         if (!res.ok) continue;
-        var cfg = await res.json();
-        if (cfg.anthropic_api_key) {
-          document.getElementById('anthropicKey').value = cfg.anthropic_api_key;
-          document.getElementById('anthropicKeyStatus').textContent = '✓ key cargada';
-          document.getElementById('anthropicKeyStatus').style.color = 'var(--green)';
-          if (window.location.hostname === 'localhost') {
-            document.getElementById('engineUrl').value = window.location.origin;
-          }
+        var health = await res.json();
+        if (health.status === 'ok') {
+          // Engine encontrado — actualizar URL en el input
+          document.getElementById('engineUrl').value = origins[i];
+          // Indicar entorno en el UI
+          var envLabel = origins[i].includes('railway') ? '☁️ Railway (production)' : '🖥️ localhost (dev)';
+          var statusEl = document.getElementById('engineStatus');
+          if (statusEl) statusEl.title = envLabel;
           return;
         }
       } catch(e) {}

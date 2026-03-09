@@ -18,12 +18,22 @@ function loadRegistry() {
     throw new Error(`Registry no encontrado en: ${registryPath}`);
   }
 
-  const content  = fs.readFileSync(registryPath, 'utf-8');
-  const registry = yaml.load(content);
+  const content = fs.readFileSync(registryPath, 'utf-8');
+  const raw     = yaml.load(content);
 
-  console.log(`  ✓ Registry cargado: ${Object.keys(registry.components).length} componentes`);
-  cache = registry;
-  return registry;
+  // Normalizar: si components es array, convertir a objeto keyed por name
+  if (Array.isArray(raw.components)) {
+    const map = {};
+    for (const comp of raw.components) {
+      const key = comp.name || comp.id;
+      map[key] = { ...comp, intenciones: comp.intenciones || [], contextos: comp.category ? [comp.category] : [], node_id: comp.id };
+    }
+    raw.components = map;
+  }
+
+  console.log(`  ✓ Registry cargado: ${Object.keys(raw.components).length} componentes`);
+  cache = raw;
+  return raw;
 }
 
 // Busca componentes por intención usando coincidencia de texto simple

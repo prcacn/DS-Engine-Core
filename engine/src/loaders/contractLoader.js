@@ -32,9 +32,12 @@ function parseContract(filename, content) {
     ? restrictMatch[1].trim().split('\n').map(l => l.replace(/^- /, '').trim()).filter(Boolean)
     : [];
 
-  // Extraer Node ID
-  const nodeIdMatch = content.match(/## Node ID en Figma\n(.*)/);
-  const nodeId = nodeIdMatch ? nodeIdMatch[1].trim() : 'pending';
+  // Extraer Node ID — soporta formato A (## Node ID en Figma) y formato B (figma_id en Metadata)
+  const nodeIdMatchA = content.match(/## Node ID en Figma\n(.*)/);
+  const nodeIdMatchB = content.match(/figma_id:\s*([\w:]+)/);
+  const nodeId = (nodeIdMatchA ? nodeIdMatchA[1].trim() : null)
+              || (nodeIdMatchB ? nodeIdMatchB[1].trim() : null)
+              || 'pending';
 
   // Extraer propiedades de la tabla
   const propsMatch = content.match(/## Propiedades\n\|.*\|\n\|.*\|\n([\s\S]*?)(?=\n##)/);
