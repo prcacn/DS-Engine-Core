@@ -1,16 +1,17 @@
 require('dotenv').config();
 const express = require('express');
-const cors    = require('cors');
-const path    = require('path');
+const cors = require('cors');
+const path = require('path');
 
-const generateRoute  = require('./api/routes/generate');
-const validateRoute  = require('./api/routes/validate');
-const registryRoute  = require('./api/routes/registry');
-const paintRoute     = require('./api/routes/paint');
-const errorHandler   = require('./api/middleware/errorHandler');
-const auth           = require('./api/middleware/auth');
+const generateRoute = require('./api/routes/generate');
+const validateRoute = require('./api/routes/validate');
+const registryRoute = require('./api/routes/registry');
+const paintRoute = require('./api/routes/paint');
+const errorHandler = require('./api/middleware/errorHandler');
+const auth = require('./api/middleware/auth');
+const knowledgeRoute = require('./api/routes/knowledge');
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Middleware global ──────────────────────────────────────────────────────
@@ -34,10 +35,11 @@ app.get('/health', (req, res) => {
 });
 
 // ── Rutas protegidas con API Key ───────────────────────────────────────────
-app.use('/generate',        auth, generateRoute);
-app.use('/validate',        auth, validateRoute);
-app.use('/registry',        auth, registryRoute);
-app.use('/paint',           auth, paintRoute);
+app.use('/generate', auth, generateRoute);
+app.use('/validate', auth, validateRoute);
+app.use('/registry', auth, registryRoute);
+app.use('/paint', auth, paintRoute);
+app.use('/knowledge', auth, knowledgeRoute);
 
 // ── Error handler global ───────────────────────────────────────────────────
 app.use(errorHandler);

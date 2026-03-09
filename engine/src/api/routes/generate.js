@@ -1,4 +1,4 @@
-// api/routes/generate.js — Fase 3+ (violations + quantity parsing)
+// api/routes/generate.js — Fase 4 (KB — Knowledge Base integration)
 
 const express                  = require('express');
 const router                   = express.Router();
@@ -6,6 +6,7 @@ const { parseIntent }          = require('../../core/intentParser');
 const { calculateScore }       = require('../../core/confidenceScore');
 const { loadContracts }        = require('../../loaders/contractLoader');
 const { loadPatterns }         = require('../../loaders/patternLoader');
+const kb                       = require('../../core/knowledgeBase'); // ← NUEVO: Base de conocimiento
 
 const INTENT_TO_PATTERN = {
   'lista-con-filtros': 'lista-con-filtros',
@@ -17,6 +18,28 @@ const INTENT_TO_PATTERN = {
   'error-estado':      'error-estado',
   'notificaciones':    'notificaciones',
 };
+
+// ─── KNOWLEDGE BASE — Enriquecer el brief con contexto organizacional ─────────
+// Busca en Pinecone los fragmentos más relevantes para el brief dado.
+// Si la KB no está disponible, el engine sigue funcionando sin contexto.
+
+async function enrichBriefWithKnowledge(brief) {
+  try {
+    const results = await kb.search(brief, { topK: 4 });
+    if (results.length === 0) return '';
+
+    const context = results
+      .map(r => `[${r.tipo} · ${r.geografia}] ${r.content}`)
+      .join('\n');
+
+    console.log('  → KB: ' + results.length + ' fragmentos relevantes encontrados');
+    return context;
+
+  } catch (error) {
+    console.warn('  ⚠ KB no disponible, continuando sin contexto:', error.message);
+    return '';
+  }
+}
 
 // ─── PARSEAR CANTIDADES DEL BRIEF ─────────────────────────────────────────────
 // Lee frases como "tres card items", "3 filtros", "dos botones"
@@ -153,7 +176,7 @@ function resolveOptional(component, intent, brief) {
 }
 
 // ─── BUILD COMPOSITION PLAN ───────────────────────────────────────────────────
-// Ahora respeta las cantidades explícitas del brief
+// Respeta las cantidades explícitas del brief
 
 function buildCompositionPlan(brief, intent, patternData, contracts) {
   const components = [];
@@ -162,17 +185,12 @@ function buildCompositionPlan(brief, intent, patternData, contracts) {
   // Componentes que NO se repiten nunca, aunque el usuario lo pida
   const SINGLETON_COMPONENTS = ['navigation-header', 'filter-bar', 'modal-bottom-sheet', 'tab-bar'];
 
-  // Componentes que el filter-bar reemplaza conceptualmente cuando se piden "filtros"
-  // filter-bar es UN solo componente que contiene los chips — no se repite
-  // Lo que sí se puede repetir: card-item, input-text, button-primary
-
   let order = 1;
 
   patternData.requiredComponents.forEach(function(req) {
     const contract = contracts[req.component];
     if (!contract) return;
 
-    // ¿Cuántas veces pintar este componente?
     let count = 1;
     if (!SINGLETON_COMPONENTS.includes(req.component) && quantities[req.component]) {
       count = quantities[req.component];
@@ -203,7 +221,6 @@ function buildCompositionPlan(brief, intent, patternData, contracts) {
     }
 
     const r = resolveOptional(opt.component, intent, brief);
-    // Incluir si: (a) las reglas lo dicen, o (b) el usuario lo pidió explícitamente
     const include = r.include || (quantities[opt.component] && quantities[opt.component] > 0);
     if (include) {
       for (let i = 0; i < count; i++) {
@@ -290,11 +307,22 @@ router.post('/', async function(req, res, next) {
       console.log('  → Cantidades detectadas:', JSON.stringify(quantities));
     }
 
+    // ── KNOWLEDGE BASE — Buscar contexto organizacional relevante ──────────────
+    const kbContext = await enrichBriefWithKnowledge(brief);
+
+    // El brief enriquecido incluye el contexto de la KB si existe
+    // Si no hay contexto, el engine funciona exactamente igual que antes
+    const enrichedBrief = kbContext
+      ? `${brief}\n\n[Contexto organizacional:\n${kbContext}]`
+      : brief;
+
     const contracts = loadContracts();
     const patterns  = loadPatterns();
+
     const intent = forcedPattern
       ? { intent_type: forcedPattern, confidence: 0.99, domain: 'manual', constraints: {}, reasoning: 'Pattern forzado', brief_violations: [] }
-      : await parseIntent(brief);
+      : await parseIntent(enrichedBrief); // ← parseIntent ahora recibe el brief enriquecido
+
     const patternName = INTENT_TO_PATTERN[intent.intent_type] || 'lista-con-filtros';
     const patternData = patterns[patternName];
     if (!patternData) {
@@ -309,17 +337,23 @@ router.post('/', async function(req, res, next) {
     const screenId = 'gen_' + Date.now();
 
     console.log('  ✓ Plan generado: ' + components.length + ' componentes, status: ' + confidence.status);
+
     res.json({
-      screen_id:         screenId,
-      brief:             brief.trim(),
-      pattern:           patternName,
+      screen_id:          screenId,
+      brief:              brief.trim(),
+      pattern:            patternName,
       intent,
-      status:            confidence.status,
+      status:             confidence.status,
       confidence,
       violations,
       components,
-      composition_rules: compositionRules,
-      meta: { engine_version: '1.0.0', phase: 'Fase 3+ — Quantity Parsing', generated_at: new Date().toISOString() }
+      composition_rules:  compositionRules,
+      kb_context_used:    kbContext ? true : false, // ← indica si la KB aportó contexto
+      meta: {
+        engine_version: '1.0.0',
+        phase: 'Fase 4 — Knowledge Base',
+        generated_at: new Date().toISOString()
+      }
     });
   } catch (err) {
     next(err);
