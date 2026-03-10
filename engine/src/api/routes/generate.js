@@ -308,7 +308,9 @@ router.post('/', async function(req, res, next) {
     }
 
     // ── KNOWLEDGE BASE — Buscar contexto organizacional relevante ──────────────
-    const kbContext = await enrichBriefWithKnowledge(brief);
+    const kbResult = await enrichBriefWithKnowledge(brief);
+    const kbContext = kbResult.context;
+    const kbRules  = kbResult.rules;
 
     // El brief enriquecido incluye el contexto de la KB si existe
     // Si no hay contexto, el engine funciona exactamente igual que antes
