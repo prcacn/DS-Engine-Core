@@ -1,7 +1,7 @@
 // DS IA-Ready Engine — Figma Plugin V1
 // Thin HTTP client. Toda la lógica vive en el Engine (Railway).
 
-var ENGINE_URL = 'http://localhost:3000';
+var ENGINE_URL = 'https://ds-ia-ready-engine-production.up.railway.app';
 var ENGINE_API_KEY = 'dev-key-local-2025';
 
 var COMPONENT_NODE_IDS = {
