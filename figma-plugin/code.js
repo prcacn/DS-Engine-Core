@@ -89,6 +89,8 @@ function handleGenerate(brief, patternOverride) {
       components: result.components,
       violations: result.violations,
       missing_components: result.missing_components,
+      kb_context_used: result.kb_context_used,
+      kb_context: result.kb_context,
       nodeId: result.nodeId,
     });
     figma.currentPage.selection = [result.frame];
@@ -164,6 +166,8 @@ function paintScreen(engineResponse) {
         components: components,
         violations: engineResponse.violations || [],
         missing_components: engineResponse.missing_components || [],
+        kb_context_used: engineResponse.kb_context_used || false,
+        kb_context: engineResponse.kb_context || null,
       };
     });
   });
