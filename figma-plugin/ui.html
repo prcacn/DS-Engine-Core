@@ -2,211 +2,531 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>DS IA-Ready Engine</title>
+<title>DS Engine</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0f0f11; --surface: #1a1a1f; --surface2: #22222a; --border: #2e2e38;
-    --accent: #7c5cfc; --accent-dim: #4a3a9a; --text: #e8e8f0; --text-dim: #7a7a90;
-    --success: #4ade80; --warning: #fbbf24; --error: #f87171; --radius: 8px;
-  }
-  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); height: 620px; overflow: hidden; display: flex; flex-direction: column; }
-  .header { padding: 14px 20px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .logo { display: flex; align-items: center; gap: 8px; }
-  .logo-icon { width: 26px; height: 26px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-  .logo-text { font-size: 13px; font-weight: 600; }
-  .logo-sub { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); transition: background 0.3s; }
-  .status-dot.online { background: var(--success); box-shadow: 0 0 6px var(--success); }
-  .status-dot.error { background: var(--error); }
-  .main { flex: 1; overflow-y: auto; padding: 14px 20px; display: flex; flex-direction: column; gap: 12px; }
-  .field-label { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
-  textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 13px; line-height: 1.5; padding: 10px 12px; resize: none; height: 72px; font-family: inherit; }
-  textarea:focus { outline: none; border-color: var(--accent); }
-  textarea::placeholder { color: var(--text-dim); }
-  .pattern-row { display: flex; gap: 5px; flex-wrap: wrap; }
-  .chip { padding: 3px 9px; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; font-size: 11px; color: var(--text-dim); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-  .chip:hover { border-color: var(--accent); color: var(--text); }
-  .chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
-  .btn-generate { width: 100%; padding: 10px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
-  .btn-generate:hover { opacity: 0.88; }
-  .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; }
-  .status-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; font-size: 12px; color: var(--text-dim); min-height: 36px; display: flex; align-items: center; gap: 8px; }
-  .status-bar.error { border-color: var(--error); color: var(--error); }
-  .status-bar.success { border-color: var(--success); color: var(--success); }
-  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; display: none; flex-direction: column; gap: 10px; }
-  .result-card.visible { display: flex; }
-  .result-header { display: flex; align-items: center; justify-content: space-between; }
-  .result-pattern { font-size: 12px; font-weight: 600; background: var(--surface2); padding: 3px 8px; border-radius: 4px; }
-  .confidence-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
-  .confidence-badge.AUTO_APPROVE { background: #14532d; color: var(--success); }
-  .confidence-badge.REVIEW_FLAGGED { background: #451a03; color: var(--warning); }
-  .confidence-badge.NEEDS_REVIEW { background: #450a0a; color: var(--error); }
-  .signals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-  .signal-item { background: var(--surface2); border-radius: 6px; padding: 6px 9px; }
-  .signal-name { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
-  .signal-bar-wrap { background: var(--border); border-radius: 2px; height: 3px; overflow: hidden; margin-bottom: 3px; }
-  .signal-bar { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.4s ease; }
-  .signal-value { font-size: 11px; font-weight: 600; }
-  .components-list { display: flex; flex-direction: column; gap: 3px; }
-  .comp-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: var(--surface2); border-radius: 5px; }
-  .comp-order { font-size: 10px; color: var(--text-dim); width: 14px; text-align: right; }
-  .comp-name { font-size: 11px; font-weight: 500; flex: 1; }
-  .comp-node-id { font-size: 10px; color: var(--accent); font-family: 'SF Mono', monospace; background: var(--bg); padding: 2px 5px; border-radius: 3px; }
-  .violations-list { display: flex; flex-direction: column; gap: 4px; }
-  .violation-row { padding: 7px 10px; border-radius: 5px; border-left: 3px solid; }
-  .violation-row.error { background: rgba(248,113,113,0.08); border-color: var(--error); }
-  .violation-row.warning { background: rgba(251,191,36,0.08); border-color: var(--warning); }
-  .violation-rule { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-  .violation-row.error .violation-rule { color: var(--error); }
-  .violation-row.warning .violation-rule { color: var(--warning); }
-  .violation-detail { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
-  .violation-action { font-size: 10px; color: var(--text-dim); font-style: italic; margin-top: 2px; }
-  .missing-section { background: rgba(251,191,36,0.05); border: 1px dashed rgba(251,191,36,0.25); border-radius: var(--radius); padding: 10px 12px; }
-  .missing-section .field-label { color: var(--warning); margin-bottom: 6px; }
-  .missing-item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
-  .missing-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .missing-item-name { font-size: 11px; font-weight: 600; color: var(--warning); min-width: 90px; }
-  .missing-item-reason { font-size: 11px; color: var(--text-dim); line-height: 1.4; flex: 1; }
-  .spinner { width: 13px; height: 13px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .main::-webkit-scrollbar { width: 4px; }
-  .main::-webkit-scrollbar-track { background: transparent; }
-  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0c0c0f;
+  --surface: #141418;
+  --surface2: #1c1c22;
+  --surface3: #242430;
+  --border: #2a2a35;
+  --border2: #353545;
+  --accent: #7c5cfc;
+  --accent-dim: rgba(124,92,252,0.12);
+  --accent-glow: rgba(124,92,252,0.25);
+  --text: #eeeef5;
+  --text2: #9898b0;
+  --text3: #5a5a70;
+  --success: #34d399;
+  --success-dim: rgba(52,211,153,0.1);
+  --warning: #fbbf24;
+  --warning-dim: rgba(251,191,36,0.1);
+  --error: #f87171;
+  --error-dim: rgba(248,113,113,0.1);
+  --radius: 8px;
+  --radius-sm: 5px;
+  --mono: 'SF Mono', 'Fira Code', monospace;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 680px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ── HEADER ── */
+.header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.logo { display: flex; align-items: center; gap: 9px; }
+.logo-icon {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.logo-title { font-size: 13px; font-weight: 700; letter-spacing: -0.2px; }
+.logo-sub { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-top: 1px; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.engine-status { display: flex; align-items: center; gap: 5px; }
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text3); transition: all 0.3s;
+}
+.status-dot.online { background: var(--success); box-shadow: 0 0 6px var(--success); }
+.status-dot.error { background: var(--error); }
+.status-label { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+
+/* ── SCROLL AREA ── */
+.main {
+  flex: 1; overflow-y: auto;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.main::-webkit-scrollbar { width: 3px; }
+.main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── LABELS ── */
+.label {
+  font-size: 9px; font-weight: 700;
+  color: var(--text3); text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 6px;
+}
+
+/* ── TEXTAREA ── */
+textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 12px; line-height: 1.5;
+  padding: 9px 11px;
+  resize: none; height: 68px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+textarea:focus { outline: none; border-color: var(--accent); }
+textarea::placeholder { color: var(--text3); }
+
+/* ── CHIPS ── */
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip {
+  padding: 3px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 10px; color: var(--text3);
+  cursor: pointer; transition: all 0.15s;
+}
+.chip:hover { border-color: var(--border2); color: var(--text2); }
+.chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
+
+/* ── BUTTON ── */
+.btn {
+  width: 100%; padding: 10px;
+  background: var(--accent); color: white;
+  border: none; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  letter-spacing: 0.1px;
+}
+.btn:hover { opacity: 0.88; }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn:active { transform: scale(0.99); }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 11px;
+  font-size: 11px; color: var(--text3);
+  min-height: 34px;
+  display: flex; align-items: center; gap: 7px;
+}
+.status-bar.error { border-color: rgba(248,113,113,0.3); color: var(--error); }
+.status-bar.success { border-color: rgba(52,211,153,0.3); color: var(--success); }
+
+/* ── RESULT CARD ── */
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: none; flex-direction: column;
+}
+.result-card.visible { display: flex; }
+
+/* ── RESULT HEADER ── */
+.result-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.result-pattern {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text2);
+  background: var(--surface2);
+  padding: 3px 7px; border-radius: 4px;
+}
+.confidence-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 5px;
+}
+.confidence-badge.AUTO_APPROVE { background: var(--success-dim); color: var(--success); }
+.confidence-badge.REVIEW_FLAGGED { background: var(--warning-dim); color: var(--warning); }
+.confidence-badge.NEEDS_REVIEW { background: var(--error-dim); color: var(--error); }
+
+/* ── KB INDICATOR ── */
+.kb-indicator {
+  margin: 10px 12px 0;
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 10px; font-weight: 600;
+  font-family: var(--mono);
+  letter-spacing: 0.3px;
+}
+.kb-indicator.active {
+  background: var(--accent-dim);
+  border: 1px solid rgba(124,92,252,0.3);
+  color: var(--accent);
+}
+.kb-indicator.inactive {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text3);
+}
+.kb-dot {
+  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+}
+.kb-indicator.active .kb-dot { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+.kb-indicator.inactive .kb-dot { background: var(--text3); }
+
+/* ── KB CONTEXT ── */
+.kb-context {
+  margin: 6px 12px 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 10px; color: var(--text2);
+  line-height: 1.5;
+  display: none;
+}
+.kb-context.visible { display: block; }
+.kb-context-title {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--accent); text-transform: uppercase;
+  letter-spacing: 0.8px; margin-bottom: 4px;
+}
+
+/* ── SIGNALS ── */
+.signals-block { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 6px; }
+.signal-item {
+  background: var(--surface2); border-radius: var(--radius-sm);
+  padding: 6px 8px;
+}
+.signal-name { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+.signal-bar-wrap { background: var(--border); border-radius: 2px; height: 2px; overflow: hidden; margin-bottom: 3px; }
+.signal-bar { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+.signal-val { font-size: 11px; font-weight: 700; }
+
+/* ── COMPONENTS ── */
+.components-block { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.comp-list { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+.comp-row {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 8px;
+  background: var(--surface2); border-radius: var(--radius-sm);
+}
+.comp-order { font-size: 9px; color: var(--text3); width: 14px; text-align: right; font-family: var(--mono); }
+.comp-name { font-size: 11px; font-weight: 500; flex: 1; }
+.comp-node {
+  font-size: 9px; color: var(--accent);
+  font-family: var(--mono);
+  background: var(--bg); padding: 2px 5px; border-radius: 3px;
+}
+.comp-missing { font-size: 9px; color: var(--text3); font-style: italic; }
+
+/* ── VIOLATIONS ── */
+.violations-block { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.violation-item {
+  padding: 7px 9px; border-radius: var(--radius-sm);
+  border-left: 2px solid; margin-bottom: 4px;
+}
+.violation-item:last-child { margin-bottom: 0; }
+.violation-item.error { background: var(--error-dim); border-color: var(--error); }
+.violation-item.warning { background: var(--warning-dim); border-color: var(--warning); }
+.v-rule { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.violation-item.error .v-rule { color: var(--error); }
+.violation-item.warning .v-rule { color: var(--warning); }
+.v-detail { font-size: 10px; color: var(--text2); line-height: 1.4; }
+
+/* ── MISSING ── */
+.missing-block {
+  padding: 10px 12px;
+  background: var(--warning-dim);
+  border-top: 1px solid rgba(251,191,36,0.15);
+}
+.missing-item { display: flex; gap: 7px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.missing-item:last-child { border-bottom: none; padding-bottom: 0; }
+.missing-name { font-size: 10px; font-weight: 600; color: var(--warning); min-width: 80px; }
+.missing-reason { font-size: 10px; color: var(--text2); line-height: 1.4; flex: 1; }
+
+/* ── SPINNER ── */
+.spinner {
+  width: 12px; height: 12px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+<!-- HEADER -->
 <div class="header">
   <div class="logo">
     <div class="logo-icon">⚡</div>
     <div>
-      <div class="logo-text">DS IA-Ready Engine</div>
-      <div class="logo-sub">Simple DS · V1</div>
+      <div class="logo-title">DS Engine</div>
+      <div class="logo-sub">IA-Ready · v1</div>
     </div>
   </div>
-  <div class="status-dot" id="statusDot"></div>
-</div>
-<div class="main">
-  <div>
-    <div class="field-label">Brief</div>
-    <textarea id="briefInput" placeholder="Ej: quiero ver el listado de mis transacciones con filtros"></textarea>
+  <div class="header-right">
+    <div class="engine-status">
+      <div class="status-dot" id="statusDot"></div>
+      <div class="status-label" id="statusLabel">—</div>
+    </div>
   </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- BRIEF -->
   <div>
-    <div class="field-label">Patrón (opcional)</div>
-    <div class="pattern-row" id="patternChips">
+    <div class="label">Brief</div>
+    <textarea id="briefInput" placeholder="Ej: quiero ver mis fondos de inversión con filtros para Colombia"></textarea>
+  </div>
+
+  <!-- PATTERN -->
+  <div>
+    <div class="label">Patrón (opcional)</div>
+    <div class="chips" id="patternChips">
       <div class="chip active" data-pattern="">Auto</div>
       <div class="chip" data-pattern="lista-con-filtros">lista-filtros</div>
       <div class="chip" data-pattern="formulario-simple">formulario</div>
-      <div class="chip" data-pattern="confirmacion">confirmacion</div>
+      <div class="chip" data-pattern="confirmacion">confirmación</div>
       <div class="chip" data-pattern="detalle">detalle</div>
       <div class="chip" data-pattern="dashboard">dashboard</div>
     </div>
   </div>
-  <button class="btn-generate" id="generateBtn">Generar pantalla</button>
+
+  <!-- BUTTON -->
+  <button class="btn" id="generateBtn">
+    <span id="btnText">Generar pantalla</span>
+  </button>
+
+  <!-- STATUS -->
   <div class="status-bar" id="statusBar">Listo para generar</div>
+
+  <!-- RESULT -->
   <div class="result-card" id="resultCard">
+
+    <!-- HEADER -->
     <div class="result-header">
       <span class="result-pattern" id="resultPattern">—</span>
       <span class="confidence-badge" id="confidenceBadge">—</span>
     </div>
-    <div class="signals" id="signalsGrid"></div>
-    <div>
-      <div class="field-label" style="margin-bottom:5px">Componentes</div>
-      <div class="components-list" id="componentsList"></div>
+
+    <!-- KB INDICATOR -->
+    <div class="kb-indicator inactive" id="kbIndicator">
+      <div class="kb-dot"></div>
+      <span id="kbLabel">sin contexto KB</span>
     </div>
-    <div id="missingSection" style="display:none" class="missing-section">
-      <div class="field-label">✗ No disponible en el DS</div>
+
+    <!-- KB CONTEXT (si hay contexto) -->
+    <div class="kb-context" id="kbContext">
+      <div class="kb-context-title">// contexto aplicado</div>
+      <div id="kbContextText"></div>
+    </div>
+
+    <!-- SIGNALS -->
+    <div class="signals-block">
+      <div class="label">Confianza</div>
+      <div class="signals-grid" id="signalsGrid"></div>
+    </div>
+
+    <!-- COMPONENTS -->
+    <div class="components-block">
+      <div class="label" id="compLabel">Componentes</div>
+      <div class="comp-list" id="compList"></div>
+    </div>
+
+    <!-- VIOLATIONS -->
+    <div class="violations-block" id="violationsBlock" style="display:none">
+      <div class="label" style="color:var(--error);margin-bottom:6px">⚠ Violaciones DS</div>
+      <div id="violationsList"></div>
+    </div>
+
+    <!-- MISSING -->
+    <div class="missing-block" id="missingBlock" style="display:none">
+      <div class="label" style="color:var(--warning);margin-bottom:6px">✗ No disponible en DS</div>
       <div id="missingList"></div>
     </div>
-    <div id="violationsSection" style="display:none">
-      <div class="field-label" style="margin-bottom:5px;color:var(--error)">⚠ Violaciones del DS</div>
-      <div class="violations-list" id="violationsList"></div>
-    </div>
+
   </div>
 </div>
+
 <script>
-  var selectedPattern = '';
-  document.querySelectorAll('.chip').forEach(function(chip) {
-    chip.addEventListener('click', function() {
-      document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
-      chip.classList.add('active');
-      selectedPattern = chip.dataset.pattern;
-    });
+var selectedPattern = '';
+
+// ── CHIPS ──
+document.querySelectorAll('.chip').forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
+    chip.classList.add('active');
+    selectedPattern = chip.dataset.pattern;
   });
-  document.getElementById('generateBtn').addEventListener('click', function() {
-    var brief = document.getElementById('briefInput').value.trim();
-    if (!brief) { setStatus('Escribe un brief antes de generar', 'error'); return; }
-    setGenerating(true);
-    setStatus('', 'loading');
-    document.getElementById('resultCard').classList.remove('visible');
-    parent.postMessage({ pluginMessage: { type: 'generate', brief: brief, patternOverride: selectedPattern || undefined } }, '*');
+});
+
+// ── GENERATE ──
+document.getElementById('generateBtn').addEventListener('click', function() {
+  var brief = document.getElementById('briefInput').value.trim();
+  if (!brief) { setStatus('Escribe un brief antes de generar', 'error'); return; }
+  setGenerating(true);
+  setStatus('', 'loading');
+  document.getElementById('resultCard').classList.remove('visible');
+  parent.postMessage({ pluginMessage: { type: 'generate', brief: brief, patternOverride: selectedPattern || undefined } }, '*');
+});
+
+// ── PING ──
+parent.postMessage({ pluginMessage: { type: 'ping' } }, '*');
+
+// ── MESSAGES ──
+window.onmessage = function(event) {
+  var msg = event.data.pluginMessage;
+  if (!msg) return;
+
+  if (msg.type === 'ping-result') {
+    var dot = document.getElementById('statusDot');
+    var lbl = document.getElementById('statusLabel');
+    if (msg.ok) {
+      dot.classList.add('online'); dot.classList.remove('error');
+      lbl.textContent = 'online';
+    } else {
+      dot.classList.add('error'); dot.classList.remove('online');
+      lbl.textContent = 'offline';
+    }
+  }
+
+  if (msg.type === 'status') { setStatus(msg.text, 'loading'); }
+  if (msg.type === 'error')  { setGenerating(false); setStatus(msg.text, 'error'); }
+  if (msg.type === 'success') { setGenerating(false); setStatus('✓ Pantalla pintada · node ' + msg.nodeId, 'success'); renderResult(msg); }
+};
+
+function setGenerating(loading) {
+  var btn = document.getElementById('generateBtn');
+  var txt = document.getElementById('btnText');
+  btn.disabled = loading;
+  txt.innerHTML = loading ? '<div class="spinner"></div> Generando...' : 'Generar pantalla';
+}
+
+function setStatus(text, type) {
+  var bar = document.getElementById('statusBar');
+  bar.className = 'status-bar' + (type === 'error' ? ' error' : type === 'success' ? ' success' : '');
+  bar.innerHTML = type === 'loading'
+    ? '<div class="spinner"></div><span>' + (text || 'Procesando...') + '</span>'
+    : (text || 'Listo para generar');
+}
+
+function renderResult(msg) {
+  document.getElementById('resultCard').classList.add('visible');
+
+  // Pattern + badge
+  document.getElementById('resultPattern').textContent = msg.pattern;
+  var badge = document.getElementById('confidenceBadge');
+  badge.textContent = msg.confidence.status.replace('_', ' ') + ' · ' + Math.round(msg.confidence.global * 100) + '%';
+  badge.className = 'confidence-badge ' + msg.confidence.status;
+
+  // KB indicator
+  var kbInd = document.getElementById('kbIndicator');
+  var kbLbl = document.getElementById('kbLabel');
+  var kbCtx = document.getElementById('kbContext');
+  var kbTxt = document.getElementById('kbContextText');
+
+  if (msg.kb_context_used) {
+    kbInd.className = 'kb-indicator active';
+    kbLbl.textContent = '// knowledge base activa';
+    if (msg.kb_context) {
+      kbCtx.classList.add('visible');
+      kbTxt.textContent = msg.kb_context;
+    }
+  } else {
+    kbInd.className = 'kb-indicator inactive';
+    kbLbl.textContent = '// sin contexto KB';
+    kbCtx.classList.remove('visible');
+  }
+
+  // Signals
+  var signalNames = { contract_coverage: 'Cobertura', precedent: 'Precedente', intent_clarity: 'Intención', rule_compliance: 'Reglas' };
+  var signalColors = { contract_coverage: '#7c5cfc', precedent: '#34d399', intent_clarity: '#60a5fa', rule_compliance: '#fbbf24' };
+  var grid = document.getElementById('signalsGrid');
+  grid.innerHTML = '';
+  Object.keys(msg.confidence.signals).forEach(function(key) {
+    var pct = Math.round(msg.confidence.signals[key] * 100);
+    var color = signalColors[key] || '#7c5cfc';
+    grid.innerHTML += '<div class="signal-item">' +
+      '<div class="signal-name">' + (signalNames[key] || key) + '</div>' +
+      '<div class="signal-bar-wrap"><div class="signal-bar" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+      '<div class="signal-val" style="color:' + color + '">' + pct + '%</div>' +
+      '</div>';
   });
-  parent.postMessage({ pluginMessage: { type: 'ping' } }, '*');
-  window.onmessage = function(event) {
-    var msg = event.data.pluginMessage;
-    if (!msg) return;
-    if (msg.type === 'ping-result') {
-      var dot = document.getElementById('statusDot');
-      if (msg.ok) { dot.classList.add('online'); dot.classList.remove('error'); dot.title = 'Engine online'; }
-      else { dot.classList.add('error'); dot.classList.remove('online'); dot.title = 'Engine offline'; }
-    }
-    if (msg.type === 'status') { setStatus(msg.text, 'loading'); }
-    if (msg.type === 'error') { setGenerating(false); setStatus(msg.text, 'error'); }
-    if (msg.type === 'success') {
-      setGenerating(false);
-      setStatus('✓ Pantalla pintada — node ' + msg.nodeId, 'success');
-      renderResult(msg);
-    }
-  };
-  function setGenerating(loading) {
-    var btn = document.getElementById('generateBtn');
-    btn.disabled = loading;
-    btn.textContent = loading ? 'Generando...' : 'Generar pantalla';
-  }
-  function setStatus(text, type) {
-    var bar = document.getElementById('statusBar');
-    bar.className = 'status-bar' + (type === 'error' ? ' error' : type === 'success' ? ' success' : '');
-    bar.innerHTML = type === 'loading' ? '<div class="spinner"></div><span>' + (text || 'Procesando...') + '</span>' : (text || 'Listo para generar');
-  }
-  function renderResult(msg) {
-    document.getElementById('resultCard').classList.add('visible');
-    document.getElementById('resultPattern').textContent = msg.pattern;
-    var badge = document.getElementById('confidenceBadge');
-    badge.textContent = msg.confidence.status + ' ' + Math.round(msg.confidence.global * 100) + '%';
-    badge.className = 'confidence-badge ' + msg.confidence.status;
-    var signalNames = { contract_coverage: 'Cobertura', precedent: 'Precedente', intent_clarity: 'Intención', rule_compliance: 'Reglas' };
-    var grid = document.getElementById('signalsGrid');
-    grid.innerHTML = '';
-    Object.keys(msg.confidence.signals).forEach(function(key) {
-      var pct = Math.round(msg.confidence.signals[key] * 100);
-      grid.innerHTML += '<div class="signal-item"><div class="signal-name">' + (signalNames[key] || key) + '</div><div class="signal-bar-wrap"><div class="signal-bar" style="width:' + pct + '%"></div></div><div class="signal-value">' + pct + '%</div></div>';
+
+  // Components
+  document.getElementById('compLabel').textContent = 'Componentes · ' + msg.components.length;
+  var list = document.getElementById('compList');
+  list.innerHTML = '';
+  msg.components.forEach(function(comp) {
+    list.innerHTML += '<div class="comp-row">' +
+      '<span class="comp-order">' + comp.order + '</span>' +
+      '<span class="comp-name">' + comp.component + '</span>' +
+      (comp.node_id ? '<span class="comp-node">' + comp.node_id + '</span>' : '<span class="comp-missing">sin node_id</span>') +
+      '</div>';
+  });
+
+  // Violations
+  var violations = msg.violations || [];
+  var vblock = document.getElementById('violationsBlock');
+  var vlist = document.getElementById('violationsList');
+  if (violations.length > 0) {
+    vblock.style.display = 'block';
+    vlist.innerHTML = '';
+    violations.forEach(function(v) {
+      vlist.innerHTML += '<div class="violation-item ' + v.severity + '">' +
+        '<div class="v-rule">' + v.rule + '</div>' +
+        '<div class="v-detail">' + v.detail + '</div>' +
+        '</div>';
     });
-    var list = document.getElementById('componentsList');
-    list.innerHTML = '';
-    msg.components.forEach(function(comp) {
-      list.innerHTML += '<div class="comp-row"><span class="comp-order">' + comp.order + '</span><span class="comp-name">' + comp.component + '</span>' + (comp.node_id ? '<span class="comp-node-id">' + comp.node_id + '</span>' : '') + '</div>';
+  } else { vblock.style.display = 'none'; }
+
+  // Missing
+  var missing = msg.missing_components || [];
+  var mblock = document.getElementById('missingBlock');
+  var mlist = document.getElementById('missingList');
+  if (missing.length > 0) {
+    mblock.style.display = 'block';
+    mlist.innerHTML = '';
+    missing.forEach(function(m) {
+      mlist.innerHTML += '<div class="missing-item">' +
+        '<span class="missing-name">' + m.name + '</span>' +
+        '<span class="missing-reason">' + m.reason + '</span>' +
+        '</div>';
     });
-    var missing = msg.missing_components || [];
-    var msection = document.getElementById('missingSection');
-    var mlist = document.getElementById('missingList');
-    if (missing.length > 0) {
-      msection.style.display = 'block';
-      mlist.innerHTML = '';
-      missing.forEach(function(m) {
-        mlist.innerHTML += '<div class="missing-item"><span class="missing-item-name">' + m.name + '</span><span class="missing-item-reason">' + m.reason + '</span></div>';
-      });
-    } else { msection.style.display = 'none'; }
-    var violations = msg.violations || [];
-    var vsection = document.getElementById('violationsSection');
-    var vlist = document.getElementById('violationsList');
-    if (violations.length > 0) {
-      vsection.style.display = 'block';
-      vlist.innerHTML = '';
-      violations.forEach(function(v) {
-        vlist.innerHTML += '<div class="violation-row ' + v.severity + '"><div class="violation-rule">' + v.rule + '</div><div class="violation-detail">' + v.detail + '</div>' + (v.action ? '<div class="violation-action">' + v.action + '</div>' : '') + '</div>';
-      });
-    } else { vsection.style.display = 'none'; }
-  }
+  } else { mblock.style.display = 'none'; }
+}
 </script>
 </body>
 </html>
