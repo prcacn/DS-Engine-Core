@@ -72,132 +72,22 @@
     /* CENTER */
     .panel-preview { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px 24px; border-right: 1px solid var(--border); gap: 10px; background: radial-gradient(ellipse at 50% 0%, rgba(79,70,229,0.05) 0%, transparent 70%); overflow: hidden; height: calc(100vh - 60px); }
     .preview-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--txt2); align-self: flex-start; border-bottom: 1px solid var(--border); padding-bottom: 10px; width: 100%; }
-    /* ── iPhone 16 Pro — Natural Titanium ── */
-.iphone-wrap {
-      position: relative;
-      display: inline-block;
-      filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5)) drop-shadow(0 6px 16px rgba(0,0,0,0.25));
-      flex-shrink: 0;
-    }
-    /* Power button — derecha */
-    .iphone-btn-power {
-      position: absolute; right: -3.5px; top: 148px;
-      width: 3.5px; height: 68px;
-      background: linear-gradient(90deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%);
-      border-radius: 0 2.5px 2.5px 0;
-    }
-    /* Mute switch — izquierda arriba */
-    .iphone-btn-mute {
-      position: absolute; left: -3.5px; top: 92px;
-      width: 3.5px; height: 28px;
-      background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%);
-      border-radius: 2.5px 0 0 2.5px;
-    }
-    /* Volumen up — izquierda */
-    .iphone-btn-vol-up {
-      position: absolute; left: -3.5px; top: 136px;
-      width: 3.5px; height: 52px;
-      background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%);
-      border-radius: 2.5px 0 0 2.5px;
-    }
-    /* Volumen down — izquierda */
-    .iphone-btn-vol-down {
-      position: absolute; left: -3.5px; top: 200px;
-      width: 3.5px; height: 52px;
-      background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%);
-      border-radius: 2.5px 0 0 2.5px;
-    }
-    .phone-shell {
-      width: 300px;
-      /* Dark titanium — integrado con el fondo de la app */
-      background:
-        linear-gradient(135deg,
-          #1c1c21 0%,
-          #15151a 20%,
-          #1e1e24 40%,
-          #111116 55%,
-          #1c1c22 70%,
-          #15151a 85%,
-          #1c1c21 100%
-        );
-      border-radius: 52px;
-      padding: 10px;
-      position: relative;
-      box-sizing: border-box;
-    }
-    /* Anillo interior negro entre marco y pantalla */
-    .phone-inner-ring {
-      background: #111116;
-      border-radius: 44px;
-      padding: 2px;
-      overflow: hidden;
-    }
-    /* Pantalla interior */
-    .phone-inner {
-      background: #000;
-      border-radius: 42px;
-      overflow: hidden;
-      position: relative;
-    }
-    /* Status bar */
-    .phone-status {
-      height: 54px;
-      background: white;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      padding: 0 22px 8px;
-      position: relative;
-      z-index: 10;
-    }
-    .phone-status-time {
-      font-size: 15px;
-      font-weight: 600;
-      font-family: -apple-system, 'SF Pro Display', sans-serif;
-      color: #000;
-      letter-spacing: -0.4px;
-    }
+    .iphone-wrap { position: relative; display: inline-block; filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5)) drop-shadow(0 6px 16px rgba(0,0,0,0.25)); flex-shrink: 0; }
+    .iphone-btn-power { position: absolute; right: -3.5px; top: 148px; width: 3.5px; height: 68px; background: linear-gradient(90deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 0 2.5px 2.5px 0; }
+    .iphone-btn-mute { position: absolute; left: -3.5px; top: 92px; width: 3.5px; height: 28px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
+    .iphone-btn-vol-up { position: absolute; left: -3.5px; top: 136px; width: 3.5px; height: 52px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
+    .iphone-btn-vol-down { position: absolute; left: -3.5px; top: 200px; width: 3.5px; height: 52px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
+    .phone-shell { width: 300px; background: linear-gradient(135deg, #1c1c21 0%, #15151a 20%, #1e1e24 40%, #111116 55%, #1c1c22 70%, #15151a 85%, #1c1c21 100%); border-radius: 52px; padding: 10px; position: relative; box-sizing: border-box; }
+    .phone-inner-ring { background: #111116; border-radius: 44px; padding: 2px; overflow: hidden; }
+    .phone-inner { background: #000; border-radius: 42px; overflow: hidden; position: relative; }
+    .phone-status { height: 54px; background: white; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 22px 8px; position: relative; z-index: 10; }
+    .phone-status-time { font-size: 15px; font-weight: 600; font-family: -apple-system, 'SF Pro Display', sans-serif; color: #000; letter-spacing: -0.4px; }
     .phone-status-icons { display: flex; align-items: center; gap: 7px; }
     .phone-status-icons svg { display: block; }
-    /* Dynamic Island — 126×37 tamaño real */
-    .dynamic-island {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 118px;
-      height: 34px;
-      background: #000;
-      border-radius: 20px;
-      z-index: 20;
-      /* Sutil brillo interno para dar volumen */
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
-    }
-    .phone-screen {
-      background: #f8fafc;
-      height: 583px;
-      max-height: 583px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      overflow: hidden;
-      position: relative;
-    }
-    /* Home indicator */
-    .phone-home-bar {
-      height: 34px;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-bottom: 4px;
-    }
-    .phone-home-pill {
-      width: 130px;
-      height: 5px;
-      background: #000;
-      border-radius: 10px;
-      opacity: 0.18;
-    }
+    .dynamic-island { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 118px; height: 34px; background: #000; border-radius: 20px; z-index: 20; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
+    .phone-screen { background: #f8fafc; height: 583px; max-height: 583px; overflow: hidden; position: relative; }
+    .phone-home-bar { height: 34px; background: white; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
+    .phone-home-pill { width: 130px; height: 5px; background: #000; border-radius: 10px; opacity: 0.18; }
 
     /* SCREEN COMPONENTS */
     .sc-screen { display: flex; flex-direction: column; height: auto; min-height: 100%; position: relative; background: #f8fafc; overflow: hidden; }
@@ -237,7 +127,6 @@
     .sc-modal-title { font-size: 17px; font-weight: 700; color: #0f172a; font-family: var(--sans); text-align: center; }
     .sc-modal-desc { font-size: 14px; color: #64748b; font-family: var(--sans); text-align: center; line-height: 1.5; }
     .sc-modal-btns { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-    /* Dashboard cards */
     .sc-dashboard-grid { padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; }
     .sc-metric-card { background: white; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
     .sc-metric-label { font-size: 10px; color: #64748b; font-family: var(--sans); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -288,8 +177,6 @@
     .tag.true { background: rgba(34,197,94,0.15); color: var(--green); }
     .tag.false { background: rgba(100,116,139,0.15); color: var(--txt2); }
     .block-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--txt2); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
-
-    /* VIOLATIONS */
     .violations-block { background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
     .violations-title { font-family: var(--mono); font-size: 9px; color: var(--red); text-transform: uppercase; letter-spacing: 0.08em; }
     .violation-item { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; background: rgba(239,68,68,0.06); border-left: 2px solid; border-radius: 4px; }
@@ -300,14 +187,39 @@
     .violation-item.warning .violation-rule { color: var(--yellow); }
     .violation-detail { font-size: 11px; color: var(--txt3); line-height: 1.4; }
     .violation-action { font-size: 10px; color: var(--txt2); font-style: italic; }
-
-    /* MISSING COMPONENTS */
     .missing-block { background: rgba(234,179,8,0.04); border: 1px solid rgba(234,179,8,0.2); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
     .missing-title { font-family: var(--mono); font-size: 9px; color: var(--yellow); text-transform: uppercase; letter-spacing: 0.08em; }
     .missing-item { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
     .missing-item:last-child { border-bottom: none; padding-bottom: 0; }
     .missing-name { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--yellow); min-width: 90px; flex-shrink: 0; }
     .missing-reason { font-size: 11px; color: var(--txt3); line-height: 1.4; }
+
+    /* ── KB BLOCK ── */
+    .kb-block { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .kb-block-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+    .kb-block-header.active { background: rgba(99,102,241,0.1); border-bottom: 1px solid rgba(99,102,241,0.2); color: #6366f1; }
+    .kb-block-header.inactive { background: rgba(100,116,139,0.05); color: var(--txt2); }
+    .kb-hdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .kb-block-header.active .kb-hdot { background: #6366f1; box-shadow: 0 0 6px rgba(99,102,241,0.6); }
+    .kb-block-header.inactive .kb-hdot { background: var(--txt2); }
+    .kb-rules-list { display: flex; flex-direction: column; max-height: 200px; overflow-y: auto; }
+    .kb-rules-list::-webkit-scrollbar { width: 3px; }
+    .kb-rules-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .kb-rule-item { padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+    .kb-rule-item:last-child { border-bottom: none; }
+    .kb-rule-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .kb-cat-tag { font-family: var(--mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 3px; }
+    .kb-cat-tag.restriccion   { background: rgba(239,68,68,0.1);  color: var(--red); }
+    .kb-cat-tag.recomendacion { background: rgba(99,102,241,0.1); color: #6366f1; }
+    .kb-cat-tag.normativa     { background: rgba(234,179,8,0.1);  color: var(--yellow); }
+    .kb-cat-tag.ds-pattern    { background: rgba(34,197,94,0.1);  color: var(--green); }
+    .kb-pri-tag { font-family: var(--mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 3px; }
+    .kb-pri-tag.alta  { background: rgba(239,68,68,0.08);  color: #f87171; }
+    .kb-pri-tag.media { background: rgba(234,179,8,0.08);  color: #fbbf24; }
+    .kb-pri-tag.baja  { background: rgba(148,163,184,0.08); color: #94a3b8; }
+    .kb-rule-score { font-family: var(--mono); font-size: 9px; color: var(--txt2); margin-left: auto; }
+    .kb-rule-text { font-size: 11px; color: var(--txt3); line-height: 1.5; }
+    .kb-rule-author { font-size: 10px; color: var(--txt2); font-style: italic; }
 
     @media (max-width: 1100px) { main { grid-template-columns: 340px 1fr; } .panel-analysis { display: none; } }
   </style>
@@ -331,7 +243,7 @@
         <div class="status-dot" id="statusDot"></div>
         <span id="statusText">conectando...</span>
       </div>
-      <div class="version-tag">v1.0.0 · Fase 3+</div>
+      <div class="version-tag">v1.0.0 · Fase 4</div>
     </div>
   </header>
 
@@ -347,7 +259,7 @@
       <div>
         <div class="examples-title">// ejemplos rápidos</div>
         <div class="examples">
-          <button class="example-chip" onclick="setExample(this)">quiero ver mis fondos de inversión</button>
+          <button class="example-chip" onclick="setExample(this)">quiero ver mis fondos de inversión en Colombia</button>
           <button class="example-chip" onclick="setExample(this)">el usuario necesita iniciar sesión</button>
           <button class="example-chip" onclick="setExample(this)">confirmar antes de borrar la cuenta</button>
           <button class="example-chip" onclick="setExample(this)">ver el detalle de una transacción</button>
@@ -417,54 +329,28 @@
     <div class="panel-preview">
       <div class="preview-label" style="margin-bottom:8px">// screen preview</div>
       <div class="iphone-wrap">
-        <!-- Botones físicos -->
         <div class="iphone-btn-mute"></div>
         <div class="iphone-btn-vol-up"></div>
         <div class="iphone-btn-vol-down"></div>
         <div class="iphone-btn-power"></div>
-        <!-- Cuerpo del iPhone -->
         <div class="phone-shell">
-          <!-- Anillo interior negro -->
           <div class="phone-inner-ring">
             <div class="phone-inner">
-              <!-- Status bar -->
               <div class="phone-status">
                 <span class="phone-status-time">9:41</span>
-                <!-- Dynamic Island -->
                 <div class="dynamic-island"></div>
-                <!-- Iconos status -->
                 <div class="phone-status-icons">
-                  <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
-                    <rect x="0" y="5" width="3" height="6" rx="0.8" fill="black"/>
-                    <rect x="4.5" y="3.5" width="3" height="7.5" rx="0.8" fill="black"/>
-                    <rect x="9" y="1.5" width="3" height="9.5" rx="0.8" fill="black"/>
-                    <rect x="13.5" y="0" width="3" height="11" rx="0.8" fill="black" opacity="0.25"/>
-                  </svg>
-                  <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
-                    <path d="M7.5 8.2a1.3 1.3 0 100 2.6 1.3 1.3 0 000-2.6z" fill="black"/>
-                    <path d="M4 5.8C5 4.8 6.2 4.2 7.5 4.2s2.5.6 3.5 1.6" stroke="black" stroke-width="1.3" stroke-linecap="round" fill="none"/>
-                    <path d="M1 2.8C3 .8 5.1 0 7.5 0s4.5.8 6.5 2.8" stroke="black" stroke-width="1.3" stroke-linecap="round" fill="none" opacity="0.3"/>
-                  </svg>
-                  <svg width="24" height="11" viewBox="0 0 24 11" fill="none">
-                    <rect x="0.5" y="0.5" width="20" height="10" rx="3" stroke="black" stroke-opacity="0.3"/>
-                    <rect x="2" y="2" width="14" height="7" rx="1.5" fill="black"/>
-                    <path d="M22 3.5v4a1.8 1.8 0 000-4z" fill="black" opacity="0.35"/>
-                  </svg>
+                  <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="5" width="3" height="6" rx="0.8" fill="black"/><rect x="4.5" y="3.5" width="3" height="7.5" rx="0.8" fill="black"/><rect x="9" y="1.5" width="3" height="9.5" rx="0.8" fill="black"/><rect x="13.5" y="0" width="3" height="11" rx="0.8" fill="black" opacity="0.25"/></svg>
+                  <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M7.5 8.2a1.3 1.3 0 100 2.6 1.3 1.3 0 000-2.6z" fill="black"/><path d="M4 5.8C5 4.8 6.2 4.2 7.5 4.2s2.5.6 3.5 1.6" stroke="black" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M1 2.8C3 .8 5.1 0 7.5 0s4.5.8 6.5 2.8" stroke="black" stroke-width="1.3" stroke-linecap="round" fill="none" opacity="0.3"/></svg>
+                  <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="20" height="10" rx="3" stroke="black" stroke-opacity="0.3"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="black"/><path d="M22 3.5v4a1.8 1.8 0 000-4z" fill="black" opacity="0.35"/></svg>
                 </div>
               </div>
-              <!-- Contenido de pantalla -->
               <div class="phone-screen" id="phoneScreen">
                 <div class="preview-empty" id="previewEmpty">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <rect x="4" y="4" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/>
-                    <rect x="22" y="4" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/>
-                    <rect x="4" y="22" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/>
-                    <rect x="22" y="22" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/>
-                  </svg>
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="4" y="4" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/><rect x="22" y="4" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/><rect x="4" y="22" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/><rect x="22" y="22" width="14" height="14" rx="3" stroke="#2e3540" stroke-width="1.5"/></svg>
                   <p>El preview aparecerá<br>aquí tras generar</p>
                 </div>
               </div>
-              <!-- Home indicator -->
               <div class="phone-home-bar"><div class="phone-home-pill"></div></div>
             </div>
           </div>
@@ -503,7 +389,7 @@
     var txt = document.getElementById('statusText');
     try {
       var r = await fetch(url + '/health', { signal: AbortSignal.timeout(3000) });
-      if (r.ok) { dot.style.background = '#22c55e'; txt.textContent = 'engine online'; }
+      if (r.ok) { dot.style.background = '#22c55e'; txt.textContent = 'engine online · Fase 4'; }
       else { dot.style.background = '#eab308'; txt.textContent = 'engine degraded'; }
     } catch { dot.style.background = '#ef4444'; txt.textContent = 'engine offline'; }
   }
@@ -512,41 +398,18 @@
   autoLoadConfig();
 
   async function autoLoadConfig() {
-    // Detectar entorno: Railway (production) vs localhost (dev) vs file://
     var RAILWAY_URL = 'https://ds-ia-ready-engine-production.up.railway.app';
-    var isRailway = window.location.hostname.includes('railway.app');
+    var isRailway   = window.location.hostname.includes('railway.app');
     var isLocalhost = window.location.hostname === 'localhost';
-    var isFile = window.location.protocol === 'file:';
-
-    // En Railway → usar la URL de Railway directamente
-    // En localhost → usar localhost:3000 primero, Railway como fallback
-    // En file:// → usar Railway como principal
-    var origins = [];
-    if (isRailway) {
-      origins = [window.location.origin];
-      document.getElementById('engineUrl').value = window.location.origin;
-    } else if (isLocalhost) {
-      origins = ['http://localhost:3000', RAILWAY_URL];
-    } else {
-      // file:// u otros
-      origins = [RAILWAY_URL, 'http://localhost:3000'];
-      document.getElementById('engineUrl').value = RAILWAY_URL;
-    }
-
+    var origins = isRailway ? [window.location.origin] : isLocalhost ? ['http://localhost:3000', RAILWAY_URL] : [RAILWAY_URL, 'http://localhost:3000'];
+    if (isRailway) document.getElementById('engineUrl').value = window.location.origin;
+    else if (!isLocalhost) document.getElementById('engineUrl').value = RAILWAY_URL;
     for (var i = 0; i < origins.length; i++) {
       try {
         var res = await fetch(origins[i] + '/health', { signal: AbortSignal.timeout(3000) });
         if (!res.ok) continue;
-        var health = await res.json();
-        if (health.status === 'ok') {
-          // Engine encontrado — actualizar URL en el input
-          document.getElementById('engineUrl').value = origins[i];
-          // Indicar entorno en el UI
-          var envLabel = origins[i].includes('railway') ? '☁️ Railway (production)' : '🖥️ localhost (dev)';
-          var statusEl = document.getElementById('engineStatus');
-          if (statusEl) statusEl.title = envLabel;
-          return;
-        }
+        var h = await res.json();
+        if (h.status === 'ok') { document.getElementById('engineUrl').value = origins[i]; return; }
       } catch(e) {}
     }
   }
@@ -558,7 +421,7 @@
   async function generate() {
     var brief = document.getElementById('briefInput').value.trim();
     if (!brief) { document.getElementById('briefInput').focus(); return; }
-    var url = document.getElementById('engineUrl').value;
+    var url    = document.getElementById('engineUrl').value;
     var apiKey = document.getElementById('apiKey').value;
     var pattern = document.getElementById('patternSelect').value;
     var btn = document.getElementById('generateBtn');
@@ -596,50 +459,32 @@
     var hasFilters = intent.constraints && intent.constraints.has_filters;
     var isDestructive = intent.constraints && intent.constraints.is_destructive;
     var isDashboard = data.pattern === 'dashboard';
-    var isConfirmacion = data.pattern === 'confirmacion';
-
-    // Separar: modal vs fondo
-    // Primero determinar si hay modal
     var modalComp = null;
     for (var ci2 = 0; ci2 < components.length; ci2++) {
       if (components[ci2].component === 'modal-bottom-sheet') { modalComp = components[ci2]; break; }
     }
-    // Luego construir el fondo: si hay modal, los button-primary/secondary no van al fondo
     var bgComponents = [];
     for (var ci = 0; ci < components.length; ci++) {
       var c = components[ci];
-      if (c.component === 'modal-bottom-sheet') continue; // se pinta como overlay
+      if (c.component === 'modal-bottom-sheet') continue;
       if (modalComp && (c.component === 'button-primary' || c.component === 'button-secondary')) continue;
-      if (modalComp && c.component === 'card-item') continue; // en confirmacion el fondo no tiene cards
+      if (modalComp && c.component === 'card-item') continue;
       bgComponents.push(c);
     }
-
-    // Renderizar fondo
     var html = '';
     var i = 0;
     while (i < bgComponents.length) {
       var comp = bgComponents[i];
       if (comp.component === 'card-item' && !isDashboard) {
         var cardGroup = '';
-        while (i < bgComponents.length && bgComponents[i].component === 'card-item') {
-          cardGroup += renderComponent(bgComponents[i], { domain: domain, hasFilters: hasFilters, isDestructive: isDestructive, data: data });
-          i++;
-        }
+        while (i < bgComponents.length && bgComponents[i].component === 'card-item') { cardGroup += renderComponent(bgComponents[i], { domain, hasFilters, isDestructive, data }); i++; }
         html += '<div class="sc-card-list">' + cardGroup + '</div>';
       } else if (comp.component === 'card-item' && isDashboard) {
         var gridGroup = '';
-        while (i < bgComponents.length && bgComponents[i].component === 'card-item') {
-          gridGroup += renderComponent(bgComponents[i], { domain: domain, hasFilters: hasFilters, isDestructive: isDestructive, data: data });
-          i++;
-        }
+        while (i < bgComponents.length && bgComponents[i].component === 'card-item') { gridGroup += renderComponent(bgComponents[i], { domain, hasFilters, isDestructive, data }); i++; }
         html += '<div class="sc-dashboard-grid">' + gridGroup + '</div>';
-      } else {
-        html += renderComponent(comp, { domain: domain, hasFilters: hasFilters, isDestructive: isDestructive, data: data });
-        i++;
-      }
+      } else { html += renderComponent(comp, { domain, hasFilters, isDestructive, data }); i++; }
     }
-
-    // Envolver en sc-screen con position:relative para que el overlay se posicione sobre él
     html = '<div class="sc-screen">' + html + (modalComp ? renderModal(modalComp, isDestructive) : '') + '</div>';
     screen.innerHTML = html;
     document.getElementById('patternBadgeText').textContent = data.pattern + ' · ' + data.components.length + ' componentes';
@@ -647,135 +492,66 @@
   }
 
   function renderModal(comp, isDestructive) {
-    // Overlay absoluto inset:0 sobre todo el sc-screen
     var icon = isDestructive
       ? '<div style="width:52px;height:52px;border-radius:50%;background:#fff1f2;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 21h20L12 2z" stroke="#e11d48" stroke-width="2" stroke-linejoin="round" fill="#fff1f2"/><line x1="12" y1="9" x2="12" y2="14" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="#e11d48"/></svg></div>'
       : '<div style="width:52px;height:52px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#3b82f6" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="#3b82f6"/></svg></div>';
-
     var btnColor = isDestructive ? '#dc2626' : '#4f46e5';
     var btnLabel = isDestructive ? 'Sí, eliminar cuenta' : 'Confirmar';
     var title    = isDestructive ? 'Eliminar cuenta' : 'Confirmar acción';
-    var desc     = isDestructive
-      ? 'Esta acción es permanente e irreversible. Perderás todos tus datos, historial y configuración.'
-      : '¿Confirmas que deseas continuar con esta acción?';
-
-    return '<div class="sc-modal-overlay">' +
-      '<div class="sc-modal">' +
-        '<div class="sc-modal-handle"></div>' +
-        icon +
-        '<div class="sc-modal-title">' + title + '</div>' +
-        '<div class="sc-modal-desc">' + desc + '</div>' +
-        '<div class="sc-modal-btns">' +
-          '<div class="sc-btn-primary" style="background:' + btnColor + ';border-radius:14px">' + btnLabel + '</div>' +
-          '<div class="sc-btn-secondary" style="border-radius:14px">Cancelar</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
+    var desc     = isDestructive ? 'Esta acción es permanente e irreversible. Perderás todos tus datos, historial y configuración.' : '¿Confirmas que deseas continuar con esta acción?';
+    return '<div class="sc-modal-overlay"><div class="sc-modal"><div class="sc-modal-handle"></div>' + icon + '<div class="sc-modal-title">' + title + '</div><div class="sc-modal-desc">' + desc + '</div><div class="sc-modal-btns"><div class="sc-btn-primary" style="background:' + btnColor + ';border-radius:14px">' + btnLabel + '</div><div class="sc-btn-secondary" style="border-radius:14px">Cancelar</div></div></div></div>';
   }
 
   function renderComponent(comp, ctx) {
     var domain = ctx.domain, hasFilters = ctx.hasFilters, isDestructive = ctx.isDestructive, data = ctx.data;
     switch(comp.component) {
       case 'navigation-header':
-        return '<div class="sc-header"><div class="sc-header-back">' +
-          (comp.variant === 'with-back' ? '<svg viewBox="0 0 20 20" fill="none" stroke="#0f172a" stroke-width="2"><path d="M12 4L6 10L12 16"/></svg>' : '<div style="width:20px"></div>') +
-          '</div><div class="sc-header-title">' + (comp.props && comp.props.title ? comp.props.title : domain) + '</div>' +
-          '<div class="sc-header-action"><svg width="20" height="20" viewBox="0 0 20 20" fill="#0f172a"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg></div></div>';
+        return '<div class="sc-header"><div class="sc-header-back">' + (comp.variant === 'with-back' ? '<svg viewBox="0 0 20 20" fill="none" stroke="#0f172a" stroke-width="2"><path d="M12 4L6 10L12 16"/></svg>' : '<div style="width:20px"></div>') + '</div><div class="sc-header-title">' + (comp.props && comp.props.title ? comp.props.title : domain) + '</div><div class="sc-header-action"><svg width="20" height="20" viewBox="0 0 20 20" fill="#0f172a"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg></div></div>';
       case 'filter-bar':
         return '<div class="sc-filter-bar"><div class="sc-chip sc-chip-active">Todos</div><div class="sc-chip sc-chip-default">Categoría</div><div class="sc-chip sc-chip-default">Tipo</div>' + (hasFilters ? '<div class="sc-chip sc-chip-default">Más</div>' : '') + '</div>';
       case 'card-item':
         if (data.pattern === 'dashboard') {
-          // En dashboard cada card-item es una métrica individual
           var idx = comp.quantity_index || 1;
-          var dashItems = [
-            { label: 'Total balance', val: '€12.480', change: '↑ +3.2%', up: true },
-            { label: 'Rendimiento', val: '8.4%', change: '↑ +0.6%', up: true },
-            { label: 'Posiciones', val: '7', change: '↓ -1', up: false },
-            { label: 'Disponible', val: '€2.150', change: '—', up: null },
-          ];
-          var di = dashItems[(idx - 1) % dashItems.length];
-          return '<div class="sc-metric-card"><div class="sc-metric-label">' + di.label + '</div><div class="sc-metric-value">' + di.val + '</div><div class="sc-metric-change ' + (di.up === true ? 'up' : di.up === false ? 'down' : '') + '">' + di.change + '</div></div>';
+          var dashItems = [{ label:'Total balance',val:'€12.480',change:'↑ +3.2%',up:true},{label:'Rendimiento',val:'8.4%',change:'↑ +0.6%',up:true},{label:'Posiciones',val:'7',change:'↓ -1',up:false},{label:'Disponible',val:'€2.150',change:'—',up:null}];
+          var di = dashItems[(idx-1)%dashItems.length];
+          return '<div class="sc-metric-card"><div class="sc-metric-label">'+di.label+'</div><div class="sc-metric-value">'+di.val+'</div><div class="sc-metric-change '+(di.up===true?'up':di.up===false?'down':'')+'">'+di.change+'</div></div>';
         }
-        // Lista normal — una fila por instancia
-        var sampleVals = ['+3.2%', '€1.240', '-0.8%', '€580', '+5.1%', '€3.200'];
-        var sampleColors = ['#16a34a', '#0f172a', '#dc2626', '#0f172a', '#16a34a', '#0f172a'];
-        var ci = (comp.quantity_index ? comp.quantity_index - 1 : 0);
-        return '<div class="sc-card-item"><div class="sc-card-left"><div class="sc-card-title">' + domain + ' · item ' + (ci + 1) + '</div><div class="sc-card-subtitle">Actualizado hoy</div></div><div class="sc-card-right"><div class="sc-card-value" style="color:' + sampleColors[ci % sampleColors.length] + '">' + sampleVals[ci % sampleVals.length] + '</div><div class="sc-card-chevron">›</div></div></div>';
+        var sampleVals=['+3.2%','€1.240','-0.8%','€580','+5.1%','€3.200'];
+        var sampleColors=['#16a34a','#0f172a','#dc2626','#0f172a','#16a34a','#0f172a'];
+        var ci=(comp.quantity_index?comp.quantity_index-1:0);
+        return '<div class="sc-card-item"><div class="sc-card-left"><div class="sc-card-title">'+domain+' · item '+(ci+1)+'</div><div class="sc-card-subtitle">Actualizado hoy</div></div><div class="sc-card-right"><div class="sc-card-value" style="color:'+sampleColors[ci%sampleColors.length]+'">'+sampleVals[ci%sampleVals.length]+'</div><div class="sc-card-chevron">›</div></div></div>';
       case 'input-text':
-        var fields = data.pattern === 'formulario-simple'
-          ? [{ label: 'Email', placeholder: 'tu@email.com' }, { label: 'Contraseña', placeholder: '••••••••' }]
-          : [{ label: 'Campo', placeholder: 'Introduce el valor...' }];
-        var formHtml = '<div class="sc-form">';
-        for (var k = 0; k < fields.length; k++) {
-          formHtml += '<div class="sc-input-wrap"><div class="sc-input-label">' + fields[k].label + '</div><div class="sc-input-field">' + fields[k].placeholder + '</div></div>';
-        }
-        return formHtml + '</div>';
+        var fields=data.pattern==='formulario-simple'?[{label:'Email',placeholder:'tu@email.com'},{label:'Contraseña',placeholder:'••••••••'}]:[{label:'Campo',placeholder:'Introduce el valor...'}];
+        var formHtml='<div class="sc-form">';
+        for(var k=0;k<fields.length;k++){formHtml+='<div class="sc-input-wrap"><div class="sc-input-label">'+fields[k].label+'</div><div class="sc-input-field">'+fields[k].placeholder+'</div></div>';}
+        return formHtml+'</div>';
       case 'empty-state':
-        return '<div class="sc-empty" style="flex:1"><div class="sc-empty-icon">🔍</div><div class="sc-empty-title">' + (comp.props && comp.props.title ? comp.props.title : 'Sin resultados') + '</div><div class="sc-empty-desc">Prueba ajustando los filtros para ver más resultados</div><div class="sc-empty-action">' + (comp.props && comp.props.action_label ? comp.props.action_label : 'Limpiar filtros') + '</div></div>';
+        return '<div class="sc-empty" style="flex:1"><div class="sc-empty-icon">🔍</div><div class="sc-empty-title">'+(comp.props&&comp.props.title?comp.props.title:'Sin resultados')+'</div><div class="sc-empty-desc">Prueba ajustando los filtros para ver más resultados</div><div class="sc-empty-action">'+(comp.props&&comp.props.action_label?comp.props.action_label:'Limpiar filtros')+'</div></div>';
       case 'button-primary':
-        return '<div class="sc-btn-area" style="padding-top:8px"><div class="sc-btn-primary">' + (comp.props && comp.props.label ? comp.props.label : 'Continuar') + '</div></div>';
+        return '<div class="sc-btn-area" style="padding-top:8px"><div class="sc-btn-primary">'+(comp.props&&comp.props.label?comp.props.label:'Continuar')+'</div></div>';
       case 'button-secondary':
-        return '<div class="sc-btn-area" style="padding-top:0"><div class="sc-btn-secondary">' + (comp.props && comp.props.label ? comp.props.label : 'Cancelar') + '</div></div>';
-      case 'modal-bottom-sheet':
-        return ''; // Gestionado por renderModal() como overlay absoluto
+        return '<div class="sc-btn-area" style="padding-top:0"><div class="sc-btn-secondary">'+(comp.props&&comp.props.label?comp.props.label:'Cancelar')+'</div></div>';
+      case 'modal-bottom-sheet': return '';
       case 'tab-bar':
-        var tabs = [
-          { label: 'Inicio', active: data.pattern === 'onboarding' },
-          { label: 'Mercado', active: false },
-          { label: 'Cartera', active: ['detalle','lista-con-filtros'].includes(data.pattern) },
-          { label: 'Perfil', active: data.pattern === 'perfil-usuario' }
-        ];
-        var tabsHtml = '<div style="display:flex;width:100%;background:white;border-top:1px solid #e2e8f0;height:56px">';
-        tabs.forEach(function(t) {
-          var c = t.active ? '#4f46e5' : '#94a3b8';
-          tabsHtml += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">' +
-            '<div style="width:18px;height:18px;border-radius:50%;background:' + c + ';opacity:0.9"></div>' +
-            '<div style="font-size:9px;font-family:var(--sans);color:' + c + ';font-weight:' + (t.active ? '600' : '400') + '">' + t.label + '</div>' +
-            '</div>';
-        });
-        return tabsHtml + '</div>';
+        var tabs=[{label:'Inicio',active:data.pattern==='onboarding'},{label:'Mercado',active:false},{label:'Cartera',active:['detalle','lista-con-filtros'].includes(data.pattern)},{label:'Perfil',active:data.pattern==='perfil-usuario'}];
+        var tabsHtml='<div style="display:flex;width:100%;background:white;border-top:1px solid #e2e8f0;height:56px">';
+        tabs.forEach(function(t){var c=t.active?'#4f46e5':'#94a3b8';tabsHtml+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><div style="width:18px;height:18px;border-radius:50%;background:'+c+';opacity:0.9"></div><div style="font-size:9px;font-family:var(--sans);color:'+c+';font-weight:'+(t.active?'600':'400')+'">'+t.label+'</div></div>';});
+        return tabsHtml+'</div>';
       case 'list-header':
-        var lhIdx = comp.quantity_index || 1;
-        var lhLabels = ['Mis posiciones', 'Actividad reciente', 'Configuración', 'Notificaciones'];
-        var lhLabel = lhLabels[(lhIdx - 1) % lhLabels.length];
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9">' +
-          '<div style="font-family:var(--sans);font-size:12px;font-weight:700;color:#0f172a">' + lhLabel + '</div>' +
-          '<div style="font-family:var(--sans);font-size:11px;color:#4f46e5">Ver todo</div>' +
-          '</div>';
+        var lhIdx=comp.quantity_index||1;var lhLabels=['Mis posiciones','Actividad reciente','Configuración','Notificaciones'];var lhLabel=lhLabels[(lhIdx-1)%lhLabels.length];
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9"><div style="font-family:var(--sans);font-size:12px;font-weight:700;color:#0f172a">'+lhLabel+'</div><div style="font-family:var(--sans);font-size:11px;color:#4f46e5">Ver todo</div></div>';
       case 'badge':
-        var badgeIdx = comp.quantity_index || 1;
-        var badgeVals = ['+2.4%', '-1.2%', 'Activo', '+5.7%', 'Pendiente'];
-        var badgeColors = [
-          { bg:'#dcfce7', txt:'#15803d' },
-          { bg:'#fee2e2', txt:'#b91c1c' },
-          { bg:'#dbeafe', txt:'#1d4ed8' },
-          { bg:'#dcfce7', txt:'#15803d' },
-          { bg:'#fef9c3', txt:'#a16207' },
-        ];
-        var bi = (badgeIdx - 1) % badgeVals.length;
-        return '<div style="padding:8px 16px;background:white;border-bottom:1px solid #f1f5f9;display:flex;gap:8px;flex-wrap:wrap">' +
-          '<span style="background:' + badgeColors[bi].bg + ';color:' + badgeColors[bi].txt + ';font-size:11px;font-family:var(--sans);font-weight:500;padding:3px 10px;border-radius:12px">' + badgeVals[bi] + '</span>' +
-          '</div>';
+        var badgeIdx=comp.quantity_index||1;var badgeVals=['+2.4%','-1.2%','Activo','+5.7%','Pendiente'];var badgeColors=[{bg:'#dcfce7',txt:'#15803d'},{bg:'#fee2e2',txt:'#b91c1c'},{bg:'#dbeafe',txt:'#1d4ed8'},{bg:'#dcfce7',txt:'#15803d'},{bg:'#fef9c3',txt:'#a16207'}];var bi=(badgeIdx-1)%badgeVals.length;
+        return '<div style="padding:8px 16px;background:white;border-bottom:1px solid #f1f5f9;display:flex;gap:8px;flex-wrap:wrap"><span style="background:'+badgeColors[bi].bg+';color:'+badgeColors[bi].txt+';font-size:11px;font-family:var(--sans);font-weight:500;padding:3px 10px;border-radius:12px">'+badgeVals[bi]+'</span></div>';
       case 'notification-banner':
-        var nbIdx = comp.quantity_index || 1;
-        var nbData = [
-          { title: 'Operación completada', sub: 'Tu orden de IBEX ha sido ejecutada', color: '#dbeafe', dot: '#3b82f6' },
-          { title: 'Alerta de precio', sub: 'AAPL ha superado los $185', color: '#dcfce7', dot: '#22c55e' },
-          { title: 'Sesión a punto de expirar', sub: 'Tu sesión expirará en 5 minutos', color: '#fef9c3', dot: '#eab308' },
-          { title: 'Transferencia recibida', sub: '+€2.500 en tu cuenta corriente', color: '#dcfce7', dot: '#22c55e' },
-          { title: 'Mantenimiento programado', sub: 'Hoy a las 23:00 — 02:00', color: '#f1f5f9', dot: '#94a3b8' },
-        ];
-        var nb = nbData[(nbIdx - 1) % nbData.length];
-        return '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:' + nb.color + ';border-bottom:1px solid rgba(0,0,0,0.06)">' +
-          '<div style="width:8px;height:8px;border-radius:50%;background:' + nb.dot + ';flex-shrink:0"></div>' +
-          '<div style="flex:1"><div style="font-family:var(--sans);font-size:12px;font-weight:500;color:#0f172a">' + nb.title + '</div>' +
-          '<div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">' + nb.sub + '</div></div>' +
-          '</div>';
+        var nbIdx=comp.quantity_index||1;var nbData=[{title:'Operación completada',sub:'Tu orden de IBEX ha sido ejecutada',color:'#dbeafe',dot:'#3b82f6'},{title:'Alerta de precio',sub:'AAPL ha superado los $185',color:'#dcfce7',dot:'#22c55e'},{title:'Sesión a punto de expirar',sub:'Tu sesión expirará en 5 minutos',color:'#fef9c3',dot:'#eab308'},{title:'Transferencia recibida',sub:'+€2.500 en tu cuenta corriente',color:'#dcfce7',dot:'#22c55e'},{title:'Mantenimiento programado',sub:'Hoy a las 23:00 — 02:00',color:'#f1f5f9',dot:'#94a3b8'}];var nb=nbData[(nbIdx-1)%nbData.length];
+        return '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:'+nb.color+';border-bottom:1px solid rgba(0,0,0,0.06)"><div style="width:8px;height:8px;border-radius:50%;background:'+nb.dot+';flex-shrink:0"></div><div style="flex:1"><div style="font-family:var(--sans);font-size:12px;font-weight:500;color:#0f172a">'+nb.title+'</div><div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">'+nb.sub+'</div></div></div>';
       default:
-        return '<div style="padding:12px 16px;font-family:var(--sans);font-size:12px;color:#64748b;background:white;border-bottom:1px solid #f1f5f9">' + comp.component + '</div>';
+        return '<div style="padding:12px 16px;font-family:var(--sans);font-size:12px;color:#64748b;background:white;border-bottom:1px solid #f1f5f9">'+comp.component+'</div>';
     }
   }
 
+  // ── RENDER ANALYSIS con KB catalogado ────────────────────────────────────────
   function renderAnalysis(data) {
     var conf = data.confidence;
     var score = conf.global;
@@ -783,117 +559,99 @@
     var scoreColor = score >= 0.80 ? '#22c55e' : score >= 0.60 ? '#eab308' : '#ef4444';
     var signals = conf.signals || {};
     var signalDefs = [
-      { key:'contract_coverage', label:'CONTRACT', weight:'30%' },
-      { key:'intent_clarity',    label:'INTENT',   weight:'25%' },
+      { key:'contract_coverage', label:'CONTRACT',  weight:'30%' },
+      { key:'intent_clarity',    label:'INTENT',    weight:'25%' },
       { key:'precedent',         label:'PRECEDENT', weight:'25%' },
-      { key:'rule_compliance',   label:'RULES',    weight:'20%' },
+      { key:'rule_compliance',   label:'RULES',     weight:'20%' },
     ];
     var signalsHTML = signalDefs.map(function(s) {
       var v = signals[s.key] !== undefined ? signals[s.key] : 0;
       var p = Math.round(v*100);
       var c = v >= 0.7 ? '#22c55e' : v >= 0.5 ? '#eab308' : '#ef4444';
-      return '<div class="signal"><div class="signal-name">' + s.label + '</div><div class="progress-bar-outer"><div class="progress-bar-inner" style="width:' + p + '%;background:' + c + '"></div></div><div style="display:flex;justify-content:space-between;align-items:center"><div class="signal-val" style="color:' + c + '">' + p + '%</div><div class="signal-weight">' + s.weight + '</div></div></div>';
+      return '<div class="signal"><div class="signal-name">'+s.label+'</div><div class="progress-bar-outer"><div class="progress-bar-inner" style="width:'+p+'%;background:'+c+'"></div></div><div style="display:flex;justify-content:space-between;align-items:center"><div class="signal-val" style="color:'+c+'">'+p+'%</div><div class="signal-weight">'+s.weight+'</div></div></div>';
     }).join('');
+
+    // ── KB BLOCK ──────────────────────────────────────────────────────────────
+    var kbRules = data.kb_rules || [];
+    var kbHTML = '';
+    if (kbRules.length > 0) {
+      var rulesHTML = kbRules.map(function(rule) {
+        var cat   = rule.categoria || 'recomendacion';
+        var pri   = rule.prioridad || 'media';
+        var score = rule.score ? Math.round(rule.score * 100) + '%' : '';
+        var autor = rule.autor || '';
+        return '<div class="kb-rule-item">' +
+          '<div class="kb-rule-meta">' +
+            '<span class="kb-cat-tag ' + cat + '">' + cat + '</span>' +
+            '<span class="kb-pri-tag ' + pri + '">' + pri + '</span>' +
+            (score ? '<span class="kb-rule-score">' + score + ' relevancia</span>' : '') +
+          '</div>' +
+          '<div class="kb-rule-text">' + rule.content + '</div>' +
+          (autor ? '<div class="kb-rule-author">— ' + autor + '</div>' : '') +
+        '</div>';
+      }).join('');
+      kbHTML = '<div class="kb-block">' +
+        '<div class="kb-block-header active"><div class="kb-hdot"></div>// knowledge base activa · ' + kbRules.length + ' regla' + (kbRules.length > 1 ? 's' : '') + ' aplicada' + (kbRules.length > 1 ? 's' : '') + '</div>' +
+        '<div class="kb-rules-list">' + rulesHTML + '</div>' +
+      '</div>';
+    } else {
+      kbHTML = '<div class="kb-block">' +
+        '<div class="kb-block-header inactive"><div class="kb-hdot"></div>// sin contexto KB</div>' +
+      '</div>';
+    }
 
     var compsHTML = data.components.map(function(c, i) {
-      return '<div class="comp-row" style="animation-delay:' + (i*50) + 'ms"><div class="comp-order">' + String(c.order).padStart(2,'0') + '</div><div class="comp-info"><div class="comp-name">' + c.component + '</div><div class="comp-variant">' + c.variant + '</div></div><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end"><div class="badge ' + (c.required ? 'required' : 'optional') + '">' + (c.required ? 'req' : 'opt') + '</div><div class="badge ' + (c.node_id === 'pending' ? 'pending' : 'resolved') + '">' + (c.node_id === 'pending' ? 'pending' : c.node_id) + '</div></div></div>';
+      return '<div class="comp-row" style="animation-delay:' + (i*50) + 'ms"><div class="comp-order">' + String(c.order).padStart(2,'0') + '</div><div class="comp-info"><div class="comp-name">' + c.component + '</div><div class="comp-variant">' + c.variant + '</div></div><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end"><div class="badge ' + (c.required?'required':'optional') + '">' + (c.required?'req':'opt') + '</div><div class="badge ' + (c.node_id==='pending'?'pending':'resolved') + '">' + (c.node_id==='pending'?'pending':c.node_id) + '</div></div></div>';
     }).join('');
 
-    var weakHTML = conf.weak_signals && conf.weak_signals.length ? '<div class="weak-signals"><div class="weak-signal-title">⚠ señales débiles</div>' + conf.weak_signals.map(function(s){ return '<div class="weak-signal-item">' + s + '</div>'; }).join('') + '</div>' : '';
+    var weakHTML = conf.weak_signals && conf.weak_signals.length ? '<div class="weak-signals"><div class="weak-signal-title">⚠ señales débiles</div>' + conf.weak_signals.map(function(s){ return '<div class="weak-signal-item">'+s+'</div>'; }).join('') + '</div>' : '';
 
-    // VIOLATIONS
     var violations = data.violations || [];
-    var violationsHTML = '';
-    if (violations.length > 0) {
-      violationsHTML = '<div class="violations-block"><div class="violations-title">✗ violaciones · ' + violations.length + '</div>' +
-        violations.map(function(v) {
-          return '<div class="violation-item ' + v.severity + '"><div class="violation-rule">' + v.rule + '</div><div class="violation-detail">' + v.detail + '</div>' + (v.action ? '<div class="violation-action">' + v.action + '</div>' : '') + '</div>';
-        }).join('') + '</div>';
-    }
+    var violationsHTML = violations.length > 0 ? '<div class="violations-block"><div class="violations-title">✗ violaciones · '+violations.length+'</div>' + violations.map(function(v){ return '<div class="violation-item '+v.severity+'"><div class="violation-rule">'+v.rule+'</div><div class="violation-detail">'+v.detail+'</div>'+(v.action?'<div class="violation-action">'+v.action+'</div>':'')+'</div>'; }).join('') + '</div>' : '';
 
-    // MISSING COMPONENTS
     var missing = data.missing_components || [];
-    var missingHTML = '';
-    if (missing.length > 0) {
-      missingHTML = '<div class="missing-block"><div class="missing-title">✗ no disponible en el DS · ' + missing.length + '</div>' +
-        missing.map(function(m) {
-          return '<div class="missing-item"><div class="missing-name">' + m.name + '</div><div class="missing-reason">' + m.reason + '</div></div>';
-        }).join('') + '</div>';
-    }
+    var missingHTML = missing.length > 0 ? '<div class="missing-block"><div class="missing-title">✗ no disponible en el DS · '+missing.length+'</div>' + missing.map(function(m){ return '<div class="missing-item"><div class="missing-name">'+m.name+'</div><div class="missing-reason">'+m.reason+'</div></div>'; }).join('') + '</div>' : '';
 
-    var constraintsHTML = data.intent && data.intent.constraints ? Object.entries(data.intent.constraints)
-      .filter(function(entry) { return entry[0] !== 'estimated_items'; })
-      .map(function(entry) { return '<div class="intent-row"><div class="intent-key">' + entry[0] + '</div><div class="tag ' + entry[1] + '">' + entry[1] + '</div></div>'; })
-      .join('') : '';
+    var constraintsHTML = data.intent && data.intent.constraints ? Object.entries(data.intent.constraints).filter(function(e){ return e[0]!=='estimated_items'; }).map(function(e){ return '<div class="intent-row"><div class="intent-key">'+e[0]+'</div><div class="tag '+e[1]+'">'+e[1]+'</div></div>'; }).join('') : '';
 
     document.getElementById('analysisPanel').innerHTML =
       '<div class="panel-title">// analysis</div>' +
-      '<div style="display:flex;align-items:center;justify-content:space-between"><div class="status-badge ' + data.status + '">' + data.status.replace('_',' ') + '</div><div style="font-family:var(--mono);font-size:10px;color:var(--txt2)">' + data.pattern + '</div></div>' +
-      (data.kb_context_used ? '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:8px;margin-top:4px"><div style="width:6px;height:6px;border-radius:50%;background:#6366f1;flex-shrink:0"></div><div style="font-family:var(--mono);font-size:11px;color:#6366f1">// knowledge base activa</div></div>' : '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(100,116,139,0.05);border:1px solid rgba(100,116,139,0.15);border-radius:8px;margin-top:4px"><div style="width:6px;height:6px;border-radius:50%;background:#64748b;flex-shrink:0"></div><div style="font-family:var(--mono);font-size:11px;color:#64748b">// sin contexto KB</div></div>') +
+      '<div style="display:flex;align-items:center;justify-content:space-between"><div class="status-badge ' + data.status + '">' + data.status.replace(/_/g,' ') + '</div><div style="font-family:var(--mono);font-size:10px;color:var(--txt2)">' + data.pattern + '</div></div>' +
+      kbHTML +
       '<div class="confidence-block"><div class="block-title">// confidence</div><div style="display:flex;align-items:baseline;gap:6px"><div class="confidence-score" style="color:' + scoreColor + '">' + pct + '</div><div style="font-family:var(--mono);font-size:14px;color:var(--txt2)">%</div></div><div class="progress-bar-outer" style="height:5px"><div class="progress-bar-inner" style="width:' + pct + '%;background:' + scoreColor + '"></div></div><div class="signals-grid">' + signalsHTML + '</div></div>' +
-      weakHTML +
-      violationsHTML +
-      missingHTML +
+      weakHTML + violationsHTML + missingHTML +
       '<div><div class="block-title">// components · ' + data.components.length + '</div><div class="components-list">' + compsHTML + '</div></div>' +
-      '<div class="intent-block"><div class="block-title">// intent</div><div class="intent-row"><div class="intent-key">type</div><div class="intent-val">' + (data.intent && data.intent.intent_type ? data.intent.intent_type : '—') + '</div></div><div class="intent-row"><div class="intent-key">domain</div><div class="intent-val">' + (data.intent && data.intent.domain ? data.intent.domain : '—') + '</div></div><div class="intent-row"><div class="intent-key">confidence</div><div class="intent-val">' + Math.round((data.intent && data.intent.confidence ? data.intent.confidence : 0)*100) + '%</div></div>' + constraintsHTML + '</div>' +
-      '<div style="font-family:var(--mono);font-size:9px;color:var(--txt2);padding-top:4px;border-top:1px solid var(--border)">' + data.screen_id + ' · ' + new Date(data.meta && data.meta.generated_at ? data.meta.generated_at : Date.now()).toLocaleTimeString('es-ES') + '</div>';
+      '<div class="intent-block"><div class="block-title">// intent</div><div class="intent-row"><div class="intent-key">type</div><div class="intent-val">' + (data.intent&&data.intent.intent_type?data.intent.intent_type:'—') + '</div></div><div class="intent-row"><div class="intent-key">domain</div><div class="intent-val">' + (data.intent&&data.intent.domain?data.intent.domain:'—') + '</div></div><div class="intent-row"><div class="intent-key">confidence</div><div class="intent-val">' + Math.round((data.intent&&data.intent.confidence?data.intent.confidence:0)*100) + '%</div></div>' + constraintsHTML + '</div>' +
+      '<div style="font-family:var(--mono);font-size:9px;color:var(--txt2);padding-top:4px;border-top:1px solid var(--border)">' + data.screen_id + ' · ' + new Date(data.meta&&data.meta.generated_at?data.meta.generated_at:Date.now()).toLocaleTimeString('es-ES') + '</div>';
   }
 
   function exportToFigma() {
     if (!lastResult) return;
-    // Enviar el plan a la cola del engine — el engine lo pinta via Desktop Bridge
     var btn = document.getElementById('figmaBtn');
     var txt = document.getElementById('figmaBtnText');
     var sp  = document.getElementById('figmaSpinner');
-    btn.disabled = true;
-    txt.textContent = 'ENVIANDO...';
-    sp.style.display = 'block';
-
+    btn.disabled = true; txt.textContent = 'ENVIANDO...'; sp.style.display = 'block';
     fetch(window.location.origin + '/figma/queue', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': document.getElementById('apiKey').value || 'dev-key-local-2025' },
       body: JSON.stringify({ plan: lastResult })
     })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.ok) {
-        showFigmaStatus('success', '✓ En cola · dile a Claude "pinta" para verlo en Figma');
-      } else {
-        showFigmaStatus('error', 'Error: ' + (d.error || 'desconocido'));
-      }
-    })
-    .catch(function(e) {
-      showFigmaStatus('error', 'Sin conexión al engine');
-    })
-    .finally(function() {
-      btn.disabled = false;
-      txt.textContent = 'PAINT IN FIGMA';
-      sp.style.display = 'none';
-    });
-  }
-
-
-  function buildFigmaScript(plan, nodeIds, heights) {
-    var components = JSON.stringify(plan.components);
-    var nIds = JSON.stringify(nodeIds);
-    var hMap = JSON.stringify(heights);
-    var score = Math.round((plan.confidence && plan.confidence.global ? plan.confidence.global : 0)*100);
-    return '(async () => {\n  const page = figma.currentPage;\n  const NIDS = ' + nIds + ';\n  const HEIGHTS = ' + hMap + ';\n  const comps = ' + components + ';\n  let maxX = 0;\n  page.children.forEach(n => { if (n.x + (n.width||0) > maxX) maxX = n.x + (n.width||0); });\n  const sx = maxX + 80;\n  const screen = figma.createFrame();\n  screen.name = "' + plan.screen_id + ' / ' + plan.pattern + '";\n  screen.resize(390, 10);\n  screen.x = sx; screen.y = 0;\n  screen.fills = [{type:"SOLID",color:{r:0.97,g:0.98,b:0.99}}];\n  screen.clipsContent = true;\n  await figma.loadFontAsync({family:"Inter",style:"Regular"});\n  const lbl = figma.createText();\n  lbl.fontName = {family:"Inter",style:"Regular"};\n  lbl.characters = "' + plan.screen_id + '  ·  ' + plan.pattern + '  ·  ' + plan.status + '  ' + score + '%";\n  lbl.fontSize = 11;\n  lbl.fills = [{type:"SOLID",color:{r:0.4,g:0.44,b:0.5}}];\n  lbl.x = sx; lbl.y = -22;\n  page.appendChild(lbl);\n  let y = 0;\n  for (const c of comps) {\n    const nid = NIDS[c.component];\n    if (!nid) continue;\n    try {\n      const node = await figma.getNodeByIdAsync(nid);\n      if (!node || node.type !== "COMPONENT") continue;\n      const inst = node.createInstance();\n      inst.name = String(c.order).padStart(2,"0") + "/" + c.component;\n      inst.x = 0; inst.y = y;\n      inst.resize(390, HEIGHTS[c.component]||56);\n      screen.appendChild(inst);\n      y += HEIGHTS[c.component]||56;\n    } catch(e) {}\n  }\n  screen.resize(390, Math.min(Math.max(y, 200), 844));\n  figma.viewport.scrollAndZoomIntoView([screen]);\n  return {ok:true, screenId:screen.id};\n})()';
+    .then(function(r){ return r.json(); })
+    .then(function(d){ d.ok ? showFigmaStatus('success','✓ En cola · dile a Claude "pinta" para verlo en Figma') : showFigmaStatus('error','Error: '+(d.error||'desconocido')); })
+    .catch(function(){ showFigmaStatus('error','Sin conexión al engine'); })
+    .finally(function(){ btn.disabled=false; txt.textContent='PAINT IN FIGMA'; sp.style.display='none'; });
   }
 
   function showFigmaStatus(type, msg, url) {
     var el = document.getElementById('figmaStatus');
-    var icons = { loading: '⟳', success: '✓', error: '✗' };
-    var colors = { loading: '#64748b', success: '#16a34a', error: '#dc2626' };
-    el.style.display = 'flex';
-    el.style.flexDirection = 'column';
-    el.style.gap = '4px';
-    el.innerHTML = '<span style="color:' + colors[type] + ';font-size:11px">' + (icons[type]||'') + ' ' + msg + '</span>' +
-      (url ? '<a href="' + url + '" target="_blank" style="color:#6366f1;font-size:10px;text-decoration:none">→ Abrir en Figma</a>' : '');
+    if (!el) return;
+    var colors = { loading:'#64748b', success:'#16a34a', error:'#dc2626' };
+    el.style.display='flex'; el.style.flexDirection='column'; el.style.gap='4px';
+    el.innerHTML = '<span style="color:'+colors[type]+';font-size:11px">' + msg + '</span>' + (url?'<a href="'+url+'" target="_blank" style="color:#6366f1;font-size:10px;text-decoration:none">→ Abrir en Figma</a>':'');
   }
 
   function renderError(err) {
-    document.getElementById('analysisPanel').innerHTML = '<div class="panel-title">// analysis</div><div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;margin-top:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#ef4444;margin-bottom:6px">✗ ' + (err.error || 'Error') + '</div><div style="font-size:13px;color:var(--txt3)">' + (err.message || 'Error desconocido') + '</div></div>';
+    document.getElementById('analysisPanel').innerHTML = '<div class="panel-title">// analysis</div><div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;margin-top:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#ef4444;margin-bottom:6px">✗ '+(err.error||'Error')+'</div><div style="font-size:13px;color:var(--txt3)">'+(err.message||'Error desconocido')+'</div></div>';
   }
 </script>
 </body>
