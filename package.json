@@ -2,7 +2,8 @@
   "name": "ds-ia-ready-root",
   "version": "1.0.0",
   "scripts": {
-    "start": "cd engine && node src/server.js"
+    "start": "cd engine && node src/server.js",
+    "postinstall": "cd engine && npm install"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
