@@ -1,99 +1,171 @@
 // core/figmaPainter.js
 // ─────────────────────────────────────────────────────────────────────────────
-// FigmaPainter — Level 3.1
-// Motor genérico de pintado: recibe una composición del engine y genera
-// el código JavaScript listo para ejecutar en figma_execute / Figma plugin.
-//
-// NO depende de ningún patrón específico — consume el JSON de /generate
-// y construye la pantalla dinámicamente según los componentes y sus contratos.
+// FigmaPainter — Level 3.2
+// Mejoras de spacing:
+//   - PADDING_H diferenciado por tipo de componente (edge-to-edge vs inset)
+//   - GAP entre componentes basado en relación semántica (mismo grupo = 0, sección = 16, bloque = 24)
+//   - Márgenes laterales reales: 16px para contenido, 0px para componentes de sistema
+//   - Padding top/bottom dentro del área de contenido
+//   - Separadores visuales entre secciones (list-header → cards)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Mapa de componentes del DS con sus alturas reales y text nodes
-// Source of truth: auditado directamente desde Figma (Simple DS)
+// ── TOKENS DE SPACING ─────────────────────────────────────────────────────────
+// Basados en tokens.css del Simple DS
+const SPACING = {
+  // Gaps entre componentes según relación
+  GAP_NONE:        0,   // mismo componente repetido (cards consecutivas)
+  GAP_TIGHT:       1,   // separador visual mínimo dentro de un grupo
+  GAP_SECTION:    16,   // entre sección y su contenido (list-header → cards)
+  GAP_BLOCK:      24,   // entre bloques distintos (filter → cards, banner → cards)
+  GAP_LARGE:      32,   // entre áreas principales (header → primer contenido)
+
+  // Márgenes horizontales por tipo
+  MARGIN_EDGE:     0,   // componentes full-width del sistema (header, filter, tab-bar, banner)
+  MARGIN_CONTENT: 16,   // contenido con margen lateral (cards, inputs, buttons, empty-state)
+  MARGIN_INSET:   24,   // contenido más aireado (modales sueltos, estados de error)
+
+  // Padding vertical del área de contenido
+  CONTENT_PADDING_TOP:    12,
+  CONTENT_PADDING_BOTTOM: 24,
+};
+
+// ── COMPONENT REGISTRY ────────────────────────────────────────────────────────
+// marginH: margen lateral real del componente
+// gapAfter: gap que deja este componente ANTES del siguiente (gap semántico)
+// gapBefore: gap extra ANTES de este componente (cuando viene después de otro tipo)
+// group: agrupa componentes que van juntos sin separación extra
+
 const COMPONENT_REGISTRY = {
   'navigation-header': {
     nodeId: '1:3', height: 56, width: 390,
     texts: { title: '6' },
-    slot: 'header',       // siempre va arriba
-    sticky: 'top'
-  },
-  'button-primary': {
-    nodeId: '1:9', height: 48, width: 390,
-    texts: { label: '10' },
-    slot: 'cta',
-    fullWidth: true
-  },
-  'button-secondary': {
-    nodeId: '1:11', height: 48, width: 390,
-    texts: { label: '12' },
-    slot: 'cta-secondary',
-    fullWidth: true
-  },
-  'card-item': {
-    nodeId: '1:13', height: 72, width: 390,
-    texts: { title: '15', subtitle: '16', value: '18' },
-    slot: 'list-item',
-    repeatable: true
-  },
-  'input-text': {
-    nodeId: '1:21', height: 50, width: 390,
-    texts: { label: '22', placeholder: '23' },
-    slot: 'form-field',
-    repeatable: true,
-    paddingH: 16        // necesita margen horizontal
+    slot: 'header',
+    sticky: 'top',
+    marginH: SPACING.MARGIN_EDGE,
+    gapAfter: 0,          // el header no deja gap — el contenido empieza justo
   },
   'filter-bar': {
     nodeId: '1:24', height: 48, width: 390,
-    texts: {},          // chips internos, no editables individualmente
-    slot: 'filter'
-  },
-  'empty-state': {
-    nodeId: '1:31', height: 244, width: 390,
-    texts: { title: '33', description: '34', action: '35' },
-    slot: 'empty',
-    centered: true
-  },
-  'modal-bottom-sheet': {
-    nodeId: '1:36', height: 255, width: 390,
-    texts: { title: '38', description: '39' },
-    slot: 'modal',
-    sticky: 'bottom'
-  },
-  'tab-bar': {
-    nodeId: '20:784', height: 56, width: 390,
     texts: {},
-    slot: 'tab-bar',
-    sticky: 'bottom'    // SIEMPRE va al fondo
-  },
-  'list-header': {
-    nodeId: '20:797', height: 44, width: 390,
-    texts: { label: '798', action: '799' },
-    slot: 'section-header'
-  },
-  'badge': {
-    nodeId: '20:800', height: 26, width: 72,
-    texts: { label: '801' },
-    slot: 'badge'
+    slot: 'filter',
+    marginH: SPACING.MARGIN_EDGE,
+    gapAfter: SPACING.GAP_BLOCK,   // después del filter hay un bloque de contenido
+    group: 'system',
   },
   'notification-banner': {
     nodeId: '20:802', height: 64, width: 390,
     texts: { title: '805', body: '806' },
     slot: 'banner',
-    repeatable: true
-  }
+    repeatable: true,
+    marginH: SPACING.MARGIN_EDGE,
+    gapAfter: SPACING.GAP_BLOCK,
+    group: 'system',
+  },
+  'list-header': {
+    nodeId: '20:797', height: 44, width: 390,
+    texts: { label: '798', action: '799' },
+    slot: 'section-header',
+    marginH: SPACING.MARGIN_EDGE,
+    gapAfter: SPACING.GAP_NONE,    // el list-header va pegado a sus cards
+    gapBefore: SPACING.GAP_BLOCK,  // pero sí se separa del bloque anterior
+    group: 'section',
+  },
+  'card-item': {
+    nodeId: '1:13', height: 72, width: 390,
+    texts: { title: '15', subtitle: '16', value: '18' },
+    slot: 'list-item',
+    repeatable: true,
+    marginH: SPACING.MARGIN_EDGE,  // cards van edge-to-edge en listas
+    gapAfter: SPACING.GAP_TIGHT,   // separador mínimo entre cards (1px)
+    group: 'list',
+  },
+  'input-text': {
+    nodeId: '1:21', height: 56, width: 390,
+    texts: { label: '22', placeholder: '23' },
+    slot: 'form-field',
+    repeatable: true,
+    marginH: SPACING.MARGIN_CONTENT,   // inputs con margen lateral
+    gapAfter: SPACING.GAP_SECTION,     // entre campos hay espacio para respirar
+    group: 'form',
+  },
+  'empty-state': {
+    nodeId: '1:31', height: 244, width: 390,
+    texts: { title: '33', description: '34', action: '35' },
+    slot: 'empty',
+    centered: true,
+    marginH: SPACING.MARGIN_EDGE,
+    gapAfter: SPACING.GAP_BLOCK,
+    gapBefore: SPACING.GAP_BLOCK,
+  },
+  'button-primary': {
+    nodeId: '1:9', height: 52, width: 390,
+    texts: { label: '10' },
+    slot: 'cta',
+    fullWidth: true,
+    marginH: SPACING.MARGIN_CONTENT,   // botones con margen lateral
+    gapAfter: SPACING.GAP_SECTION,
+    gapBefore: SPACING.GAP_BLOCK,
+    sticky: 'bottom',
+  },
+  'button-secondary': {
+    nodeId: '1:11', height: 52, width: 390,
+    texts: { label: '12' },
+    slot: 'cta-secondary',
+    fullWidth: true,
+    marginH: SPACING.MARGIN_CONTENT,
+    gapAfter: SPACING.GAP_SECTION,
+    sticky: 'bottom',
+  },
+  'modal-bottom-sheet': {
+    nodeId: '1:36', height: 280, width: 390,
+    texts: { title: '38', description: '39' },
+    slot: 'modal',
+    sticky: 'bottom',
+    marginH: SPACING.MARGIN_EDGE,
+    gapAfter: 0,
+  },
+  'tab-bar': {
+    nodeId: '20:784', height: 56, width: 390,
+    texts: {},
+    slot: 'tab-bar',
+    sticky: 'bottom',
+    marginH: SPACING.MARGIN_EDGE,
+    gapAfter: 0,
+  },
+  'badge': {
+    nodeId: '20:800', height: 26, width: 72,
+    texts: { label: '801' },
+    slot: 'badge',
+    marginH: SPACING.MARGIN_CONTENT,
+    gapAfter: SPACING.GAP_TIGHT,
+  },
 };
 
 const SCREEN_W = 390;
 const SCREEN_H = 844;
-const PADDING_H = 0;    // padding horizontal por defecto
 
-/**
- * Genera el código JS para figma_execute a partir de una composición del engine.
- *
- * @param {Object} composition — respuesta de POST /generate
- * @param {Object} options — { x, y, label }
- * @returns {string} código JS listo para figma_execute
- */
+// ── LÓGICA DE GAP SEMÁNTICO ───────────────────────────────────────────────────
+// Calcula el gap correcto entre dos componentes consecutivos según su relación
+function _getGapBetween(prevComp, nextComp) {
+  if (!prevComp) return 0;
+
+  const prevMeta = COMPONENT_REGISTRY[prevComp.component];
+  const nextMeta = COMPONENT_REGISTRY[nextComp.component];
+
+  // Si el siguiente tiene gapBefore explícito, úsalo
+  if (nextMeta?.gapBefore !== undefined) return nextMeta.gapBefore;
+
+  // Si el anterior tiene gapAfter explícito, úsalo
+  if (prevMeta?.gapAfter !== undefined) return prevMeta.gapAfter;
+
+  // Mismo grupo → gap mínimo
+  if (prevMeta?.group && prevMeta.group === nextMeta?.group) return SPACING.GAP_TIGHT;
+
+  // Diferente tipo → gap de bloque
+  return SPACING.GAP_BLOCK;
+}
+
+// ── GENERADOR PRINCIPAL ───────────────────────────────────────────────────────
 function generatePainterCode(composition, options = {}) {
   const { x = 0, y = 0, label = null } = options;
   const { pattern, components = [], confidence } = composition;
@@ -102,7 +174,7 @@ function generatePainterCode(composition, options = {}) {
     throw new Error('Composición sin componentes');
   }
 
-  // Separar componentes sticky (top/bottom) del contenido scrollable
+  // Separar por zona
   const headerComponents  = components.filter(c => _getMeta(c.component)?.sticky === 'top');
   const bottomComponents  = components.filter(c => _getMeta(c.component)?.sticky === 'bottom');
   const contentComponents = components.filter(c => {
@@ -110,82 +182,87 @@ function generatePainterCode(composition, options = {}) {
     return !meta?.sticky;
   });
 
-  // Calcular alturas
   const headerHeight = headerComponents.reduce((sum, c) => sum + _getHeight(c), 0);
   const bottomHeight = bottomComponents.reduce((sum, c) => sum + _getHeight(c), 0);
-  const contentHeight = SCREEN_H - headerHeight - bottomHeight;
 
   const screenName = `gen_${Date.now()} — ${pattern} — ${Math.round((confidence?.global || 0) * 100)}%`;
   const confidenceLabel = label || `☁️ Railway → ${pattern} | confidence: ${Math.round((confidence?.global || 0) * 100)}%`;
 
-  // Construir el código JS
   const lines = [];
-  lines.push(`// FigmaPainter v3.1 — ${pattern}`);
+  lines.push(`// FigmaPainter v3.2 — ${pattern} — spacing system`);
   lines.push(`const PAGE_W = ${SCREEN_W};`);
   lines.push(`const PAGE_H = ${SCREEN_H};`);
   lines.push(`const page = figma.currentPage;`);
   lines.push(``);
 
-  // Crear frame contenedor
+  // Frame principal
   lines.push(`// Frame principal`);
   lines.push(`const screen = figma.createFrame();`);
   lines.push(`screen.name = ${JSON.stringify(screenName)};`);
   lines.push(`screen.resize(PAGE_W, PAGE_H);`);
   lines.push(`screen.x = ${x};`);
   lines.push(`screen.y = ${y};`);
-  lines.push(`screen.fills = [{ type: 'SOLID', color: { r: 0.97, g: 0.97, b: 0.97 } }];`);
+  lines.push(`screen.fills = [{ type: 'SOLID', color: { r: 0.98, g: 0.98, b: 0.99 } }];`);
   lines.push(`screen.clipsContent = true;`);
   lines.push(`page.appendChild(screen);`);
   lines.push(`let _y = 0;`);
   lines.push(``);
 
-  // Pintar header components
+  // ── Header (sticky top) ──────────────────────────────────────────────────
   if (headerComponents.length > 0) {
     lines.push(`// ── Header ────────────────────────────────────`);
     for (const comp of headerComponents) {
-      lines.push(..._generateComponentBlock(comp, { fullWidth: true, yFromVar: true }));
+      lines.push(..._generateComponentBlock(comp, { yFromVar: true }));
     }
     lines.push(``);
   }
 
-  // Pintar content components
+  // ── Content ──────────────────────────────────────────────────────────────
   if (contentComponents.length > 0) {
     lines.push(`// ── Content ───────────────────────────────────`);
-    const contentPaddingTop = contentComponents.some(c => _getMeta(c.component)?.paddingH)
-      ? 24 : 0;
-    if (contentPaddingTop > 0) lines.push(`_y += ${contentPaddingTop};`);
+    lines.push(`_y += ${SPACING.CONTENT_PADDING_TOP}; // padding top del área de contenido`);
+    lines.push(``);
 
-    for (const comp of contentComponents) {
-      const meta = _getMeta(comp.component);
-      const quantity = comp.quantity || 1;
-      const paddingH = meta?.paddingH || 0;
+    for (let i = 0; i < contentComponents.length; i++) {
+      const comp = contentComponents[i];
+      const prevComp = i > 0 ? contentComponents[i - 1] : null;
+      const gap = _getGapBetween(prevComp, comp);
 
-      if (meta?.repeatable && quantity > 1) {
-        lines.push(`// ${comp.component} x${quantity}`);
-        for (let i = 0; i < quantity; i++) {
-          lines.push(..._generateComponentBlock(
-            { ...comp, _index: i },
-            { fullWidth: true, yFromVar: true, paddingH, gap: i > 0 ? 0 : 0 }
-          ));
-        }
-      } else {
-        lines.push(..._generateComponentBlock(comp, { fullWidth: true, yFromVar: true, paddingH }));
+      if (gap > 0) {
+        lines.push(`_y += ${gap}; // gap semántico antes de ${comp.component}`);
       }
 
-      // Gap entre secciones de contenido
-      lines.push(`_y += 8;`);
+      lines.push(..._generateComponentBlock(comp, { yFromVar: true }));
+      lines.push(``);
     }
-    lines.push(``);
   }
 
-  // Pintar bottom components (posición absoluta al fondo)
+  // ── Bottom (sticky bottom) ───────────────────────────────────────────────
   if (bottomComponents.length > 0) {
     lines.push(`// ── Bottom (sticky) ──────────────────────────`);
+
+    // Ordenar: modal primero (más alto), luego buttons, luego tab-bar
+    const ORDER = ['modal-bottom-sheet', 'button-primary', 'button-secondary', 'tab-bar'];
+    const sorted = [...bottomComponents].sort((a, b) => {
+      return (ORDER.indexOf(a.component) ?? 99) - (ORDER.indexOf(b.component) ?? 99);
+    });
+
     let bottomOffset = SCREEN_H;
-    for (const comp of [...bottomComponents].reverse()) {
+    for (const comp of [...sorted].reverse()) {
       const h = _getHeight(comp);
+      const meta = _getMeta(comp.component);
+      const marginH = meta?.marginH ?? 0;
       bottomOffset -= h;
-      lines.push(..._generateComponentBlock(comp, { fullWidth: true, yFixed: bottomOffset }));
+
+      // Padding bottom para botones (no para tab-bar ni modal)
+      const paddingBottom = comp.component === 'tab-bar' ? 0
+        : comp.component === 'modal-bottom-sheet' ? 0
+        : SPACING.CONTENT_PADDING_BOTTOM;
+
+      lines.push(..._generateComponentBlock(comp, {
+        yFixed: bottomOffset - paddingBottom,
+        marginH,
+      }));
     }
     lines.push(``);
   }
@@ -209,9 +286,7 @@ function generatePainterCode(composition, options = {}) {
   return lines.join('\n');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers internos
-// ─────────────────────────────────────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 
 function _getMeta(componentName) {
   return COMPONENT_REGISTRY[componentName] || null;
@@ -222,69 +297,70 @@ function _getHeight(comp) {
   return meta?.height || 56;
 }
 
-/**
- * Genera el bloque de código para clonar y posicionar un componente
- */
 function _generateComponentBlock(comp, opts = {}) {
-  const { fullWidth = true, yFromVar = false, yFixed = null, paddingH = 0, gap = 0 } = opts;
+  const { yFromVar = false, yFixed = null, marginH: overrideMarginH } = opts;
   const meta = _getMeta(comp.component);
   if (!meta) return [`// WARN: componente no encontrado: ${comp.component}`];
 
-  const nodeId = comp.node_id || meta.nodeId;
+  const nodeId = comp.node_id && comp.node_id !== 'pending' ? comp.node_id : meta.nodeId;
   const h = meta.height;
-  const w = fullWidth ? SCREEN_W - (paddingH * 2) : meta.width;
-  const xPos = paddingH;
+
+  // Margen lateral: usa override si se pasa, sino el del registry
+  const marginH = overrideMarginH !== undefined ? overrideMarginH : (meta.marginH ?? 0);
+  const w = SCREEN_W - (marginH * 2);
+  const xPos = marginH;
+
   const suffix = comp._index !== undefined ? `_${comp._index}` : '';
   const varName = `_${comp.component.replace(/-/g, '_')}${suffix}`;
 
   const lines = [];
   lines.push(`{`);
   lines.push(`  const _src = await figma.getNodeByIdAsync('${nodeId}');`);
-  lines.push(`  const ${varName} = _src.clone();`);
-  lines.push(`  ${varName}.x = ${xPos};`);
+  lines.push(`  if (!_src) { console.warn('Node not found: ${nodeId} (${comp.component})'); }`);
+  lines.push(`  else {`);
+  lines.push(`    const ${varName} = _src.clone();`);
+  lines.push(`    ${varName}.x = ${xPos};`);
 
   if (yFixed !== null) {
-    lines.push(`  ${varName}.y = ${yFixed};`);
+    lines.push(`    ${varName}.y = ${yFixed};`);
   } else if (yFromVar) {
-    if (gap > 0) lines.push(`  _y += ${gap};`);
-    lines.push(`  ${varName}.y = _y;`);
-    lines.push(`  _y += ${h};`);
+    lines.push(`    ${varName}.y = _y;`);
+    lines.push(`    _y += ${h};`);
   }
 
-  lines.push(`  ${varName}.resize(${w}, ${h});`);
-  lines.push(`  screen.appendChild(${varName});`);
+  lines.push(`    ${varName}.resize(${w}, ${h});`);
 
-  // Aplicar props de texto si existen
+  // Corner radius para componentes de contenido con margen
+  if (marginH > 0 && comp.component !== 'button-primary' && comp.component !== 'button-secondary') {
+    lines.push(`    if ('cornerRadius' in ${varName}) ${varName}.cornerRadius = 12;`);
+  }
+
+  lines.push(`    screen.appendChild(${varName});`);
+
+  // Aplicar props de texto
   if (comp.props && meta.texts) {
-    for (const [slot, textNodeSuffix] of Object.entries(meta.texts)) {
+    for (const [slot] of Object.entries(meta.texts)) {
       const propValue = comp.props[slot];
       if (propValue) {
-        lines.push(`  {`);
-        lines.push(`    const _t = ${varName}.findOne(n => n.type === 'TEXT' && n.name === '${slot}');`);
-        lines.push(`    if (_t) { await figma.loadFontAsync(_t.fontName); _t.characters = ${JSON.stringify(String(propValue))}; }`);
-        lines.push(`  }`);
+        lines.push(`    {`);
+        lines.push(`      const _t = ${varName}.findOne(n => n.type === 'TEXT' && n.name === '${slot}');`);
+        lines.push(`      if (_t) { await figma.loadFontAsync(_t.fontName); _t.characters = ${JSON.stringify(String(propValue))}; }`);
+        lines.push(`    }`);
       }
     }
   }
 
+  lines.push(`  }`);
   lines.push(`}`);
   return lines;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// API pública
-// ─────────────────────────────────────────────────────────────────────────────
+// ── API PÚBLICA ───────────────────────────────────────────────────────────────
 
-/**
- * Devuelve el código JS para figma_execute
- */
 function paint(composition, options = {}) {
   return generatePainterCode(composition, options);
 }
 
-/**
- * Devuelve el registry de componentes (para diagnóstico)
- */
 function getRegistry() {
   return COMPONENT_REGISTRY;
 }

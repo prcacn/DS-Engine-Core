@@ -6,6 +6,7 @@ const { calculateScore } = require('../../core/confidenceScore');
 const { loadContracts }  = require('../../loaders/contractLoader');
 const { loadPatterns }   = require('../../loaders/patternLoader');
 const kb = require('../../core/knowledgeBase');
+const { runAgents } = require('../../agents/orchestrator');
 
 const INTENT_TO_PATTERN = {
   'lista-con-filtros': 'lista-con-filtros',
@@ -144,7 +145,22 @@ function resolveExclusivity(components, brief) {
 }
 
 function reorderComponents(components) {
-  return components.sort((a, b) => a.order - b.order).map((c, i) => Object.assign({}, c, { order: i + 1 }));
+  // Reglas de posición fija — independiente del orden que devuelvan los agentes
+  const POSITION_TOP    = ['navigation-header'];                    // siempre primero
+  const POSITION_BOTTOM = ['tab-bar', 'button-primary', 'button-secondary', 'modal-bottom-sheet']; // siempre al final
+
+  const top    = components.filter(c => POSITION_TOP.includes(c.component));
+  const bottom = components.filter(c => POSITION_BOTTOM.includes(c.component));
+  const middle = components.filter(c => !POSITION_TOP.includes(c.component) && !POSITION_BOTTOM.includes(c.component));
+
+  // Ordenar cada grupo por su order original (respeta la lógica de los agentes dentro de cada zona)
+  const sorted = [
+    ...top.sort((a, b) => a.order - b.order),
+    ...middle.sort((a, b) => a.order - b.order),
+    ...bottom.sort((a, b) => a.order - b.order),
+  ];
+
+  return sorted.map((c, i) => Object.assign({}, c, { order: i + 1 }));
 }
 
 function buildViolationsSummary(intentViolations, components) {
@@ -156,6 +172,153 @@ function buildViolationsSummary(intentViolations, components) {
   if (names.filter(n => n === 'button-primary').length > 1) { violations.push({ source: 'composition', rule: 'max-1-button-primary', detail: 'Solo se permite 1 button-primary.', severity: 'error', action: 'Revisar manualmente' }); }
   if (names.filter(n => n === 'navigation-header').length > 1) { violations.push({ source: 'composition', rule: 'max-1-navigation-header', detail: 'Solo se permite 1 navigation-header.', severity: 'error', action: 'Revisar manualmente' }); }
   return violations;
+}
+
+// ─── KB RULES ENGINE ──────────────────────────────────────────────────────────
+// Aplica las reglas KB sobre los componentes generados y devuelve
+// los componentes modificados + un log explicado de cada cambio.
+
+const KB_COMPONENT_KEYWORDS = {
+  'fondos':           ['card-item', 'list-header', 'filter-bar'],
+  'inversión':        ['card-item', 'list-header', 'filter-bar'],
+  'inversion':        ['card-item', 'list-header', 'filter-bar'],
+  'perfil de riesgo': ['card-item'],
+  'login':            ['input-text', 'button-primary'],
+  'formulario':       ['input-text', 'button-primary'],
+  'notificación':     ['notification-banner'],
+  'notificacion':     ['notification-banner'],
+  'transacción':      ['card-item', 'list-header'],
+  'transaccion':      ['card-item', 'list-header'],
+  'dashboard':        ['card-item', 'list-header'],
+  'kyc':              ['input-text', 'button-primary'],
+  'onboarding':       ['button-primary'],
+};
+
+const KB_REPLACEMENT_COMPONENTS = {
+  // NOTA: 'card-item' → 'empty-state' eliminado intencionalmente.
+  // Era demasiado agresivo: reemplazaba card-items válidos por empty-state
+  // cuando una regla KB mencionaba restricciones de acceso.
+  // El empty-state solo debe aparecer si intent_type es 'error-estado'
+  // o si el brief lo pide explícitamente.
+  'list-header':  { component: 'notification-banner', variant: 'warning', label: 'Banner de aviso' },
+  'filter-bar':   { component: 'notification-banner', variant: 'warning', label: 'Banner de aviso' },
+};
+
+function applyKBRules(components, kbRules, contracts, intent) {
+  if (!kbRules || kbRules.length === 0) return { components, kb_changes: [] };
+
+  const intentGeo = (intent?.constraints?.geography || '').toLowerCase(); // ej: 'colombia', ''
+
+  // ── FILTRO DE GEOGRAFÍA ──────────────────────────────────────────────────
+  // Si una regla menciona "solo en [país]" pero el intent no es de ese país,
+  // la ignoramos para no contaminar briefs genéricos.
+  const GEO_MARKERS = [
+    { marker: 'solo en colombia', geo: 'colombia' },
+    { marker: 'solo en méxico',   geo: 'mexico'   },
+    { marker: 'solo en mexico',   geo: 'mexico'   },
+    { marker: 'solo en españa',   geo: 'spain'    },
+    { marker: 'solo en spain',    geo: 'spain'    },
+    { marker: 'geography=colombia', geo: 'colombia' },
+    { marker: 'geography=mexico',   geo: 'mexico'   },
+  ];
+
+  const filteredRules = kbRules.filter(function(rule) {
+    const ruleText = (rule.content || '').toLowerCase();
+    for (const { marker, geo } of GEO_MARKERS) {
+      if (ruleText.includes(marker)) {
+        // La regla es geográfica — solo aplica si el intent coincide
+        return intentGeo === geo;
+      }
+    }
+    return true; // regla sin marcador geográfico → siempre aplica
+  });
+
+  if (filteredRules.length < kbRules.length) {
+    console.log('  → KB: ' + (kbRules.length - filteredRules.length) + ' regla(s) filtrada(s) por geografía (intent.geo=' + (intentGeo || 'null') + ')');
+  }
+
+  let result    = [...components];
+  const changes = [];
+  const PRIORITY = { alta: 3, media: 2, baja: 1 };
+  const sorted  = [...filteredRules].sort((a, b) => (PRIORITY[b.prioridad] || 0) - (PRIORITY[a.prioridad] || 0));
+
+  sorted.forEach(function(rule) {
+    const cat  = rule.categoria || 'recomendacion';
+    const pri  = rule.prioridad || 'media';
+    const text = (rule.content || '').toLowerCase();
+
+    // ── UMBRAL DE SCORE ──────────────────────────────────────────────────────
+    // Las reglas con score bajo (similitud semántica débil) no deben aplicarse
+    // aunque estén en el contexto KB — evita falsos positivos en briefs genéricos
+    const MIN_SCORE_RESTRICCION  = 0.82; // restricciones solo con alta confianza
+    const MIN_SCORE_RECOMENDACION = 0.78;
+    const ruleScore = rule.score || 0;
+
+    if (cat === 'restriccion' && ruleScore < MIN_SCORE_RESTRICCION) {
+      console.log('  → KB: regla ' + (rule.id || '') + ' ignorada (score=' + ruleScore.toFixed(3) + ' < ' + MIN_SCORE_RESTRICCION + ')');
+      return;
+    }
+    if (cat === 'recomendacion' && ruleScore < MIN_SCORE_RECOMENDACION) {
+      return;
+    }
+
+    // Detectar qué componentes afecta esta regla por palabras clave
+    const affected = new Set();
+    Object.entries(KB_COMPONENT_KEYWORDS).forEach(([kw, comps]) => {
+      if (text.includes(kw)) comps.forEach(c => affected.add(c));
+    });
+
+    // Regla genérica sin componentes detectados → solo normativas añaden banner
+    if (affected.size === 0) {
+      if (cat === 'normativa' && !result.some(c => c.component === 'notification-banner') && contracts['notification-banner']) {
+        const maxOrder = Math.max(...result.map(c => c.order), 0);
+        result.push({ slot: 'notification-banner', component: 'notification-banner', order: maxOrder + 1, required: true, variant: 'info', props: { text: rule.content }, node_id: contracts['notification-banner']?.nodeId, resolution_confidence: rule.score || 0.8, kb_injected: true });
+        changes.push({ type: 'añadido', component: 'notification-banner', reason: rule.content, rule_cat: cat, rule_pri: pri, rule_id: rule.id, score: rule.score });
+      }
+      return;
+    }
+
+    // RESTRICCION → reemplazar o eliminar componentes afectados
+    if (cat === 'restriccion') {
+      affected.forEach(function(compName) {
+        const idx = result.findIndex(c => c.component === compName);
+        if (idx === -1) return;
+        const repl = KB_REPLACEMENT_COMPONENTS[compName];
+        // Guardia: nunca reemplazar por empty-state vía KB (demasiado agresivo)
+        if (repl && repl.component === 'empty-state') return;
+        if (repl && contracts[repl.component]) {
+          const original = result[idx];
+          result[idx] = { slot: repl.component, component: repl.component, order: original.order, required: true, variant: repl.variant, props: { text: rule.content }, node_id: contracts[repl.component]?.nodeId, resolution_confidence: rule.score || 0.9, kb_injected: true };
+          changes.push({ type: 'reemplazado', from: compName, to: repl.component, reason: rule.content, rule_cat: cat, rule_pri: pri, rule_id: rule.id, score: rule.score });
+        } else {
+          result.splice(idx, 1);
+          changes.push({ type: 'eliminado', component: compName, reason: rule.content, rule_cat: cat, rule_pri: pri, rule_id: rule.id, score: rule.score });
+        }
+      });
+    }
+
+    // RECOMENDACION alta → añadir componentes si no existen
+    if (cat === 'recomendacion' && pri === 'alta') {
+      affected.forEach(function(compName) {
+        // Guardia: KB nunca puede inyectar empty-state directamente.
+        // Solo aparece si intent_type === 'error-estado' o brief explícito.
+        if (compName === 'empty-state') return;
+        if (!result.some(c => c.component === compName) && contracts[compName]) {
+          const maxOrder = Math.max(...result.map(c => c.order), 0);
+          result.push({ slot: compName, component: compName, order: maxOrder + 1, required: false, variant: 'default', props: {}, node_id: contracts[compName]?.nodeId, resolution_confidence: rule.score || 0.75, kb_injected: true });
+          changes.push({ type: 'añadido', component: compName, reason: rule.content, rule_cat: cat, rule_pri: pri, rule_id: rule.id, score: rule.score });
+        }
+      });
+    }
+
+    // DS-PATTERN → registrar como informativo sin cambiar composición
+    if (cat === 'ds-pattern') {
+      changes.push({ type: 'patrón-aplicado', component: null, reason: rule.content, rule_cat: cat, rule_pri: pri, rule_id: rule.id, score: rule.score });
+    }
+  });
+
+  result = result.sort((a, b) => a.order - b.order).map((c, i) => ({ ...c, order: i + 1 }));
+  return { components: result, kb_changes: changes };
 }
 
 router.post('/', async function(req, res, next) {
@@ -182,13 +345,23 @@ router.post('/', async function(req, res, next) {
     const patternData = patterns[patternName];
     if (!patternData) return res.status(404).json({ error: 'PatternNotFound', message: "Pattern '" + patternName + "' no encontrado" });
 
-    const rawResult    = buildCompositionPlan(brief, intent, patternData, contracts);
-    const components   = reorderComponents(resolveExclusivity(rawResult.components, brief));
-    const confidence   = calculateScore({ pattern: patternName, components, intent, contracts: Object.values(contracts) });
-    const violations   = buildViolationsSummary(intent.brief_violations || [], components);
-    const screenId     = 'gen_' + Date.now();
+    const rawResult      = buildCompositionPlan(brief, intent, patternData, contracts);
+    const baseComponents = reorderComponents(resolveExclusivity(rawResult.components, brief));
 
-    console.log('  ✓ ' + components.length + ' componentes | ' + confidence.status + ' | KB: ' + (kbRules.length > 0 ? kbRules.length + ' reglas' : 'sin contexto'));
+    // ── AGENTES: UXWriter + UXSpec en paralelo ────────────────────────────
+    const agentResult  = await runAgents({ brief, components: baseComponents, intent, kbRules, contracts });
+    const agentComponents = agentResult.components;
+
+    // ── APLICAR REGLAS KB (governance final — red de seguridad) ───────────
+    const kbApplied  = applyKBRules(agentComponents, kbRules, contracts, intent);
+    const components = kbApplied.components;
+    const kb_changes = kbApplied.kb_changes;
+
+    const confidence = calculateScore({ pattern: patternName, components, intent, contracts: Object.values(contracts) });
+    const violations = buildViolationsSummary(intent.brief_violations || [], components);
+    const screenId   = 'gen_' + Date.now();
+
+    console.log('  ✓ ' + components.length + ' componentes | ' + confidence.status + ' | KB: ' + (kbRules.length > 0 ? kbRules.length + ' reglas, ' + kb_changes.length + ' cambios' : 'sin contexto') + ' | agentes: ✓');
 
     res.json({
       screen_id:        screenId,
@@ -202,6 +375,8 @@ router.post('/', async function(req, res, next) {
       composition_rules:rawResult.compositionRules,
       kb_context_used:  kbRules.length > 0,
       kb_rules:         kbRules,
+      kb_changes:       kb_changes,
+      agent_meta:       agentResult.agent_meta,
       meta: { engine_version: '1.0.0', phase: 'Fase 4 — Knowledge Base', generated_at: new Date().toISOString() }
     });
   } catch (err) {

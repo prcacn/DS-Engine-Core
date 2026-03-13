@@ -70,24 +70,24 @@
     @keyframes spin { to{transform:rotate(360deg)} }
 
     /* CENTER */
-    .panel-preview { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px 24px; border-right: 1px solid var(--border); gap: 10px; background: radial-gradient(ellipse at 50% 0%, rgba(79,70,229,0.05) 0%, transparent 70%); overflow: hidden; height: calc(100vh - 60px); }
+    .panel-preview { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 24px; border-right: 1px solid var(--border); gap: 10px; background: radial-gradient(ellipse at 50% 0%, rgba(79,70,229,0.05) 0%, transparent 70%); overflow: hidden; height: calc(100vh - 60px); }
     .preview-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--txt2); align-self: flex-start; border-bottom: 1px solid var(--border); padding-bottom: 10px; width: 100%; }
-    .iphone-wrap { position: relative; display: inline-block; filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5)) drop-shadow(0 6px 16px rgba(0,0,0,0.25)); flex-shrink: 0; }
-    .iphone-btn-power { position: absolute; right: -3.5px; top: 148px; width: 3.5px; height: 68px; background: linear-gradient(90deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 0 2.5px 2.5px 0; }
-    .iphone-btn-mute { position: absolute; left: -3.5px; top: 92px; width: 3.5px; height: 28px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
-    .iphone-btn-vol-up { position: absolute; left: -3.5px; top: 136px; width: 3.5px; height: 52px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
-    .iphone-btn-vol-down { position: absolute; left: -3.5px; top: 200px; width: 3.5px; height: 52px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
-    .phone-shell { width: 300px; background: linear-gradient(135deg, #1c1c21 0%, #15151a 20%, #1e1e24 40%, #111116 55%, #1c1c22 70%, #15151a 85%, #1c1c21 100%); border-radius: 52px; padding: 10px; position: relative; box-sizing: border-box; }
-    .phone-inner-ring { background: #111116; border-radius: 44px; padding: 2px; overflow: hidden; }
-    .phone-inner { background: #000; border-radius: 42px; overflow: hidden; position: relative; }
-    .phone-status { height: 54px; background: white; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 22px 8px; position: relative; z-index: 10; }
-    .phone-status-time { font-size: 15px; font-weight: 600; font-family: -apple-system, 'SF Pro Display', sans-serif; color: #000; letter-spacing: -0.4px; }
-    .phone-status-icons { display: flex; align-items: center; gap: 7px; }
+    .iphone-wrap { position: relative; display: inline-block; filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5)) drop-shadow(0 6px 16px rgba(0,0,0,0.25)); flex-shrink: 0; transform-origin: top center; }
+    .iphone-btn-power { position: absolute; right: -4px; top: 178px; width: 4px; height: 82px; background: linear-gradient(90deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 0 2.5px 2.5px 0; }
+    .iphone-btn-mute { position: absolute; left: -4px; top: 112px; width: 4px; height: 34px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
+    .iphone-btn-vol-up { position: absolute; left: -4px; top: 163px; width: 4px; height: 62px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
+    .iphone-btn-vol-down { position: absolute; left: -4px; top: 240px; width: 4px; height: 62px; background: linear-gradient(270deg, #18181c 0%, #2e2e34 40%, #3a3a42 55%, #2e2e34 80%, #18181c 100%); border-radius: 2.5px 0 0 2.5px; }
+    .phone-shell { width: 360px; background: linear-gradient(135deg, #1c1c21 0%, #15151a 20%, #1e1e24 40%, #111116 55%, #1c1c22 70%, #15151a 85%, #1c1c21 100%); border-radius: 64px; padding: 12px; position: relative; box-sizing: border-box; }
+    .phone-inner-ring { background: #111116; border-radius: 54px; padding: 2px; overflow: visible; }
+    .phone-inner { background: #000; border-radius: 51px; overflow: hidden; position: relative; }
+    .phone-status { height: 65px; background: white; display: flex; align-items: flex-start; justify-content: space-between; padding: 20px 24px 0; position: relative; z-index: 10; }
+    .phone-status-time { font-size: 15px; font-weight: 600; font-family: -apple-system, 'SF Pro Display', sans-serif; color: #000; letter-spacing: -0.3px; line-height: 1; }
+    .phone-status-icons { display: flex; align-items: center; gap: 5px; }
     .phone-status-icons svg { display: block; }
-    .dynamic-island { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 118px; height: 34px; background: #000; border-radius: 20px; z-index: 20; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
-    .phone-screen { background: #f8fafc; height: 583px; max-height: 583px; overflow: hidden; position: relative; }
-    .phone-home-bar { height: 34px; background: white; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
-    .phone-home-pill { width: 130px; height: 5px; background: #000; border-radius: 10px; opacity: 0.18; }
+    .dynamic-island { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; height: 34px; background: #000; border-radius: 20px; z-index: 20; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); pointer-events: none; }
+    .phone-screen { background: #f8fafc; height: 700px; max-height: 700px; overflow-y: auto; overflow-x: hidden; position: relative; }
+    .phone-home-bar { height: 42px; background: white; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
+    .phone-home-pill { width: 156px; height: 6px; background: #000; border-radius: 10px; opacity: 0.18; }
 
     /* SCREEN COMPONENTS */
     .sc-screen { display: flex; flex-direction: column; height: auto; min-height: 100%; position: relative; background: #f8fafc; overflow: hidden; }
@@ -134,7 +134,7 @@
     .sc-metric-change { font-size: 11px; font-family: var(--sans); }
     .sc-metric-change.up { color: #16a34a; }
     .sc-metric-change.down { color: #dc2626; }
-    .preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 580px; gap: 12px; opacity: 0.3; }
+    .preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 700px; gap: 12px; opacity: 0.3; }
     .preview-empty p { font-family: var(--mono); font-size: 11px; color: var(--txt2); text-align: center; }
 
     /* RIGHT */
@@ -144,7 +144,7 @@
     .progress-bar-outer { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
     .progress-bar-inner { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
     .signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .signal { background: var(--surface2); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .signal { background: var(--surface2); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
     .signal-name { font-family: var(--mono); font-size: 9px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.08em; }
     .signal-val { font-family: var(--mono); font-size: 13px; font-weight: 700; }
     .signal-weight { font-family: var(--mono); font-size: 9px; color: var(--txt2); }
@@ -194,7 +194,84 @@
     .missing-name { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--yellow); min-width: 90px; flex-shrink: 0; }
     .missing-reason { font-size: 11px; color: var(--txt3); line-height: 1.4; }
 
-    /* ── KB BLOCK ── */
+    /* ── KB FLOATING CARDS ── */
+    #kb-cards-layer { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+    .kb-float-card {
+      position: absolute;
+      width: 220px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+      pointer-events: all;
+      cursor: grab;
+      user-select: none;
+      transition: box-shadow 0.15s, opacity 0.2s, transform 0.2s;
+      overflow: hidden;
+    }
+    .kb-float-card:active { cursor: grabbing; box-shadow: 0 16px 48px rgba(0,0,0,0.5); }
+    .kb-float-card.dragging { opacity: 0.92; transform: scale(1.02); z-index: 100; }
+    .kb-float-card.closing { opacity: 0; transform: scale(0.88) translateY(-8px); pointer-events: none; }
+    .kb-float-handle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px 6px;
+      cursor: grab;
+      border-bottom: 1px solid var(--border);
+    }
+    .kb-float-handle:active { cursor: grabbing; }
+    .kb-float-handle-bar {
+      width: 28px; height: 3px; border-radius: 2px;
+      background: var(--border2); margin: 0 auto;
+      position: absolute; left: 50%; transform: translateX(-50%); top: 6px;
+    }
+    .kb-float-type { display: flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .kb-float-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .kb-float-close {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(239,68,68,0.12); border: none;
+      color: #f87171; font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .kb-float-close:hover { background: rgba(239,68,68,0.25); }
+    .kb-float-body { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+    .kb-float-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .kb-float-text { font-size: 11px; color: var(--txt3); line-height: 1.55; }
+    .kb-float-author { font-size: 9px; color: var(--txt2); font-style: italic; }
+    .kb-float-score { font-family: var(--mono); font-size: 9px; color: var(--txt2); margin-left: auto; }
+    /* Change cards (KB cambios) */
+    .kb-float-card.change-card { width: 200px; }
+    .kb-float-change-type { font-family: var(--mono); font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; }
+    .kb-float-comp { font-family: var(--mono); font-size: 10px; color: var(--txt2); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 3px; }
+    .kb-float-arrow { font-size: 10px; color: var(--txt2); }
+    /* colores por categoría */
+    .kb-float-card.restriccion  { border-color: rgba(239,68,68,0.3); }
+    .kb-float-card.restriccion  .kb-float-handle { background: rgba(239,68,68,0.06); }
+    .kb-float-card.restriccion  .kb-float-dot { background: #ef4444; box-shadow: 0 0 5px rgba(239,68,68,0.5); }
+    .kb-float-card.restriccion  .kb-float-type { color: #ef4444; }
+    .kb-float-card.recomendacion { border-color: rgba(99,102,241,0.3); }
+    .kb-float-card.recomendacion .kb-float-handle { background: rgba(99,102,241,0.06); }
+    .kb-float-card.recomendacion .kb-float-dot { background: #6366f1; box-shadow: 0 0 5px rgba(99,102,241,0.5); }
+    .kb-float-card.recomendacion .kb-float-type { color: #818cf8; }
+    .kb-float-card.normativa    { border-color: rgba(234,179,8,0.3); }
+    .kb-float-card.normativa    .kb-float-handle { background: rgba(234,179,8,0.06); }
+    .kb-float-card.normativa    .kb-float-dot { background: #eab308; box-shadow: 0 0 5px rgba(234,179,8,0.5); }
+    .kb-float-card.normativa    .kb-float-type { color: #fbbf24; }
+    .kb-float-card.ds-pattern   { border-color: rgba(34,197,94,0.3); }
+    .kb-float-card.ds-pattern   .kb-float-handle { background: rgba(34,197,94,0.06); }
+    .kb-float-card.ds-pattern   .kb-float-dot { background: #22c55e; box-shadow: 0 0 5px rgba(34,197,94,0.5); }
+    .kb-float-card.ds-pattern   .kb-float-type { color: #22c55e; }
+    /* cambios */
+    .kb-float-card.change-reemplazado,
+    .kb-float-card.change-eliminado   { border-color: rgba(239,68,68,0.25); }
+    .kb-float-card.change-reemplazado .kb-float-handle,
+    .kb-float-card.change-eliminado   .kb-float-handle { background: rgba(239,68,68,0.06); }
+    .kb-float-card.change-añadido     { border-color: rgba(34,197,94,0.25); }
+    .kb-float-card.change-añadido     .kb-float-handle { background: rgba(34,197,94,0.06); }
+    .kb-float-card.change-patrón-aplicado { border-color: rgba(99,102,241,0.25); }
+    .kb-float-card.change-patrón-aplicado .kb-float-handle { background: rgba(99,102,241,0.06); }
+    /* bloque vacío en panel analysis */
     .kb-block { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
     .kb-block-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
     .kb-block-header.active { background: rgba(99,102,241,0.1); border-bottom: 1px solid rgba(99,102,241,0.2); color: #6366f1; }
@@ -202,6 +279,26 @@
     .kb-hdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     .kb-block-header.active .kb-hdot { background: #6366f1; box-shadow: 0 0 6px rgba(99,102,241,0.6); }
     .kb-block-header.inactive .kb-hdot { background: var(--txt2); }
+    /* ── KB CHANGES ── */
+    .kb-changes-block { border-radius: 8px; overflow: hidden; border: 1px solid rgba(99,102,241,0.25); }
+    .kb-changes-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(99,102,241,0.08); border-bottom: 1px solid rgba(99,102,241,0.15); font-family: var(--mono); font-size: 11px; font-weight: 700; color: #818cf8; }
+    .kb-changes-list { display: flex; flex-direction: column; }
+    .kb-change-item { padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; border-left: 3px solid transparent; }
+    .kb-change-item:last-child { border-bottom: none; }
+    .kb-change-item.reemplazado { border-left-color: #ef4444; background: rgba(239,68,68,0.03); }
+    .kb-change-item.eliminado   { border-left-color: #ef4444; background: rgba(239,68,68,0.03); }
+    .kb-change-item.añadido     { border-left-color: #22c55e; background: rgba(34,197,94,0.03); }
+    .kb-change-item.patrón-aplicado { border-left-color: #6366f1; background: rgba(99,102,241,0.03); }
+    .kb-change-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .kb-change-type { font-family: var(--mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 3px; }
+    .kb-change-item.reemplazado .kb-change-type,
+    .kb-change-item.eliminado   .kb-change-type { background: rgba(239,68,68,0.12); color: #ef4444; }
+    .kb-change-item.añadido .kb-change-type     { background: rgba(34,197,94,0.12);  color: #22c55e; }
+    .kb-change-item.patrón-aplicado .kb-change-type { background: rgba(99,102,241,0.12); color: #818cf8; }
+    .kb-change-comp { font-family: var(--mono); font-size: 10px; color: var(--txt2); background: rgba(255,255,255,0.05); padding: 2px 7px; border-radius: 3px; }
+    .kb-change-arrow { font-size: 10px; color: var(--txt2); }
+    .kb-change-reason { font-size: 11px; color: var(--txt2); line-height: 1.6; }
+    .kb-change-meta { display: flex; align-items: center; gap: 6px; }
     .kb-rules-list { display: flex; flex-direction: column; max-height: 200px; overflow-y: auto; }
     .kb-rules-list::-webkit-scrollbar { width: 3px; }
     .kb-rules-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
@@ -328,6 +425,8 @@
     <!-- CENTER -->
     <div class="panel-preview">
       <div class="preview-label" style="margin-bottom:8px">// screen preview</div>
+      <div style="position:relative">
+      <div id="kb-cards-layer"></div>
       <div class="iphone-wrap">
         <div class="iphone-btn-mute"></div>
         <div class="iphone-btn-vol-up"></div>
@@ -336,9 +435,9 @@
         <div class="phone-shell">
           <div class="phone-inner-ring">
             <div class="phone-inner">
+              <div class="dynamic-island"></div>
               <div class="phone-status">
                 <span class="phone-status-time">9:41</span>
-                <div class="dynamic-island"></div>
                 <div class="phone-status-icons">
                   <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="5" width="3" height="6" rx="0.8" fill="black"/><rect x="4.5" y="3.5" width="3" height="7.5" rx="0.8" fill="black"/><rect x="9" y="1.5" width="3" height="9.5" rx="0.8" fill="black"/><rect x="13.5" y="0" width="3" height="11" rx="0.8" fill="black" opacity="0.25"/></svg>
                   <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M7.5 8.2a1.3 1.3 0 100 2.6 1.3 1.3 0 000-2.6z" fill="black"/><path d="M4 5.8C5 4.8 6.2 4.2 7.5 4.2s2.5.6 3.5 1.6" stroke="black" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M1 2.8C3 .8 5.1 0 7.5 0s4.5.8 6.5 2.8" stroke="black" stroke-width="1.3" stroke-linecap="round" fill="none" opacity="0.3"/></svg>
@@ -356,6 +455,7 @@
           </div>
         </div>
       </div>
+      </div><!-- /relative wrapper -->
       <div id="patternBadge" style="display:none">
         <div style="font-family:var(--mono);font-size:11px;color:var(--txt2);text-align:center;margin-top:4px" id="patternBadgeText"></div>
       </div>
@@ -453,7 +553,20 @@
   function renderScreen(data) {
     document.getElementById('figmaBtn').disabled = false;
     var screen = document.getElementById('phoneScreen');
-    var components = data.components;
+
+    // ── ORDEN GARANTIZADO ──────────────────────────────────────────────────
+    // navigation-header SIEMPRE primero, tab-bar/buttons/modal SIEMPRE al final
+    var FORCE_TOP    = ['navigation-header'];
+    var FORCE_BOTTOM = ['tab-bar', 'button-primary', 'button-secondary', 'modal-bottom-sheet'];
+    var compTop    = data.components.filter(function(c) { return FORCE_TOP.indexOf(c.component) !== -1; });
+    var compBottom = data.components.filter(function(c) { return FORCE_BOTTOM.indexOf(c.component) !== -1; });
+    var compMiddle = data.components.filter(function(c) {
+      return FORCE_TOP.indexOf(c.component) === -1 && FORCE_BOTTOM.indexOf(c.component) === -1;
+    });
+    var sortByOrder = function(a, b) { return a.order - b.order; };
+    var components = compTop.sort(sortByOrder).concat(compMiddle.sort(sortByOrder), compBottom.sort(sortByOrder));
+    // ──────────────────────────────────────────────────────────────────────
+
     var intent = data.intent || {};
     var domain = (intent.domain || 'pantalla').charAt(0).toUpperCase() + (intent.domain || 'pantalla').slice(1);
     var hasFilters = intent.constraints && intent.constraints.has_filters;
@@ -503,49 +616,86 @@
   }
 
   function renderComponent(comp, ctx) {
-    var domain = ctx.domain, hasFilters = ctx.hasFilters, isDestructive = ctx.isDestructive, data = ctx.data;
+    var domain = ctx.domain, data = ctx.data;
+    var p = comp.props || {};
+    var v = comp.variant || 'default';
+    function t(prop, fallback) { return (p[prop] && String(p[prop]).trim()) ? p[prop] : fallback; }
+
     switch(comp.component) {
+
       case 'navigation-header':
-        return '<div class="sc-header"><div class="sc-header-back">' + (comp.variant === 'with-back' ? '<svg viewBox="0 0 20 20" fill="none" stroke="#0f172a" stroke-width="2"><path d="M12 4L6 10L12 16"/></svg>' : '<div style="width:20px"></div>') + '</div><div class="sc-header-title">' + (comp.props && comp.props.title ? comp.props.title : domain) + '</div><div class="sc-header-action"><svg width="20" height="20" viewBox="0 0 20 20" fill="#0f172a"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg></div></div>';
+        var showBack = (v === 'back' || v === 'close');
+        var backIcon = v === 'close'
+          ? '<svg viewBox="0 0 20 20" fill="none" stroke="#0f172a" stroke-width="2"><path d="M4 4l12 12M16 4L4 16"/></svg>'
+          : '<svg viewBox="0 0 20 20" fill="none" stroke="#0f172a" stroke-width="2"><path d="M12 4L6 10L12 16"/></svg>';
+        return '<div class="sc-header"><div class="sc-header-back">' + (showBack ? backIcon : '<div style="width:20px"></div>') + '</div>'
+          + '<div style="display:flex;flex-direction:column;align-items:center"><div class="sc-header-title">' + t('title', domain) + '</div>'
+          + (p.subtitle ? '<div style="font-size:11px;color:#64748b;font-family:var(--sans);margin-top:1px">' + p.subtitle + '</div>' : '')
+          + '</div><div class="sc-header-action"><svg width="20" height="20" viewBox="0 0 20 20" fill="#0f172a"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg></div></div>';
+
       case 'filter-bar':
-        return '<div class="sc-filter-bar"><div class="sc-chip sc-chip-active">Todos</div><div class="sc-chip sc-chip-default">Categoría</div><div class="sc-chip sc-chip-default">Tipo</div>' + (hasFilters ? '<div class="sc-chip sc-chip-default">Más</div>' : '') + '</div>';
+        var filters = Array.isArray(p.filters) ? p.filters : ['Todos', 'Categoría', 'Tipo'];
+        var fHtml = '<div class="sc-filter-bar">';
+        filters.forEach(function(f, fi) { fHtml += '<div class="sc-chip ' + (fi===0?'sc-chip-active':'sc-chip-default') + '">' + f + '</div>'; });
+        return fHtml + '</div>';
+
       case 'card-item':
         if (data.pattern === 'dashboard') {
           var idx = comp.quantity_index || 1;
-          var dashItems = [{ label:'Total balance',val:'€12.480',change:'↑ +3.2%',up:true},{label:'Rendimiento',val:'8.4%',change:'↑ +0.6%',up:true},{label:'Posiciones',val:'7',change:'↓ -1',up:false},{label:'Disponible',val:'€2.150',change:'—',up:null}];
-          var di = dashItems[(idx-1)%dashItems.length];
-          return '<div class="sc-metric-card"><div class="sc-metric-label">'+di.label+'</div><div class="sc-metric-value">'+di.val+'</div><div class="sc-metric-change '+(di.up===true?'up':di.up===false?'down':'')+'">'+di.change+'</div></div>';
+          var dd = [{label:'Total balance',val:'€12.480',change:'↑ +3.2%',up:true},{label:'Rendimiento',val:'8.4%',change:'↑ +0.6%',up:true},{label:'Posiciones',val:'7',change:'↓ -1',up:false},{label:'Disponible',val:'€2.150',change:'—',up:null}];
+          var di = dd[(idx-1)%dd.length];
+          return '<div class="sc-metric-card"><div class="sc-metric-label">'+t('title',di.label)+'</div><div class="sc-metric-value">'+t('value',di.val)+'</div><div class="sc-metric-change '+(di.up===true?'up':di.up===false?'down':'')+'">'+t('metadata',di.change)+'</div></div>';
         }
-        var sampleVals=['+3.2%','€1.240','-0.8%','€580','+5.1%','€3.200'];
-        var sampleColors=['#16a34a','#0f172a','#dc2626','#0f172a','#16a34a','#0f172a'];
-        var ci=(comp.quantity_index?comp.quantity_index-1:0);
-        return '<div class="sc-card-item"><div class="sc-card-left"><div class="sc-card-title">'+domain+' · item '+(ci+1)+'</div><div class="sc-card-subtitle">Actualizado hoy</div></div><div class="sc-card-right"><div class="sc-card-value" style="color:'+sampleColors[ci%sampleColors.length]+'">'+sampleVals[ci%sampleVals.length]+'</div><div class="sc-card-chevron">›</div></div></div>';
+        var ci = (comp.quantity_index ? comp.quantity_index-1 : 0);
+        var fv=['+3.2%','€1.240','-0.8%','€580','+5.1%','€3.200'];
+        var fc=['#16a34a','#0f172a','#dc2626','#0f172a','#16a34a','#0f172a'];
+        var cv=t('value',fv[ci%fv.length]);
+        var cc=(cv.includes('+')||parseFloat(cv)>0)?'#16a34a':(cv.includes('-')?'#dc2626':fc[ci%fc.length]);
+        return '<div class="sc-card-item"><div class="sc-card-left"><div class="sc-card-title">'+t('title',domain+' · '+(ci+1))+'</div><div class="sc-card-subtitle">'+t('subtitle','Actualizado hoy')+'</div></div><div class="sc-card-right">'+(p.badge_label?'<span style="background:#f0fdf4;color:#16a34a;font-size:10px;font-family:var(--sans);font-weight:500;padding:2px 8px;border-radius:8px">'+p.badge_label+'</span>':'')+'<div class="sc-card-value" style="color:'+cc+'">'+cv+'</div><div class="sc-card-chevron">›</div></div></div>';
+
       case 'input-text':
-        var fields=data.pattern==='formulario-simple'?[{label:'Email',placeholder:'tu@email.com'},{label:'Contraseña',placeholder:'••••••••'}]:[{label:'Campo',placeholder:'Introduce el valor...'}];
-        var formHtml='<div class="sc-form">';
-        for(var k=0;k<fields.length;k++){formHtml+='<div class="sc-input-wrap"><div class="sc-input-label">'+fields[k].label+'</div><div class="sc-input-field">'+fields[k].placeholder+'</div></div>';}
-        return formHtml+'</div>';
+        var isErr = v==='error', isPass = v==='password';
+        return '<div class="sc-form"><div class="sc-input-wrap">'
+          +'<div class="sc-input-label" style="'+(isErr?'color:#dc2626':'')+'">'+t('label','Campo')+'</div>'
+          +'<div class="sc-input-field" style="'+(isErr?'border-color:#dc2626;background:#fff5f5':'')+'">'+( isPass?'••••••••':t('placeholder','Introduce el valor...'))+'</div>'
+          +(p.helper_text?'<div style="font-size:10px;font-family:var(--sans);color:'+(isErr?'#dc2626':'#94a3b8')+';margin-top:3px">'+p.helper_text+'</div>':'')
+          +'</div></div>';
+
       case 'empty-state':
-        return '<div class="sc-empty" style="flex:1"><div class="sc-empty-icon">🔍</div><div class="sc-empty-title">'+(comp.props&&comp.props.title?comp.props.title:'Sin resultados')+'</div><div class="sc-empty-desc">Prueba ajustando los filtros para ver más resultados</div><div class="sc-empty-action">'+(comp.props&&comp.props.action_label?comp.props.action_label:'Limpiar filtros')+'</div></div>';
+        var eIcon = v==='locked'?'🔒':v==='error'?'⚠️':v==='cta'?'👤':'🔍';
+        var eColor = v==='locked'?'#64748b':'#4f46e5';
+        return '<div class="sc-empty" style="flex:1"><div class="sc-empty-icon">'+eIcon+'</div><div class="sc-empty-title">'+t('title','Sin resultados')+'</div><div class="sc-empty-desc">'+t('description','Prueba ajustando los filtros para ver más resultados')+'</div><div class="sc-empty-action" style="color:'+eColor+'">'+t('action_label','Limpiar filtros')+'</div></div>';
+
       case 'button-primary':
-        return '<div class="sc-btn-area" style="padding-top:8px"><div class="sc-btn-primary">'+(comp.props&&comp.props.label?comp.props.label:'Continuar')+'</div></div>';
+        var bColor = v==='destructive'?'#dc2626':'#4f46e5';
+        var bOp = (v==='disabled'||comp.state==='disabled')?'0.45':'1';
+        return '<div class="sc-btn-area" style="padding-top:8px"><div class="sc-btn-primary" style="background:'+bColor+';opacity:'+bOp+'">'+t('label','Continuar')+'</div></div>';
+
       case 'button-secondary':
-        return '<div class="sc-btn-area" style="padding-top:0"><div class="sc-btn-secondary">'+(comp.props&&comp.props.label?comp.props.label:'Cancelar')+'</div></div>';
+        return '<div class="sc-btn-area" style="padding-top:0"><div class="sc-btn-secondary">'+t('label','Cancelar')+'</div></div>';
+
       case 'modal-bottom-sheet': return '';
+
       case 'tab-bar':
-        var tabs=[{label:'Inicio',active:data.pattern==='onboarding'},{label:'Mercado',active:false},{label:'Cartera',active:['detalle','lista-con-filtros'].includes(data.pattern)},{label:'Perfil',active:data.pattern==='perfil-usuario'}];
-        var tabsHtml='<div style="display:flex;width:100%;background:white;border-top:1px solid #e2e8f0;height:56px">';
-        tabs.forEach(function(t){var c=t.active?'#4f46e5':'#94a3b8';tabsHtml+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><div style="width:18px;height:18px;border-radius:50%;background:'+c+';opacity:0.9"></div><div style="font-size:9px;font-family:var(--sans);color:'+c+';font-weight:'+(t.active?'600':'400')+'">'+t.label+'</div></div>';});
-        return tabsHtml+'</div>';
+        var tabItems = Array.isArray(p.tabs) ? p.tabs : ['Inicio','Mercado','Cartera','Perfil'];
+        var tHtml = '<div style="display:flex;width:100%;background:white;border-top:1px solid #e2e8f0;height:56px">';
+        tabItems.forEach(function(tab,ti){ var tc=ti===0?'#4f46e5':'#94a3b8'; tHtml+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><div style="width:18px;height:18px;border-radius:50%;background:'+tc+';opacity:0.9"></div><div style="font-size:9px;font-family:var(--sans);color:'+tc+';font-weight:'+(ti===0?'600':'400')+'">'+tab+'</div></div>'; });
+        return tHtml+'</div>';
+
       case 'list-header':
-        var lhIdx=comp.quantity_index||1;var lhLabels=['Mis posiciones','Actividad reciente','Configuración','Notificaciones'];var lhLabel=lhLabels[(lhIdx-1)%lhLabels.length];
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9"><div style="font-family:var(--sans);font-size:12px;font-weight:700;color:#0f172a">'+lhLabel+'</div><div style="font-family:var(--sans);font-size:11px;color:#4f46e5">Ver todo</div></div>';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9"><div style="font-family:var(--sans);font-size:12px;font-weight:700;color:#0f172a">'+t('title','Sección')+'</div><div style="font-family:var(--sans);font-size:11px;color:#4f46e5">'+t('action_label','Ver todo')+'</div></div>';
+
       case 'badge':
-        var badgeIdx=comp.quantity_index||1;var badgeVals=['+2.4%','-1.2%','Activo','+5.7%','Pendiente'];var badgeColors=[{bg:'#dcfce7',txt:'#15803d'},{bg:'#fee2e2',txt:'#b91c1c'},{bg:'#dbeafe',txt:'#1d4ed8'},{bg:'#dcfce7',txt:'#15803d'},{bg:'#fef9c3',txt:'#a16207'}];var bi=(badgeIdx-1)%badgeVals.length;
-        return '<div style="padding:8px 16px;background:white;border-bottom:1px solid #f1f5f9;display:flex;gap:8px;flex-wrap:wrap"><span style="background:'+badgeColors[bi].bg+';color:'+badgeColors[bi].txt+';font-size:11px;font-family:var(--sans);font-weight:500;padding:3px 10px;border-radius:12px">'+badgeVals[bi]+'</span></div>';
+        var bl=t('label','+0.0%'); var isPos=bl.includes('+')||(!bl.includes('-')&&parseFloat(bl)>0); var isNeg=bl.includes('-')||parseFloat(bl)<0;
+        var bbg=v==='positive'||isPos?'#dcfce7':v==='negative'||isNeg?'#fee2e2':v==='warning'?'#fef9c3':'#dbeafe';
+        var btxt=v==='positive'||isPos?'#15803d':v==='negative'||isNeg?'#b91c1c':v==='warning'?'#a16207':'#1d4ed8';
+        return '<div style="padding:8px 16px;background:white;border-bottom:1px solid #f1f5f9;display:flex;gap:8px;flex-wrap:wrap"><span style="background:'+bbg+';color:'+btxt+';font-size:11px;font-family:var(--sans);font-weight:500;padding:3px 10px;border-radius:12px">'+bl+'</span></div>';
+
       case 'notification-banner':
-        var nbIdx=comp.quantity_index||1;var nbData=[{title:'Operación completada',sub:'Tu orden de IBEX ha sido ejecutada',color:'#dbeafe',dot:'#3b82f6'},{title:'Alerta de precio',sub:'AAPL ha superado los $185',color:'#dcfce7',dot:'#22c55e'},{title:'Sesión a punto de expirar',sub:'Tu sesión expirará en 5 minutos',color:'#fef9c3',dot:'#eab308'},{title:'Transferencia recibida',sub:'+€2.500 en tu cuenta corriente',color:'#dcfce7',dot:'#22c55e'},{title:'Mantenimiento programado',sub:'Hoy a las 23:00 — 02:00',color:'#f1f5f9',dot:'#94a3b8'}];var nb=nbData[(nbIdx-1)%nbData.length];
-        return '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:'+nb.color+';border-bottom:1px solid rgba(0,0,0,0.06)"><div style="width:8px;height:8px;border-radius:50%;background:'+nb.dot+';flex-shrink:0"></div><div style="flex:1"><div style="font-family:var(--sans);font-size:12px;font-weight:500;color:#0f172a">'+nb.title+'</div><div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">'+nb.sub+'</div></div></div>';
+        var nbColors={'info':{bg:'#dbeafe',dot:'#3b82f6'},'success':{bg:'#dcfce7',dot:'#22c55e'},'warning':{bg:'#fef9c3',dot:'#eab308'},'error':{bg:'#fee2e2',dot:'#ef4444'}};
+        var nbs=nbColors[v]||nbColors.info;
+        return '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:'+nbs.bg+';border-bottom:1px solid rgba(0,0,0,0.06)"><div style="width:8px;height:8px;border-radius:50%;background:'+nbs.dot+';flex-shrink:0"></div><div style="flex:1"><div style="font-family:var(--sans);font-size:12px;font-weight:500;color:#0f172a">'+t('title','Notificación')+'</div>'+(p.message?'<div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">'+p.message+'</div>':'')+'</div>'+(p.action_label?'<div style="font-family:var(--sans);font-size:11px;font-weight:600;color:#1d4ed8;white-space:nowrap">'+p.action_label+'</div>':'')+'</div>';
+
       default:
         return '<div style="padding:12px 16px;font-family:var(--sans);font-size:12px;color:#64748b;background:white;border-bottom:1px solid #f1f5f9">'+comp.component+'</div>';
     }
@@ -571,34 +721,145 @@
       return '<div class="signal"><div class="signal-name">'+s.label+'</div><div class="progress-bar-outer"><div class="progress-bar-inner" style="width:'+p+'%;background:'+c+'"></div></div><div style="display:flex;justify-content:space-between;align-items:center"><div class="signal-val" style="color:'+c+'">'+p+'%</div><div class="signal-weight">'+s.weight+'</div></div></div>';
     }).join('');
 
-    // ── KB BLOCK ──────────────────────────────────────────────────────────────
-    var kbRules = data.kb_rules || [];
-    var kbHTML = '';
-    if (kbRules.length > 0) {
-      var rulesHTML = kbRules.map(function(rule) {
-        var cat   = rule.categoria || 'recomendacion';
-        var pri   = rule.prioridad || 'media';
-        var score = rule.score ? Math.round(rule.score * 100) + '%' : '';
-        var autor = rule.autor || '';
-        return '<div class="kb-rule-item">' +
-          '<div class="kb-rule-meta">' +
+    // ── KB FLOATING CARDS ─────────────────────────────────────────────────────
+    var kbRules   = data.kb_rules   || [];
+    var kbChanges = data.kb_changes || [];
+    var kbHTML = '';  // ya no usamos el panel para KB
+
+    // Limpiar cards anteriores
+    var layer = document.getElementById('kb-cards-layer');
+    if (layer) layer.innerHTML = '';
+
+    // Posiciones en abanico alrededor del móvil
+    // El wrapper relativo tiene el mismo tamaño que el iphone-wrap + padding
+    var positions = [
+      { right: '-240px', top:  '60px'  },
+      { right: '-240px', top: '180px'  },
+      { right: '-240px', top: '300px'  },
+      { left:  '-240px', top:  '60px'  },
+      { left:  '-240px', top: '180px'  },
+      { left:  '-240px', top: '300px'  },
+      { right: '-240px', top: '420px'  },
+      { left:  '-240px', top: '420px'  },
+    ];
+    var cardIndex = 0;
+
+    function makeDraggable(card) {
+      var isDragging = false, startX, startY, startLeft, startTop;
+      card.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('kb-float-close')) return;
+        isDragging = true;
+        card.classList.add('dragging');
+        startX = e.clientX; startY = e.clientY;
+        var rect = card.getBoundingClientRect();
+        var layerRect = layer.getBoundingClientRect();
+        startLeft = rect.left - layerRect.left;
+        startTop  = rect.top  - layerRect.top;
+        card.style.left = startLeft + 'px'; card.style.top = startTop + 'px';
+        card.style.right = 'auto'; card.style.bottom = 'auto';
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        var dx = e.clientX - startX, dy = e.clientY - startY;
+        card.style.left = (startLeft + dx) + 'px';
+        card.style.top  = (startTop  + dy) + 'px';
+      });
+      document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        isDragging = false; card.classList.remove('dragging');
+      });
+    }
+
+    function closeCard(card) {
+      card.classList.add('closing');
+      setTimeout(function() { card.remove(); }, 220);
+    }
+
+    function spawnCard(html, catClass) {
+      if (!layer) return;
+      var pos = positions[cardIndex % positions.length];
+      cardIndex++;
+      var card = document.createElement('div');
+      card.className = 'kb-float-card ' + catClass;
+      // offset stack leve para que no queden exactamente superpuestas
+      var stackOffset = Math.floor(cardIndex / positions.length) * 18;
+      Object.entries(pos).forEach(function(e) { card.style[e[0]] = e[1]; });
+      card.innerHTML = html;
+      layer.appendChild(card);
+      makeDraggable(card);
+      card.querySelector('.kb-float-close').addEventListener('click', function() { closeCard(card); });
+      // Animación de entrada
+      card.style.opacity = '0'; card.style.transform = 'scale(0.88) translateY(6px)';
+      requestAnimationFrame(function() {
+        card.style.transition = 'opacity 0.2s, transform 0.2s';
+        card.style.opacity = '1'; card.style.transform = '';
+      });
+    }
+
+    // ── KB: fusionar reglas + cambios en una sola card por regla ────────────
+    // Estrategia:
+    //   1. Cada regla KB → 1 card
+    //   2. Si esa regla provocó un cambio (mismo reason) → se fusiona en la misma card
+    //   3. Los cambios sin regla asociada → card propia
+    var usedChangeIndexes = [];
+
+    kbRules.forEach(function(rule, i) {
+      var cat   = rule.categoria || 'recomendacion';
+      var pri   = rule.prioridad || 'media';
+      var score = rule.score ? Math.round(rule.score * 100) + '%' : '';
+      var autor = rule.autor || '';
+
+      // Buscar cambio asociado a esta regla (mismo rule_id o mismo reason)
+      var matchIdx = -1;
+      kbChanges.forEach(function(ch, ci) {
+        if (usedChangeIndexes.indexOf(ci) !== -1) return;
+        if ((rule.id && ch.rule_id && rule.id === ch.rule_id) ||
+            (ch.reason && rule.content && ch.reason === rule.content)) {
+          if (matchIdx === -1) matchIdx = ci;
+        }
+      });
+
+      var changeBlock = '';
+      if (matchIdx !== -1) {
+        usedChangeIndexes.push(matchIdx);
+        var ch = kbChanges[matchIdx];
+        var typeLabel = ch.type === 'reemplazado' ? '⇄ reemplazado'
+                      : ch.type === 'eliminado'   ? '✕ eliminado'
+                      : ch.type === 'añadido'     ? '+ añadido'
+                      : '◈ patrón';
+        var chColor = (ch.type==='reemplazado'||ch.type==='eliminado') ? '#ef4444'
+                    : ch.type==='añadido' ? '#22c55e' : '#818cf8';
+        var compHtml = ch.type === 'reemplazado'
+          ? '<span class="kb-float-comp">'+ch.from+'</span><span class="kb-float-arrow"> → </span><span class="kb-float-comp">'+ch.to+'</span>'
+          : (ch.component ? '<span class="kb-float-comp">'+ch.component+'</span>' : '');
+        changeBlock =
+          '<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;' +
+            'background:rgba(0,0,0,0.2);border-radius:6px;margin-bottom:4px;flex-wrap:wrap">' +
+            '<span style="font-family:var(--mono);font-size:9px;font-weight:700;' +
+              'text-transform:uppercase;color:'+chColor+'">'+typeLabel+'</span>' +
+            (compHtml ? compHtml : '') +
+          '</div>';
+      }
+
+      var html =
+        '<div class="kb-float-handle">' +
+          '<div class="kb-float-handle-bar"></div>' +
+          '<div class="kb-float-type"><div class="kb-float-dot"></div>' + cat + '</div>' +
+          '<button class="kb-float-close">✕</button>' +
+        '</div>' +
+        '<div class="kb-float-body">' +
+          changeBlock +
+          '<div class="kb-float-tags">' +
             '<span class="kb-cat-tag ' + cat + '">' + cat + '</span>' +
             '<span class="kb-pri-tag ' + pri + '">' + pri + '</span>' +
-            (score ? '<span class="kb-rule-score">' + score + ' relevancia</span>' : '') +
+            (score ? '<span class="kb-float-score">' + score + '</span>' : '') +
           '</div>' +
-          '<div class="kb-rule-text">' + rule.content + '</div>' +
-          (autor ? '<div class="kb-rule-author">— ' + autor + '</div>' : '') +
+          '<div class="kb-float-text">' + rule.content + '</div>' +
+          (autor ? '<div class="kb-float-author">— ' + autor + '</div>' : '') +
         '</div>';
-      }).join('');
-      kbHTML = '<div class="kb-block">' +
-        '<div class="kb-block-header active"><div class="kb-hdot"></div>// knowledge base activa · ' + kbRules.length + ' regla' + (kbRules.length > 1 ? 's' : '') + ' aplicada' + (kbRules.length > 1 ? 's' : '') + '</div>' +
-        '<div class="kb-rules-list">' + rulesHTML + '</div>' +
-      '</div>';
-    } else {
-      kbHTML = '<div class="kb-block">' +
-        '<div class="kb-block-header inactive"><div class="kb-hdot"></div>// sin contexto KB</div>' +
-      '</div>';
-    }
+      spawnCard(html, cat);
+    });
 
     var compsHTML = data.components.map(function(c, i) {
       return '<div class="comp-row" style="animation-delay:' + (i*50) + 'ms"><div class="comp-order">' + String(c.order).padStart(2,'0') + '</div><div class="comp-info"><div class="comp-name">' + c.component + '</div><div class="comp-variant">' + c.variant + '</div></div><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end"><div class="badge ' + (c.required?'required':'optional') + '">' + (c.required?'req':'opt') + '</div><div class="badge ' + (c.node_id==='pending'?'pending':'resolved') + '">' + (c.node_id==='pending'?'pending':c.node_id) + '</div></div></div>';
@@ -611,6 +872,49 @@
 
     var missing = data.missing_components || [];
     var missingHTML = missing.length > 0 ? '<div class="missing-block"><div class="missing-title">✗ no disponible en el DS · '+missing.length+'</div>' + missing.map(function(m){ return '<div class="missing-item"><div class="missing-name">'+m.name+'</div><div class="missing-reason">'+m.reason+'</div></div>'; }).join('') + '</div>' : '';
+
+    // ── Cambios huérfanos (sin regla KB asociada) → card propia ─────────────
+    var changesHTML = '';
+    kbChanges.forEach(function(ch, ci) {
+      if (usedChangeIndexes.indexOf(ci) !== -1) return; // ya fusionado
+      var typeLabel = ch.type === 'reemplazado' ? '⇄ reemplazado'
+                    : ch.type === 'eliminado'   ? '✕ eliminado'
+                    : ch.type === 'añadido'     ? '+ añadido'
+                    : '◈ patrón';
+      var chColor = (ch.type==='reemplazado'||ch.type==='eliminado') ? '#ef4444'
+                  : ch.type==='añadido' ? '#22c55e' : '#818cf8';
+      var compHtml = ch.type === 'reemplazado'
+        ? '<span class="kb-float-comp">'+ch.from+'</span><span class="kb-float-arrow"> → </span><span class="kb-float-comp">'+ch.to+'</span>'
+        : (ch.component ? '<span class="kb-float-comp">'+ch.component+'</span>' : '');
+      var html =
+        '<div class="kb-float-handle">' +
+          '<div class="kb-float-handle-bar"></div>' +
+          '<div class="kb-float-type" style="color:'+chColor+'">' +
+            '<div class="kb-float-dot" style="background:'+chColor+'"></div>' +
+            typeLabel +
+          '</div>' +
+          '<button class="kb-float-close">✕</button>' +
+        '</div>' +
+        '<div class="kb-float-body">' +
+          (compHtml ? '<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:4px">' + compHtml + '</div>' : '') +
+          '<div class="kb-float-text">' + ch.reason + '</div>' +
+          '<div class="kb-float-tags">' +
+            '<span class="kb-cat-tag '+(ch.rule_cat||'recomendacion')+'">'+(ch.rule_cat||'')+'</span>' +
+            '<span class="kb-pri-tag '+(ch.rule_pri||'media')+'">'+(ch.rule_pri||'')+'</span>' +
+          '</div>' +
+        '</div>';
+      spawnCard(html, 'change-card change-' + ch.type);
+    });
+    // Badge en panel: KB activa/inactiva (solo indicador)
+    if (kbRules.length > 0) {
+      kbHTML = '<div class="kb-block">' +
+        '<div class="kb-block-header active"><div class="kb-hdot"></div>⚡ KB activa · ' + kbRules.length + ' regla' + (kbRules.length !== 1 ? 's' : '') + (kbChanges.length > 0 ? ' · ' + kbChanges.length + ' cambio' + (kbChanges.length !== 1 ? 's' : '') : '') + '</div>' +
+      '</div>';
+    } else {
+      kbHTML = '<div class="kb-block">' +
+        '<div class="kb-block-header inactive"><div class="kb-hdot"></div>// sin contexto KB</div>' +
+      '</div>';
+    }
 
     var constraintsHTML = data.intent && data.intent.constraints ? Object.entries(data.intent.constraints).filter(function(e){ return e[0]!=='estimated_items'; }).map(function(e){ return '<div class="intent-row"><div class="intent-key">'+e[0]+'</div><div class="tag '+e[1]+'">'+e[1]+'</div></div>'; }).join('') : '';
 
@@ -649,6 +953,22 @@
     el.style.display='flex'; el.style.flexDirection='column'; el.style.gap='4px';
     el.innerHTML = '<span style="color:'+colors[type]+';font-size:11px">' + msg + '</span>' + (url?'<a href="'+url+'" target="_blank" style="color:#6366f1;font-size:10px;text-decoration:none">→ Abrir en Figma</a>':'');
   }
+
+  // ── Escala el móvil para que quepa siempre en el panel ──────────────────────
+  function fitPhone() {
+    var wrap  = document.querySelector('.iphone-wrap');
+    var panel = document.querySelector('.panel-preview');
+    if (!wrap || !panel) return;
+    var availH = panel.clientHeight - 48;
+    var wrapH  = wrap.scrollHeight;
+    var scale  = Math.min(1, availH / wrapH);
+    wrap.style.transform = 'scale(' + scale.toFixed(3) + ')';
+  }
+  fitPhone();
+  window.addEventListener('resize', fitPhone);
+  // Re-escalar tras cada generación
+  var _origRenderScreen = renderScreen;
+  renderScreen = function(data) { _origRenderScreen(data); setTimeout(fitPhone, 50); };
 
   function renderError(err) {
     document.getElementById('analysisPanel').innerHTML = '<div class="panel-title">// analysis</div><div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;margin-top:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#ef4444;margin-bottom:6px">✗ '+(err.error||'Error')+'</div><div style="font-size:13px;color:var(--txt3)">'+(err.message||'Error desconocido')+'</div></div>';

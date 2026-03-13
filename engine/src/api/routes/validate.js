@@ -1,109 +1,249 @@
-// api/routes/validate.js
+// api/routes/validate.js — Fase 4 (Studio)
 // POST /validate
-// Valida si un conjunto de componentes cumple las reglas del DS
+// Valida una pantalla existente: recibe brief + componentes del frame de Figma
+// Devuelve el mismo formato de confidence score que /generate para que el Studio
+// pueda mostrar el desglose y decidir si desbloquear la exportación.
 
-const express      = require('express');
-const router       = express.Router();
-const { loadContracts } = require('../../loaders/contractLoader');
-const { loadPatterns }  = require('../../loaders/patternLoader');
+const express            = require('express');
+const router             = express.Router();
+const { parseIntent }    = require('../../core/intentParser');
+const { calculateScore } = require('../../core/confidenceScore');
+const { loadContracts }  = require('../../loaders/contractLoader');
+const { loadPatterns }   = require('../../loaders/patternLoader');
 
-router.post('/', (req, res, next) => {
+// Reutilizamos el cliente KB del mismo módulo que generate
+let kb;
+try {
+  const { Pinecone } = require('@pinecone-database/pinecone');
+  const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+  const index = pc.index(process.env.PINECONE_INDEX || 'ds-knowledge-base');
+
+  kb = {
+    search: async function(query, opts = {}) {
+      const topK = opts.topK || 4;
+      const results = await index.searchRecords({
+        query: { inputs: { text: query }, topK },
+        fields: ['content', 'tipo', 'geografia', 'categoria', 'prioridad', 'autor', 'id'],
+      });
+      return (results.result?.hits || []).map(h => ({
+        id:         h._id,
+        score:      h._score,
+        content:    h.fields?.content || '',
+        tipo:       h.fields?.tipo || '',
+        geografia:  h.fields?.geografia || '',
+        categoria:  h.fields?.categoria || '',
+        prioridad:  h.fields?.prioridad || '',
+      }));
+    }
+  };
+} catch (e) {
+  kb = { search: async () => [] };
+}
+
+// ─── VALIDACIONES ESTRUCTURALES ───────────────────────────────────────────────
+// Reglas que se pueden comprobar sin LLM — multiplicidad, exclusividad, etc.
+
+function validateStructure(components) {
+  const errors   = [];
+  const warnings = [];
+  const names    = components.map(c => c.component);
+  const counts   = {};
+  names.forEach(n => { counts[n] = (counts[n] || 0) + 1; });
+
+  if ((counts['button-primary'] || 0) > 1) {
+    errors.push({ rule: 'max-1-button-primary', detail: `Hay ${counts['button-primary']} button-primary. Máximo 1 por pantalla.` });
+  }
+  if ((counts['navigation-header'] || 0) > 1) {
+    errors.push({ rule: 'max-1-navigation-header', detail: 'Solo puede haber 1 navigation-header.' });
+  }
+  if ((counts['filter-bar'] || 0) > 1) {
+    errors.push({ rule: 'max-1-filter-bar', detail: 'Solo puede haber 1 filter-bar.' });
+  }
+  if ((counts['tab-bar'] || 0) > 1) {
+    errors.push({ rule: 'max-1-tab-bar', detail: 'Solo puede haber 1 tab-bar.' });
+  }
+  if ((counts['empty-state'] || 0) > 0 && (counts['card-item'] || 0) > 0) {
+    errors.push({ rule: 'empty-state-exclusivity', detail: 'empty-state y card-item son mutuamente excluyentes.' });
+  }
+  if ((counts['modal-bottom-sheet'] || 0) > 1) {
+    warnings.push({ rule: 'max-1-modal', detail: 'No se recomienda más de 1 modal al mismo tiempo.' });
+  }
+
+  return { errors, warnings };
+}
+
+// ─── VALIDAR CONTRA KB ────────────────────────────────────────────────────────
+// Comprueba si la composición viola alguna regla de la KB
+
+function checkKBViolations(components, kbRules, intent) {
+  const violations = [];
+  const intentGeo  = (intent?.constraints?.geography || '').toLowerCase();
+
+  const GEO_MARKERS = [
+    { marker: 'solo en colombia',   geo: 'colombia' },
+    { marker: 'solo en méxico',     geo: 'mexico'   },
+    { marker: 'solo en mexico',     geo: 'mexico'   },
+    { marker: 'geography=colombia', geo: 'colombia' },
+  ];
+
+  const KB_COMPONENT_KEYWORDS = {
+    'fondos':      ['card-item', 'filter-bar'],
+    'perfil':      ['empty-state'],
+    'riesgo':      ['card-item', 'filter-bar', 'empty-state'],
+    'transferencia': ['input-text', 'button-primary'],
+    'confirmacion': ['modal-bottom-sheet', 'button-primary', 'button-secondary'],
+    'autenticacion': ['input-text', 'button-primary'],
+    'inicio sesion': ['input-text', 'button-primary'],
+    'kyc':          ['input-text', 'button-primary'],
+  };
+
+  for (const rule of kbRules) {
+    const ruleText = (rule.content || '').toLowerCase();
+    const cat      = rule.categoria || 'recomendacion';
+    if (cat !== 'restriccion') continue;
+
+    // Filtro geográfico
+    let geoRestricted = false;
+    for (const { marker, geo } of GEO_MARKERS) {
+      if (ruleText.includes(marker)) {
+        geoRestricted = true;
+        if (intentGeo !== geo) break; // regla no aplica
+        // sí aplica — comprobar componentes afectados
+        for (const [kw, comps] of Object.entries(KB_COMPONENT_KEYWORDS)) {
+          if (ruleText.includes(kw)) {
+            const violating = components.filter(c => comps.includes(c.component));
+            if (violating.length > 0) {
+              violations.push({
+                rule_id:    rule.id,
+                rule:       rule.content,
+                severity:   'error',
+                components: violating.map(c => c.component),
+              });
+            }
+          }
+        }
+        break;
+      }
+    }
+
+    if (!geoRestricted) {
+      for (const [kw, comps] of Object.entries(KB_COMPONENT_KEYWORDS)) {
+        if (ruleText.includes(kw)) {
+          const violating = components.filter(c => comps.includes(c.component));
+          if (violating.length > 0) {
+            violations.push({
+              rule_id:    rule.id,
+              rule:       rule.content,
+              severity:   'error',
+              components: violating.map(c => c.component),
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return violations;
+}
+
+// ─── SCORE DE VALIDACIÓN ──────────────────────────────────────────────────────
+// Calcula un confidence score basado en la composición real del frame
+
+function calculateValidationScore(components, intent, contracts, kbViolations, structErrors) {
+  // CONTRACT: % de componentes que existen en los contratos
+  const total     = components.length;
+  const inContract = components.filter(c => contracts[c.component]).length;
+  const contract  = total > 0 ? inContract / total : 0;
+
+  // RULES: penalizar errores estructurales y violaciones KB
+  const rulesPenalty = (structErrors.length * 0.15) + (kbViolations.length * 0.20);
+  const rules = Math.max(0, 1 - rulesPenalty);
+
+  // PRECEDENT: usar el del calculateScore normal si hay intent
+  let precedent = 0.5; // baseline si no hay ejemplos
   try {
-    const { components, pattern } = req.body;
+    const scoreResult = calculateScore({
+      pattern:   intent?.intent_type || 'unknown',
+      components,
+      intent,
+      contracts: Object.values(contracts),
+    });
+    precedent = scoreResult.precedent || 0.5;
+  } catch (e) { /* usar baseline */ }
 
+  // GLOBAL: promedio ponderado (sin intent — no lo podemos medir en validación)
+  const global = (contract * 0.35) + (rules * 0.40) + (precedent * 0.25);
+
+  return {
+    global:   parseFloat(global.toFixed(2)),
+    contract: parseFloat(contract.toFixed(2)),
+    rules:    parseFloat(rules.toFixed(2)),
+    precedent: parseFloat(precedent.toFixed(2)),
+    status:   global >= 0.8 ? 'approved' : global >= 0.6 ? 'review' : 'blocked',
+  };
+}
+
+// ─── ROUTE ────────────────────────────────────────────────────────────────────
+
+router.post('/', async function(req, res, next) {
+  try {
+    const { brief, components, frame_id } = req.body;
+
+    if (!brief || !brief.trim()) {
+      return res.status(400).json({ error: 'BadRequest', message: 'El campo brief es requerido' });
+    }
     if (!components || !Array.isArray(components) || components.length === 0) {
       return res.status(400).json({ error: 'BadRequest', message: 'El campo components (array) es requerido' });
     }
 
-    const contracts    = loadContracts();
-    const patterns     = loadPatterns();
-    const errors       = [];
-    const warnings     = [];
+    console.log(`  → Validando frame ${frame_id || '?'} con ${components.length} componentes`);
 
-    // 1. Validar que cada componente existe en el DS
-    components.forEach(c => {
-      if (!contracts[c.component]) {
-        errors.push({
-          rule:      'component_exists',
-          component: c.component,
-          message:   `Componente '${c.component}' no existe en el DS`
-        });
-      }
+    const contracts = loadContracts();
+
+    // 1. Intent del brief
+    let intent;
+    try {
+      intent = await parseIntent(brief);
+    } catch (e) {
+      intent = { intent_type: 'unknown', domain: '', constraints: {}, brief_violations: [] };
+    }
+
+    // 2. KB — buscar reglas relevantes
+    let kbRules = [];
+    try {
+      kbRules = await kb.search(brief, { topK: 4 });
+    } catch (e) { /* sin KB */ }
+
+    // 3. Validaciones estructurales
+    const { errors: structErrors, warnings: structWarnings } = validateStructure(components);
+
+    // 4. Violaciones KB
+    const kbViolations = checkKBViolations(components, kbRules, intent);
+
+    // 5. Score
+    const confidence = calculateValidationScore(
+      components, intent, contracts, kbViolations, structErrors
+    );
+
+    // 6. Componentes no reconocidos
+    const unknown = components.filter(c => !contracts[c.component]).map(c => c.component);
+
+    console.log(`  ✓ Validación: score=${Math.round(confidence.global * 100)}% | errores=${structErrors.length} | kb_violations=${kbViolations.length}`);
+
+    res.json({
+      ok:          true,
+      frame_id:    frame_id || null,
+      brief:       brief.trim(),
+      components:  components.length,
+      intent,
+      confidence,
+      struct_errors:   structErrors,
+      struct_warnings: structWarnings,
+      kb_violations:   kbViolations,
+      kb_rules:        kbRules,
+      unknown_components: unknown,
+      pattern:     intent?.intent_type || 'unknown',
     });
-
-    // 2. Validar restricciones de multiplicidad
-    const componentNames = components.map(c => c.component);
-    const counts = {};
-    componentNames.forEach(n => { counts[n] = (counts[n] || 0) + 1; });
-
-    if ((counts['button-primary'] || 0) > 1) {
-      errors.push({
-        rule:    'max_1_primary_button',
-        message: `Se encontraron ${counts['button-primary']} button-primary. Máximo permitido: 1`
-      });
-    }
-    if ((counts['navigation-header'] || 0) > 1) {
-      errors.push({
-        rule:    'max_1_header',
-        message: 'Solo puede haber 1 navigation-header por pantalla'
-      });
-    }
-    if ((counts['filter-bar'] || 0) > 1) {
-      errors.push({
-        rule:    'max_1_filter_bar',
-        message: 'Solo puede haber 1 filter-bar por pantalla'
-      });
-    }
-    if ((counts['empty-state'] || 0) > 0 && (counts['card-item'] || 0) > 0) {
-      errors.push({
-        rule:    'empty_state_exclusivity',
-        message: 'empty-state y card-item son mutuamente excluyentes en la misma pantalla'
-      });
-    }
-    if ((counts['modal-bottom-sheet'] || 0) > 1) {
-      warnings.push({
-        rule:    'max_1_modal',
-        message: 'Se recomienda no tener más de 1 modal abierto al mismo tiempo'
-      });
-    }
-
-    // 3. Validar contra el pattern si se especifica
-    if (pattern && patterns[pattern]) {
-      const patternData = patterns[pattern];
-      const requiredComponents = patternData.requiredComponents.map(r => r.component);
-
-      // Componentes requeridos por el pattern que no están presentes
-      requiredComponents.forEach(required => {
-        if (!componentNames.includes(required)) {
-          warnings.push({
-            rule:      'pattern_required_component',
-            component: required,
-            message:   `El pattern '${pattern}' requiere '${required}' pero no está en la lista`
-          });
-        }
-      });
-    }
-
-    // 4. Calcular score de conformidad
-    const totalChecks  = 4 + (pattern ? 1 : 0);
-    const failedChecks = errors.length;
-    const score        = parseFloat(Math.max(0, (totalChecks - failedChecks) / totalChecks).toFixed(2));
-
-    const response = {
-      valid:    errors.length === 0,
-      score,
-      errors,
-      warnings,
-      summary: {
-        components_checked: components.length,
-        errors_count:       errors.length,
-        warnings_count:     warnings.length,
-        pattern_validated:  !!pattern
-      }
-    };
-
-    console.log(`  ✓ Validación completada: ${errors.length} errores, ${warnings.length} warnings, score: ${score}`);
-    res.json(response);
 
   } catch (err) {
     next(err);
