@@ -751,7 +751,7 @@
       applyFilters();
       updateStats();
     } catch(e) {
-      showEmpty('No se pudo cargar la KB — revisa la URL y API Key');
+      document.getElementById("entriesList").innerHTML = "<div class=\"empty-state visible\"><div class=\"empty-state-icon\">⚠</div><div class=\"empty-state-txt\">No se pudo cargar la KB — revisa la URL y API Key</div></div>"; document.getElementById("toolbarCount").textContent = "0 entradas";
     }
   }
 

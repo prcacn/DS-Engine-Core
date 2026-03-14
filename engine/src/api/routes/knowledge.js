@@ -1,120 +1,181 @@
-// api/routes/knowledge.js — KB management endpoints
-// POST /knowledge/ingest  → guardar una regla
-// GET  /knowledge/list    → listar todas las reglas
-// DELETE /knowledge/delete/:id → eliminar una regla
-
+// api/routes/knowledge.js
 const express = require('express');
 const router  = express.Router();
 
-// ── Intentar cargar el cliente de Pinecone si está configurado ─────────────
-let pineconeIndex = null;
-
-async function getPineconeIndex() {
-  if (pineconeIndex) return pineconeIndex;
-  if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_INDEX) return null;
-  try {
-    const { Pinecone } = require('@pinecone-database/pinecone');
-    const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-    pineconeIndex = pc.index(process.env.PINECONE_INDEX);
-    return pineconeIndex;
-  } catch (e) {
-    console.warn('  ⚠ Pinecone no disponible:', e.message);
-    return null;
-  }
-}
-
-// ── Fallback en memoria (caché — se sincroniza con Pinecone al arrancar) ──
 let memoryStore = [];
-let storeLoaded = false;
-
-// Carga las entradas de Pinecone al arrancar el servidor
-async function initStore() {
-  if (storeLoaded) return;
-  storeLoaded = true;
-  try {
-    const index = await getPineconeIndex();
-    if (!index) return;
-    const dim = parseInt(process.env.PINECONE_DIMENSION || '1024');
-    const zeroVector = new Array(dim).fill(0);
-    const result = await index.query({ vector: zeroVector, topK: 500, includeMetadata: true });
-    memoryStore = (result.matches || []).map(m => ({ id: m.id, ...m.metadata }));
-    console.log(`  ✓ [KB] ${memoryStore.length} reglas cargadas desde Pinecone`);
-  } catch (e) {
-    console.warn('  ⚠ [KB] No se pudo cargar desde Pinecone:', e.message);
-  }
-}
-
-// Llamar al arrancar
-initStore();
+let initialLoad = false;
 
 function makeId() {
   return 'kb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
 }
 
+function cfg() {
+  const apiKey = process.env.PINECONE_API_KEY;
+  const host   = (process.env.PINECONE_HOST || '').replace(/\/$/, '');
+  if (!apiKey || !host) return null;
+  return { apiKey, host };
+}
+
+// ── Pinecone: listar todos los IDs y luego fetch metadata ─────────────────
+async function pcListAll() {
+  const c = cfg(); if (!c) return null;
+  try {
+    // Paso 1: obtener todos los IDs via /vectors/list (paginado)
+    let allIds = [];
+    let paginationToken = null;
+
+    do {
+      const url = paginationToken
+        ? `${c.host}/vectors/list?limit=100&paginationToken=${encodeURIComponent(paginationToken)}`
+        : `${c.host}/vectors/list?limit=100`;
+
+      const r = await fetch(url, { headers: { 'Api-Key': c.apiKey } });
+      if (!r.ok) {
+        const txt = await r.text();
+        console.warn('  ⚠ [KB] list error:', r.status, txt);
+        return null;
+      }
+      const data = await r.json();
+      const ids = (data.vectors || []).map(v => v.id);
+      allIds = allIds.concat(ids);
+      paginationToken = data.pagination?.next || null;
+    } while (paginationToken);
+
+    console.log(`  ✓ [KB] ${allIds.length} IDs encontrados en Pinecone`);
+    if (allIds.length === 0) return [];
+
+    // Paso 2: fetch metadata en lotes de 100
+    let entries = [];
+    for (let i = 0; i < allIds.length; i += 100) {
+      const batch = allIds.slice(i, i + 100);
+      const params = batch.map(id => `ids=${encodeURIComponent(id)}`).join('&');
+      const r = await fetch(`${c.host}/vectors/fetch?${params}`, {
+        headers: { 'Api-Key': c.apiKey },
+      });
+      if (!r.ok) continue;
+      const data = await r.json();
+      const batchEntries = Object.values(data.vectors || {}).map(v => ({
+        id: v.id,
+        ...(v.metadata || {}),
+      }));
+      entries = entries.concat(batchEntries);
+    }
+
+    console.log(`  ✓ [KB] ${entries.length} entradas recuperadas con metadata`);
+    return entries;
+
+  } catch(e) {
+    console.warn('  ⚠ [KB] pcListAll error:', e.message);
+    return null;
+  }
+}
+
+// ── Pinecone: upsert ───────────────────────────────────────────────────────
+async function pcUpsert(id, vector, metadata) {
+  const c = cfg(); if (!c) return false;
+  try {
+    const r = await fetch(`${c.host}/vectors/upsert`, {
+      method: 'POST',
+      headers: { 'Api-Key': c.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vectors: [{ id, values: vector, metadata }] }),
+    });
+    if (!r.ok) { const txt = await r.text(); console.warn('  ⚠ upsert:', r.status, txt); }
+    return r.ok;
+  } catch(e) { console.warn('  ⚠ upsert:', e.message); return false; }
+}
+
+// ── Pinecone: delete ───────────────────────────────────────────────────────
+async function pcDelete(id) {
+  const c = cfg(); if (!c) return false;
+  try {
+    const r = await fetch(`${c.host}/vectors/delete`, {
+      method: 'POST',
+      headers: { 'Api-Key': c.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [id] }),
+    });
+    return r.ok;
+  } catch(e) { console.warn('  ⚠ delete:', e.message); return false; }
+}
+
+// ── Embedding OpenAI (opcional) ────────────────────────────────────────────
+async function embed(text) {
+  if (!process.env.OPENAI_API_KEY) return null;
+  try {
+    const r = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-3-small',
+        input: text,
+        dimensions: parseInt(process.env.PINECONE_DIMENSION || '1024'),
+      }),
+    });
+    const d = await r.json();
+    return d.data?.[0]?.embedding || null;
+  } catch(e) { return null; }
+}
+
+// ── Carga inicial desde Pinecone ───────────────────────────────────────────
+async function loadFromPinecone() {
+  if (initialLoad) return;
+  initialLoad = true;
+  if (!cfg()) {
+    console.log('  ℹ [KB] Pinecone no configurado — modo memoria');
+    return;
+  }
+  const entries = await pcListAll();
+  if (entries && entries.length > 0) {
+    memoryStore = entries;
+    console.log(`  ✓ [KB] store cargado: ${memoryStore.length} reglas`);
+  } else {
+    console.log('  ℹ [KB] Pinecone vacío o error — store en memoria');
+  }
+}
+loadFromPinecone();
+
 // ── POST /knowledge/ingest ─────────────────────────────────────────────────
 router.post('/ingest', async (req, res) => {
   try {
     const {
-      text, content,          // acepta ambos por compatibilidad
-      categoria  = 'recomendacion',
-      prioridad  = 'media',
-      tipo       = 'regla-de-negocio',
-      tags       = [],
-      autor,
-      fecha,
-      geografia,
-      fuente,
-      expira,
+      text, content,
+      categoria = 'recomendacion', prioridad = 'media',
+      tipo = 'regla-de-negocio', tags = [],
+      autor, fecha, geografia, fuente, expira,
     } = req.body;
 
-    const ruleText = text || content;
-    if (!ruleText || !ruleText.trim()) {
-      return res.status(400).json({ ok: false, error: 'El campo text es obligatorio' });
-    }
+    const ruleText = (text || content || '').trim();
+    if (!ruleText) return res.status(400).json({ ok: false, error: 'El campo text es obligatorio' });
 
     const id = makeId();
     const entry = {
-      id,
-      text:       ruleText.trim(),
-      categoria,
-      prioridad,
-      tipo,
-      tags:       Array.isArray(tags) ? tags : [],
-      autor:      autor      || undefined,
-      fecha:      fecha      || new Date().toISOString().split('T')[0],
-      geografia:  geografia  || undefined,
-      fuente:     fuente     || undefined,
-      expira:     expira     || undefined,
+      id, text: ruleText, categoria, prioridad, tipo,
+      tags: Array.isArray(tags) ? tags : [],
+      fecha: fecha || new Date().toISOString().split('T')[0],
       created_at: new Date().toISOString(),
     };
+    if (autor)     entry.autor     = autor;
+    if (geografia) entry.geografia = geografia;
+    if (fuente)    entry.fuente    = fuente;
+    if (expira)    entry.expira    = expira;
 
-    // Limpiar campos undefined
-    Object.keys(entry).forEach(k => { if (entry[k] === undefined) delete entry[k]; });
+    // 1. Guardar en memoria inmediatamente
+    memoryStore.push(entry);
 
-    const index = await getPineconeIndex();
-
-    if (index) {
-      // ── Con Pinecone: intentar embedding, si falla guardar igual con vector cero
-      const embedding = await createEmbedding(ruleText);
-      const dim = parseInt(process.env.PINECONE_DIMENSION || '1024');
-      const vector = embedding || new Array(dim).fill(0);
-
-      await index.upsert([{
-        id,
-        values: vector,
-        metadata: { ...entry },
-      }]);
-      const mode = embedding ? 'embedding real' : 'vector cero (sin OpenAI)';
-      console.log(`  ✓ [KB/ingest] ${id} → Pinecone [${mode}] (${categoria}/${prioridad})`);
+    // 2. Persistir en Pinecone
+    if (cfg()) {
+      const dim    = parseInt(process.env.PINECONE_DIMENSION || '1024');
+      const vector = (await embed(ruleText)) || new Array(dim).fill(0.001);
+      const saved  = await pcUpsert(id, vector, entry);
+      console.log(`  ✓ [KB/ingest] ${id} → Pinecone: ${saved ? '✓' : '✗'}`);
+    } else {
+      console.log(`  ✓ [KB/ingest] ${id} → memoria`);
     }
 
-    // Guardar siempre en memoria también (para /list inmediato y fallback)
-    memoryStore.push(entry);
-    console.log(`  ✓ [KB/ingest] ${id} → memoria (${categoria}/${prioridad})`);
-
     res.json({ ok: true, id, entry });
-
-  } catch (err) {
+  } catch(err) {
     console.error('  ✗ [KB/ingest]', err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -123,10 +184,14 @@ router.post('/ingest', async (req, res) => {
 // ── GET /knowledge/list ────────────────────────────────────────────────────
 router.get('/list', async (req, res) => {
   try {
-    await initStore(); // asegura que Pinecone está cargado
+    // Forzar recarga desde Pinecone si el store está vacío
+    if (memoryStore.length === 0 && cfg()) {
+      initialLoad = false;
+      await loadFromPinecone();
+    }
     console.log(`  ✓ [KB/list] ${memoryStore.length} entradas`);
-    return res.json({ ok: true, total: memoryStore.length, entries: memoryStore });
-  } catch (err) {
+    res.json({ ok: true, total: memoryStore.length, entries: memoryStore });
+  } catch(err) {
     console.error('  ✗ [KB/list]', err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -135,52 +200,41 @@ router.get('/list', async (req, res) => {
 // ── DELETE /knowledge/delete/:id ───────────────────────────────────────────
 router.delete('/delete/:id', async (req, res) => {
   const { id } = req.params;
-  if (!id) return res.status(400).json({ ok: false, error: 'ID requerido' });
-
   try {
-    const index = await getPineconeIndex();
-
-    if (index) {
-      await index.deleteOne(id);
-      console.log(`  ✓ [KB/delete] ${id} eliminado de Pinecone`);
-    } else {
-      const before = memoryStore.length;
-      memoryStore = memoryStore.filter(e => e.id !== id);
-      if (memoryStore.length === before) {
-        return res.status(404).json({ ok: false, error: 'Entrada no encontrada' });
-      }
-      console.log(`  ✓ [KB/delete] ${id} eliminado de memoria`);
-    }
-
+    memoryStore = memoryStore.filter(e => e.id !== id);
+    if (cfg()) await pcDelete(id);
+    console.log(`  ✓ [KB/delete] ${id}`);
     res.json({ ok: true, deleted: id });
-
-  } catch (err) {
+  } catch(err) {
     console.error('  ✗ [KB/delete]', err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-// ── Helper: generar embedding con OpenAI ──────────────────────────────────
-async function createEmbedding(text) {
-  if (!process.env.OPENAI_API_KEY) return null;
-  try {
-    const res = await fetch('https://api.openai.com/v1/embeddings', {
-      method:  'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
-      },
-      body: JSON.stringify({
-        model: 'text-embedding-3-small',
-        input: text,
-      }),
-    });
-    const data = await res.json();
-    return data.data?.[0]?.embedding || null;
-  } catch (e) {
-    console.warn('  ⚠ Embedding fallido:', e.message);
-    return null;
-  }
-}
-
 module.exports = router;
+
+// ── GET /knowledge/debug — ver respuesta raw de Pinecone ──────────────────
+router.get('/debug', async (req, res) => {
+  const c = cfg();
+  if (!c) return res.json({ ok: false, error: 'Pinecone no configurado', env: { PINECONE_HOST: !!process.env.PINECONE_HOST, PINECONE_API_KEY: !!process.env.PINECONE_API_KEY } });
+  try {
+    // Probar /vectors/list
+    const r1 = await fetch(`${c.host}/vectors/list?limit=10`, { headers: { 'Api-Key': c.apiKey } });
+    const listRaw = await r1.text();
+
+    // Probar /describe_index_stats
+    const r2 = await fetch(`${c.host}/describe_index_stats`, { method: 'POST', headers: { 'Api-Key': c.apiKey, 'Content-Type': 'application/json' }, body: '{}' });
+    const statsRaw = await r2.text();
+
+    res.json({
+      host: c.host,
+      list_status: r1.status,
+      list_response: JSON.parse(listRaw),
+      stats_status: r2.status,
+      stats_response: JSON.parse(statsRaw),
+      memoryStore_count: memoryStore.length,
+    });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
