@@ -319,9 +319,98 @@
     .kb-rule-author { font-size: 10px; color: var(--txt2); font-style: italic; }
 
     @media (max-width: 1100px) { main { grid-template-columns: 340px 1fr; } .panel-analysis { display: none; } }
+
+    /* ── LOGIN OVERLAY ── */
+    #login-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #login-overlay::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(79,70,229,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(79,70,229,0.04) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events: none;
+    }
+    #login-overlay::after {
+      content: ''; position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(ellipse, rgba(79,70,229,0.12) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%, -60%);
+      pointer-events: none;
+    }
+    .login-card {
+      position: relative; z-index: 1;
+      width: 380px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 40px 36px 36px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+      display: flex; flex-direction: column; gap: 28px;
+    }
+    .login-header { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .login-logo-mark {
+      width: 48px; height: 48px; background: var(--accent);
+      border-radius: 12px; display: grid; place-items: center;
+      box-shadow: 0 8px 24px rgba(79,70,229,0.4);
+    }
+    .login-logo-mark svg { width: 28px; height: 28px; }
+    .login-title { font-family: var(--mono); font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: var(--txt); text-align: center; }
+    .login-subtitle { font-family: var(--mono); font-size: 10px; color: var(--txt2); text-align: center; letter-spacing: 0.06em; margin-top: -10px; }
+    .login-divider { height: 1px; background: var(--border); }
+    .login-field { display: flex; flex-direction: column; gap: 8px; }
+    .login-label { font-family: var(--mono); font-size: 10px; color: var(--txt2); letter-spacing: 0.08em; text-transform: uppercase; }
+    .login-input {
+      background: var(--surface2); border: 1px solid var(--border2);
+      border-radius: 8px; color: var(--txt); font-family: var(--mono);
+      font-size: 14px; padding: 13px 16px; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; letter-spacing: 0.12em; width: 100%;
+    }
+    .login-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+    .login-input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,0.12); animation: shake 0.35s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+    .login-error { font-family: var(--mono); font-size: 10px; color: var(--red); display: none; text-align: center; letter-spacing: 0.04em; }
+    .login-error.show { display: block; }
+    .btn-login {
+      background: var(--accent); border: none; border-radius: 8px;
+      color: white; font-family: var(--mono); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.08em; padding: 14px; cursor: pointer; width: 100%;
+      transition: background 0.2s, transform 0.1s; position: relative; overflow: hidden;
+    }
+    .btn-login::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 50%); }
+    .btn-login:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-login:active { transform: translateY(0); }
+    .login-footer { font-family: var(--mono); font-size: 9px; color: var(--txt2); text-align: center; letter-spacing: 0.06em; }
+    .login-overlay-exit { opacity: 0; transform: scale(1.04); transition: opacity 0.4s ease, transform 0.4s ease; pointer-events: none; }
   </style>
 </head>
 <body>
+
+<!-- ── LOGIN OVERLAY ── -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo-mark">
+        <svg viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="2" width="5" height="5" rx="1" fill="white"/>
+          <rect x="9" y="2" width="5" height="5" rx="1" fill="rgba(255,255,255,0.5)"/>
+          <rect x="2" y="9" width="5" height="5" rx="1" fill="rgba(255,255,255,0.5)"/>
+          <rect x="9" y="9" width="5" height="5" rx="1" fill="white"/>
+        </svg>
+      </div>
+      <div class="login-title">DS ENGINE</div>
+      <div class="login-subtitle">// Screen Generator · Acceso restringido</div>
+    </div>
+    <div class="login-divider"></div>
+    <div class="login-field">
+      <div class="login-label">contraseña de acceso</div>
+      <input class="login-input" type="password" id="loginPassword" placeholder="••••••••••" autocomplete="current-password">
+      <div class="login-error" id="loginError">⚠ Contraseña incorrecta</div>
+    </div>
+    <button class="btn-login" onclick="checkLogin()">ACCEDER →</button>
+    <div class="login-footer">DS IA-Ready Engine · v1.0.0 · Fase 4</div>
+  </div>
+</div>
 <div class="shell">
   <header>
     <div class="logo">
@@ -972,6 +1061,49 @@
 
   function renderError(err) {
     document.getElementById('analysisPanel').innerHTML = '<div class="panel-title">// analysis</div><div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;margin-top:8px"><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#ef4444;margin-bottom:6px">✗ '+(err.error||'Error')+'</div><div style="font-size:13px;color:var(--txt3)">'+(err.message||'Error desconocido')+'</div></div>';
+  }
+</script>
+
+<script>
+  // ── LOGIN ─────────────────────────────────────────────────────────────────
+  (function() {
+    var PASS = 'DSIA-2026';
+    var SESSION_KEY = 'ds_engine_auth';
+
+    // Si ya autenticó en esta sesión, quitar el overlay directo
+    if (sessionStorage.getItem(SESSION_KEY) === '1') {
+      var ov = document.getElementById('login-overlay');
+      if (ov) ov.remove();
+    }
+
+    // Enter en el input
+    var inp = document.getElementById('loginPassword');
+    if (inp) {
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') checkLogin();
+      });
+      // Focus automático al cargar
+      setTimeout(function() { inp.focus(); }, 100);
+    }
+  })();
+
+  function checkLogin() {
+    var inp = document.getElementById('loginPassword');
+    var err = document.getElementById('loginError');
+    var val = inp ? inp.value : '';
+
+    if (val === 'DSIA-2026') {
+      sessionStorage.setItem('ds_engine_auth', '1');
+      var overlay = document.getElementById('login-overlay');
+      overlay.classList.add('login-overlay-exit');
+      setTimeout(function() { overlay.remove(); }, 420);
+    } else {
+      inp.classList.add('error');
+      err.classList.add('show');
+      inp.value = '';
+      setTimeout(function() { inp.classList.remove('error'); }, 400);
+      inp.focus();
+    }
   }
 </script>
 </body>

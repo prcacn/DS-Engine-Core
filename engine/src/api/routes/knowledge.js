@@ -1,161 +1,186 @@
-// api/routes/knowledge.js — Fase 4 (Studio + KB Portal)
-// Usa el mismo cliente knowledgeBase.js que /generate
-//
-//   POST /knowledge/save-example   → guarda pantalla validada como ejemplo
-//   POST /knowledge/save-template  → guarda pantalla como template
-//   POST /knowledge/ingest         → ingesta libre de conocimiento
-//   GET  /knowledge/list           → lista entradas recientes
-//   DELETE /knowledge/:id          → elimina una entrada
+// api/routes/knowledge.js — KB management endpoints
+// POST /knowledge/ingest  → guardar una regla
+// GET  /knowledge/list    → listar todas las reglas
+// DELETE /knowledge/delete/:id → eliminar una regla
 
 const express = require('express');
 const router  = express.Router();
-const path    = require('path');
-const fs      = require('fs');
-const kb      = require('../../core/knowledgeBase');
 
-// ─── EXAMPLES DIR (filesystem) ────────────────────────────────────────────────
+// ── Intentar cargar el cliente de Pinecone si está configurado ─────────────
+let pineconeIndex = null;
 
-function getExamplesDir() {
-  const dsPath = process.env.DS_REPO_PATH;
-  if (!dsPath) return null;
-  const dir = path.join(dsPath, 'examples');
-  if (!fs.existsSync(dir)) {
-    try { fs.mkdirSync(dir, { recursive: true }); } catch (e) { return null; }
-  }
-  return dir;
-}
-
-function saveExampleFile(id, data) {
-  const dir = getExamplesDir();
-  if (!dir) return false;
+async function getPineconeIndex() {
+  if (pineconeIndex) return pineconeIndex;
+  if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_INDEX) return null;
   try {
-    fs.writeFileSync(path.join(dir, `${id}.json`), JSON.stringify(data, null, 2), 'utf8');
-    console.log(`  ✓ Example en disco: ${id}.json`);
-    return true;
+    const { Pinecone } = require('@pinecone-database/pinecone');
+    const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+    pineconeIndex = pc.index(process.env.PINECONE_INDEX);
+    return pineconeIndex;
   } catch (e) {
-    console.warn('  ⚠ No se pudo guardar en disco:', e.message);
-    return false;
+    console.warn('  ⚠ Pinecone no disponible:', e.message);
+    return null;
   }
 }
 
-// ─── POST /knowledge/save-example ────────────────────────────────────────────
+// ── Fallback en memoria (caché — se sincroniza con Pinecone al arrancar) ──
+let memoryStore = [];
+let storeLoaded = false;
 
-router.post('/save-example', async function(req, res, next) {
+// Carga las entradas de Pinecone al arrancar el servidor
+async function initStore() {
+  if (storeLoaded) return;
+  storeLoaded = true;
   try {
-    const { brief, components, score, pattern, author } = req.body;
+    const index = await getPineconeIndex();
+    if (!index) return;
+    const dim = parseInt(process.env.PINECONE_DIMENSION || '1024');
+    const zeroVector = new Array(dim).fill(0);
+    const result = await index.query({ vector: zeroVector, topK: 500, includeMetadata: true });
+    memoryStore = (result.matches || []).map(m => ({ id: m.id, ...m.metadata }));
+    console.log(`  ✓ [KB] ${memoryStore.length} reglas cargadas desde Pinecone`);
+  } catch (e) {
+    console.warn('  ⚠ [KB] No se pudo cargar desde Pinecone:', e.message);
+  }
+}
 
-    if (!brief || !components || !Array.isArray(components)) {
-      return res.status(400).json({ error: 'BadRequest', message: 'Campos requeridos: brief, components[]' });
+// Llamar al arrancar
+initStore();
+
+function makeId() {
+  return 'kb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+// ── POST /knowledge/ingest ─────────────────────────────────────────────────
+router.post('/ingest', async (req, res) => {
+  try {
+    const {
+      text, content,          // acepta ambos por compatibilidad
+      categoria  = 'recomendacion',
+      prioridad  = 'media',
+      tipo       = 'regla-de-negocio',
+      tags       = [],
+      autor,
+      fecha,
+      geografia,
+      fuente,
+      expira,
+    } = req.body;
+
+    const ruleText = text || content;
+    if (!ruleText || !ruleText.trim()) {
+      return res.status(400).json({ ok: false, error: 'El campo text es obligatorio' });
     }
 
-    const content = [
-      `EXAMPLE APROBADO: ${brief}`,
-      `Pattern: ${pattern || 'unknown'}`,
-      `Score: ${score || 0}%`,
-      `Componentes: ${components.map(c => c.component).join(', ')}`,
-    ].join('\n');
+    const id = makeId();
+    const entry = {
+      id,
+      text:       ruleText.trim(),
+      categoria,
+      prioridad,
+      tipo,
+      tags:       Array.isArray(tags) ? tags : [],
+      autor:      autor      || undefined,
+      fecha:      fecha      || new Date().toISOString().split('T')[0],
+      geografia:  geografia  || undefined,
+      fuente:     fuente     || undefined,
+      expira:     expira     || undefined,
+      created_at: new Date().toISOString(),
+    };
 
-    const result = await kb.save({
-      content,
-      tipo:      'example',
-      categoria: 'ds-pattern',
-      geografia: 'global',
-      autor:     author || 'studio',
-      prioridad: 'media',
-    });
+    // Limpiar campos undefined
+    Object.keys(entry).forEach(k => { if (entry[k] === undefined) delete entry[k]; });
 
-    // También guardar en disco si hay DS_REPO_PATH
-    saveExampleFile(result.id, { id: result.id, brief, pattern, score, components, created_at: new Date().toISOString() });
+    const index = await getPineconeIndex();
 
-    console.log(`  ✓ Example guardado: ${result.id}`);
-    res.json({ ok: true, id: result.id, message: `Example guardado correctamente` });
+    if (index) {
+      // ── Con Pinecone: intentar embedding, si falla guardar igual con vector cero
+      const embedding = await createEmbedding(ruleText);
+      const dim = parseInt(process.env.PINECONE_DIMENSION || '1024');
+      const vector = embedding || new Array(dim).fill(0);
 
-  } catch (err) { next(err); }
-});
-
-// ─── POST /knowledge/save-template ───────────────────────────────────────────
-
-router.post('/save-template', async function(req, res, next) {
-  try {
-    const { brief, components, pattern, name, author } = req.body;
-
-    if (!brief || !components || !Array.isArray(components)) {
-      return res.status(400).json({ error: 'BadRequest', message: 'Campos requeridos: brief, components[]' });
+      await index.upsert([{
+        id,
+        values: vector,
+        metadata: { ...entry },
+      }]);
+      const mode = embedding ? 'embedding real' : 'vector cero (sin OpenAI)';
+      console.log(`  ✓ [KB/ingest] ${id} → Pinecone [${mode}] (${categoria}/${prioridad})`);
     }
 
-    const templateName = name || brief.substring(0, 50);
-    const content = [
-      `TEMPLATE: ${templateName}`,
-      `Descripción: ${brief}`,
-      `Pattern: ${pattern || 'unknown'}`,
-      `Componentes: ${components.map(c => c.component).join(', ')}`,
-    ].join('\n');
+    // Guardar siempre en memoria también (para /list inmediato y fallback)
+    memoryStore.push(entry);
+    console.log(`  ✓ [KB/ingest] ${id} → memoria (${categoria}/${prioridad})`);
 
-    const result = await kb.save({
-      content,
-      tipo:      'template',
-      categoria: 'ds-pattern',
-      geografia: 'global',
-      autor:     author || 'studio',
-      prioridad: 'baja',
-    });
+    res.json({ ok: true, id, entry });
 
-    console.log(`  ✓ Template guardado: ${result.id}`);
-    res.json({ ok: true, id: result.id, message: `Template "${templateName}" guardado correctamente` });
-
-  } catch (err) { next(err); }
+  } catch (err) {
+    console.error('  ✗ [KB/ingest]', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// ─── POST /knowledge/ingest ───────────────────────────────────────────────────
-
-router.post('/ingest', async function(req, res, next) {
+// ── GET /knowledge/list ────────────────────────────────────────────────────
+router.get('/list', async (req, res) => {
   try {
-    const { text, tipo, categoria, geografia, autor, prioridad } = req.body;
+    await initStore(); // asegura que Pinecone está cargado
+    console.log(`  ✓ [KB/list] ${memoryStore.length} entradas`);
+    return res.json({ ok: true, total: memoryStore.length, entries: memoryStore });
+  } catch (err) {
+    console.error('  ✗ [KB/list]', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
-    if (!text || !text.trim()) {
-      return res.status(400).json({ error: 'BadRequest', message: 'El campo text es requerido' });
+// ── DELETE /knowledge/delete/:id ───────────────────────────────────────────
+router.delete('/delete/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ ok: false, error: 'ID requerido' });
+
+  try {
+    const index = await getPineconeIndex();
+
+    if (index) {
+      await index.deleteOne(id);
+      console.log(`  ✓ [KB/delete] ${id} eliminado de Pinecone`);
+    } else {
+      const before = memoryStore.length;
+      memoryStore = memoryStore.filter(e => e.id !== id);
+      if (memoryStore.length === before) {
+        return res.status(404).json({ ok: false, error: 'Entrada no encontrada' });
+      }
+      console.log(`  ✓ [KB/delete] ${id} eliminado de memoria`);
     }
 
-    const result = await kb.save({
-      content:   text.trim(),
-      tipo:      tipo      || 'decision',
-      categoria: categoria || 'recomendacion',
-      geografia: geografia || 'global',
-      autor:     autor     || 'equipo',
-      prioridad: prioridad || 'media',
-    });
+    res.json({ ok: true, deleted: id });
 
-    console.log(`  ✓ Conocimiento ingestado: ${result.id} [${tipo}/${categoria}]`);
-    res.json({ ok: true, id: result.id, message: 'Conocimiento añadido correctamente' });
-
-  } catch (err) { next(err); }
+  } catch (err) {
+    console.error('  ✗ [KB/delete]', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// ─── GET /knowledge/list ──────────────────────────────────────────────────────
-
-router.get('/list', async function(req, res, next) {
+// ── Helper: generar embedding con OpenAI ──────────────────────────────────
+async function createEmbedding(text) {
+  if (!process.env.OPENAI_API_KEY) return null;
   try {
-    const { tipo } = req.query;
-    // Búsqueda amplia para listar entradas recientes
-    const entries = await kb.search('diseño componente pantalla regla decisión', {
-      topK: 20,
-      minScore: 0.0,
-      ...(tipo ? { tipo } : {}),
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-3-small',
+        input: text,
+      }),
     });
-    res.json({ ok: true, total: entries.length, entries });
-  } catch (err) { next(err); }
-});
-
-// ─── DELETE /knowledge/:id ────────────────────────────────────────────────────
-
-router.delete('/:id', async function(req, res, next) {
-  try {
-    const { id } = req.params;
-    if (!id) return res.status(400).json({ error: 'BadRequest', message: 'ID requerido' });
-    await kb.remove(id);
-    console.log(`  ✓ Entrada eliminada: ${id}`);
-    res.json({ ok: true, id, message: 'Entrada eliminada correctamente' });
-  } catch (err) { next(err); }
-});
+    const data = await res.json();
+    return data.data?.[0]?.embedding || null;
+  } catch (e) {
+    console.warn('  ⚠ Embedding fallido:', e.message);
+    return null;
+  }
+}
 
 module.exports = router;

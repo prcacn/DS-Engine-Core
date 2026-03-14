@@ -775,7 +775,8 @@
     filteredEntries = allEntries.filter(function(e) {
       if (activeCat && e.categoria !== activeCat) return false;
       if (activePri && e.prioridad !== activePri) return false;
-      if (q && !e.content.toLowerCase().includes(q) && !(e.autor||'').toLowerCase().includes(q) && !(e.geografia||'').toLowerCase().includes(q)) return false;
+      var txt = (e.text || e.content || '').toLowerCase();
+      if (q && !txt.includes(q) && !(e.autor||'').toLowerCase().includes(q) && !(e.geografia||'').toLowerCase().includes(q)) return false;
       return true;
     });
     renderList();
@@ -801,13 +802,14 @@
     filteredEntries.forEach(function(e, i) {
       var cat   = e.categoria  || 'recomendacion';
       var pri   = e.prioridad  || 'media';
+      var txt   = e.text || e.content || '';
       var geo   = e.geografia  ? '<span class="tag-geo">' + e.geografia + '</span>' : '';
       var autor = e.autor      ? '<span class="tag-autor">— ' + e.autor + '</span>' : '';
       var fecha = e.created_at ? '<span class="tag-date">' + fmtDate(e.created_at) + '</span>' : '';
       html += '<div class="entry-row" data-id="' + (e.id||i) + '" data-idx="' + i + '" style="animation-delay:' + (i*30) + 'ms" onclick="selectEntry(' + i + ')">' +
         '<div class="entry-stripe ' + cat + '"></div>' +
         '<div class="entry-body">' +
-          '<div class="entry-content">' + e.content + '</div>' +
+          '<div class="entry-content">' + txt + '</div>' +
           '<div class="entry-meta">' +
             '<span class="tag-cat ' + cat + '">' + cat + '</span>' +
             '<span class="tag-pri ' + pri + '">' + pri + '</span>' +
@@ -883,7 +885,7 @@
     if (e.created_at) rows.push({ k: 'creado',     v: fmtDate(e.created_at) });
 
     document.getElementById('detailBody').innerHTML =
-      '<div class="detail-content">' + e.content + '</div>' +
+      '<div class="detail-content">' + (e.text || e.content || '') + '</div>' +
       '<div class="detail-block">' +
         rows.map(function(r) { return '<div class="detail-row"><div class="detail-key">' + r.k + '</div><div class="detail-val">' + r.v + '</div></div>'; }).join('') +
       '</div>';
@@ -936,7 +938,7 @@
     if (!content) { toast('error', '✕', 'El campo de regla es obligatorio'); document.getElementById('fContent').focus(); return; }
 
     var payload = {
-      content:    content,
+      text:       content,
       categoria:  _selectedCat,
       prioridad:  _selectedPri,
       tipo:       document.getElementById('fTipo').value.trim()   || 'regla-de-negocio',
@@ -956,7 +958,7 @@
     document.getElementById('submitTxt').textContent    = 'GUARDANDO...';
 
     try {
-      var r = await fetch(getUrl() + '/knowledge/add', {
+      var r = await fetch(getUrl() + '/knowledge/ingest', {
         method: 'POST', headers: headers(), body: JSON.stringify(payload)
       });
       var data = await r.json();
