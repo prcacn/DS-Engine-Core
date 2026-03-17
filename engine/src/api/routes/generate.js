@@ -112,7 +112,7 @@ function buildCompositionPlan(brief, intent, patternData, contracts) {
     let count = 1;
     if (!SINGLETON_COMPONENTS.includes(req.component) && quantities[req.component]) { count = quantities[req.component]; }
     for (let i = 0; i < count; i++) {
-      components.push({ slot: req.component + (count > 1 ? '_' + (i+1) : ''), component: req.component, order: order++, required: true, variant: resolveVariant(req.component, intent), props: buildSmartProps(contract, intent, req.component), node_id: contract.nodeId, resolution_confidence: 0.85, quantity_index: count > 1 ? (i+1) : null });
+      components.push({ slot: req.component + (count > 1 ? '_' + (i+1) : ''), component: req.component, order: order++, required: true, variant: resolveVariant(req.component, intent), props: buildSmartProps(contract, intent, req.component), node_id: req.node_id || contract.nodeId, resolution_confidence: 0.85, quantity_index: count > 1 ? (i+1) : null });
     }
   });
 

@@ -29,8 +29,10 @@ function parsePattern(filename, content) {
       const clean = line.replace(/^\d+\.\s*/, '');
       const compMatch = clean.match(/^([a-z-]+)/);
       if (compMatch) {
+        const nodeIdMatch = clean.match(/node_id:\s*([\w:]+)/);
         requiredComponents.push({
           component: compMatch[1],
+          node_id: nodeIdMatch ? nodeIdMatch[1] : null,
           raw: clean
         });
       }
