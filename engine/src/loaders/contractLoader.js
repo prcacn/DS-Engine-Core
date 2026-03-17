@@ -32,11 +32,16 @@ function parseContract(filename, content) {
     ? restrictMatch[1].trim().split('\n').map(l => l.replace(/^- /, '').trim()).filter(Boolean)
     : [];
 
-  // Extraer Node ID — soporta formato A (## Node ID en Figma) y formato B (figma_id en Metadata)
+  // Extraer Node ID — soporta 3 formatos:
+  // A: ## Node ID en Figma\n1:3
+  // B: figma_id: 1:3
+  // C: | **Node ID** | `1:3` | (tabla markdown)
   const nodeIdMatchA = content.match(/## Node ID en Figma\n(.*)/);
   const nodeIdMatchB = content.match(/figma_id:\s*([\w:]+)/);
+  const nodeIdMatchC = content.match(/\|\s*\*\*Node ID\*\*\s*\|\s*`([\w:]+)`/);
   const nodeId = (nodeIdMatchA ? nodeIdMatchA[1].trim() : null)
               || (nodeIdMatchB ? nodeIdMatchB[1].trim() : null)
+              || (nodeIdMatchC ? nodeIdMatchC[1].trim() : null)
               || 'pending';
 
   // Extraer propiedades de la tabla
