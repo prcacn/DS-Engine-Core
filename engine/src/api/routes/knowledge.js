@@ -213,6 +213,77 @@ router.delete('/delete/:id', async (req, res) => {
 
 module.exports = router;
 
+
+// ── POST /knowledge/feedback ──────────────────────────────────────────────
+// Recibe la validación del diseñador y la ingesta en Pinecone como conocimiento
+// status: 'approved' | 'rejected' | 'modified'
+router.post('/feedback', async (req, res) => {
+  try {
+    const { screen_id, brief, status, pattern, components, motivo, modificaciones } = req.body;
+    if (!brief || !status) return res.status(400).json({ ok: false, error: 'brief y status son obligatorios' });
+
+    const entries = [];
+
+    if (status === 'approved') {
+      const compList = (components || []).map(c => c.component).join(', ');
+      entries.push({
+        text: 'PANTALLA APROBADA: ' + brief + ' patron: ' + (pattern || 'desconocido') + '. Componentes: ' + compList,
+        categoria: 'ds-pattern',
+        prioridad: 'alta',
+        tipo: 'ejemplo-aprobado',
+        autor: 'feedback-loop',
+        geografia: 'global',
+      });
+    } else if (status === 'rejected' && motivo) {
+      entries.push({
+        text: 'PANTALLA RECHAZADA: ' + brief + '. Motivo: ' + motivo,
+        categoria: 'recomendacion',
+        prioridad: 'alta',
+        tipo: 'rechazo',
+        autor: 'feedback-loop',
+        geografia: 'global',
+      });
+    } else if (status === 'modified' && modificaciones) {
+      entries.push({
+        text: 'PANTALLA MODIFICADA: ' + brief + '. Cambios: ' + modificaciones,
+        categoria: 'recomendacion',
+        prioridad: 'media',
+        tipo: 'modificacion',
+        autor: 'feedback-loop',
+        geografia: 'global',
+      });
+    }
+
+    const saved = [];
+    for (const entry of entries) {
+      const id = makeId();
+      const fullEntry = {
+        id, ...entry,
+        fecha: new Date().toISOString().split('T')[0],
+        created_at: new Date().toISOString(),
+      };
+      memoryStore.push(fullEntry);
+      if (cfg()) {
+        const dim    = parseInt(process.env.PINECONE_DIMENSION || '1024');
+        const vector = (await embed(entry.text)) || new Array(dim).fill(0.001);
+        await pcUpsert(id, vector, fullEntry);
+      }
+      saved.push(id);
+      console.log('  [KB/feedback] ' + status + ' guardado: ' + id);
+    }
+
+    res.json({
+      ok: true,
+      status,
+      saved,
+      message: saved.length > 0 ? 'Feedback registrado en KB' : 'Sin entradas que guardar'
+    });
+  } catch(err) {
+    console.error('  [KB/feedback] error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── GET /knowledge/debug — ver respuesta raw de Pinecone ──────────────────
 router.get('/debug', async (req, res) => {
   const c = cfg();

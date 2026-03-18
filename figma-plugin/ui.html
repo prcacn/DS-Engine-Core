@@ -523,6 +523,15 @@ select:focus { outline: none; border-color: var(--accent); }
         Paint in Figma
       </button>
 
+      <!-- Feedback loop -->
+      <div id="feedbackBar" style="display:none; flex-direction:column; gap:6px;">
+        <div class="feedback-bar">
+          <button class="btn-feedback btn-approve" data-v="approved" onclick="sendFeedback(this.dataset.v)">✓ Aprobar</button>
+          <button class="btn-feedback btn-modify"  data-v="modified" onclick="sendFeedback(this.dataset.v)">✏ Modificar</button>
+          <button class="btn-feedback btn-reject"  data-v="rejected" onclick="sendFeedback(this.dataset.v)">✗ Rechazar</button>
+        </div>
+      </div>
+
     </div>
   </div><!-- /generate -->
 
@@ -773,6 +782,40 @@ function renderGenerateResult(data) {
     </div>`).join('');
 
   document.getElementById('genResult').style.display = 'flex';
+  document.getElementById('feedbackBar').style.display = 'flex';
+}
+
+// ── FEEDBACK LOOP ─────────────────────────────────────────
+function sendFeedback(status) {
+  if (!state.lastResult) return;
+  let motivo = '';
+  let modificaciones = '';
+  if (status === 'rejected') {
+    motivo = prompt('Motivo del rechazo (opcional):') || '';
+  }
+  if (status === 'modified') {
+    modificaciones = prompt('Describe los cambios que harías:') || '';
+  }
+  fetch(ENGINE_URL + '/knowledge/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
+    body: JSON.stringify({
+      screen_id:      state.lastResult.screen_id,
+      brief:          state.lastResult.brief,
+      status:         status,
+      pattern:        state.lastResult.pattern,
+      components:     state.lastResult.components,
+      motivo:         motivo,
+      modificaciones: modificaciones,
+    }),
+  })
+  .then(r => r.json())
+  .then(d => {
+    const bar = document.getElementById('feedbackBar');
+    if (bar) bar.innerHTML = '<div class="feedback-sent">✓ Feedback registrado en KB</div>';
+    console.log('[feedback]', status, d.ok ? 'OK' : d.error);
+  })
+  .catch(e => console.error('[feedback] error:', e.message));
 }
 
 // ── PAINT ──────────────────────────────────────────────────
@@ -932,14 +975,17 @@ document.getElementById('btnExport').addEventListener('click', async () => {
   try {
     for (const action of state.exportSelected) {
       if (action === 'example' || action === 'template') {
-        await fetch(ENGINE_URL + '/knowledge/save-' + action, {
+        // Usar el feedback loop real en lugar del endpoint inexistente
+        await fetch(ENGINE_URL + '/knowledge/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
           body: JSON.stringify({
-            brief: state.studioValidation.brief,
+            screen_id:  state.studioValidation.frameId || 'studio-' + Date.now(),
+            brief:      state.studioValidation.brief,
+            status:     'approved',
+            pattern:    state.studioValidation.pattern,
             components: state.studioValidation.components,
-            score: state.studioScore,
-            pattern: state.studioValidation.pattern,
+            motivo:     'Aprobado desde Studio (' + action + ')',
           }),
         });
       }

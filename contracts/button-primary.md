@@ -32,7 +32,7 @@ Botón de acción principal. Representa la acción más importante y esperada en
 - Siempre al final del contenido principal, nunca flotante sobre contenido
 
 ## Node ID en Figma
-pending
+1:9
 
 ## Tokens asociados
 - background: color-action-primary

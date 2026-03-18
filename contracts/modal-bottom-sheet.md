@@ -33,7 +33,7 @@ Hoja inferior modal. Aparece desde la parte inferior de la pantalla para mostrar
 - El backdrop siempre oscurece el fondo — nunca transparente
 
 ## Node ID en Figma
-pending
+1:36
 
 ## Tokens asociados
 - background: color-surface-primary

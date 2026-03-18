@@ -28,7 +28,7 @@ Barra de navegación superior. Elemento fijo que aparece en la parte alta de cad
 - No combinar show_action: true con variant: minimal
 
 ## Node ID en Figma
-pending
+1:3
 
 ## Tokens asociados
 - background: color-surface-primary

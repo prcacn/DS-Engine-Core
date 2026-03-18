@@ -34,7 +34,7 @@ Tarjeta de item para listas. Unidad básica de información en cualquier listado
 - No mezclar card-item con show_thumbnail: true y sin thumbnail en el mismo listado
 
 ## Node ID en Figma
-pending
+1:13
 
 ## Tokens asociados
 - background: color-surface-primary

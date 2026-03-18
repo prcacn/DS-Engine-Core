@@ -33,7 +33,7 @@ Barra de filtros horizontales con scroll. Permite al usuario reducir el conjunto
 - Siempre debe haber un filtro "Todos" o equivalente como primera opción
 
 ## Node ID en Figma
-pending
+1:24
 
 ## Tokens asociados
 - background: color-surface-primary

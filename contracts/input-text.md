@@ -34,7 +34,7 @@ Campo de entrada de texto. Permite al usuario introducir información textual. B
 - No apilar más de 5 input-text sin separación visual de secciones
 
 ## Node ID en Figma
-pending
+1:21
 
 ## Tokens asociados
 - border: color-border-default

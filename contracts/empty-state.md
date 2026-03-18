@@ -30,7 +30,7 @@ Estado vacío. Se muestra cuando un listado no tiene contenido que mostrar, ya s
 - No usar más de 1 empty-state por pantalla
 
 ## Node ID en Figma
-pending
+1:31
 
 ## Tokens asociados
 - illustration: color-illustration-primary (neutrales)

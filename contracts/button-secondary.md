@@ -30,7 +30,7 @@ Botón de acción secundaria. Complementa al button-primary ofreciendo una alter
 - No usar variant: ghost en fondos oscuros
 
 ## Node ID en Figma
-pending
+1:11
 
 ## Tokens asociados
 - border: color-action-primary
