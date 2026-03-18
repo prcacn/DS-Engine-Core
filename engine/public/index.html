@@ -137,6 +137,19 @@
     .preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 700px; gap: 12px; opacity: 0.3; }
     .preview-empty p { font-family: var(--mono); font-size: 11px; color: var(--txt2); text-align: center; }
 
+    /* ── NAVEGACIÓN MULTIPANTALLA ── */
+    .flow-nav { display: none; align-items: center; justify-content: space-between; width: 100%; padding: 0 4px; }
+    .flow-nav.visible { display: flex; }
+    .flow-nav-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border2); background: var(--surface); color: var(--txt); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.15s; flex-shrink: 0; }
+    .flow-nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: rgba(79,70,229,0.08); }
+    .flow-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+    .flow-nav-center { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+    .flow-dots { display: flex; gap: 6px; }
+    .flow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); transition: all 0.2s; cursor: pointer; }
+    .flow-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+    .flow-screen-label { font-family: var(--mono); font-size: 9px; color: var(--txt2); text-align: center; letter-spacing: 0.06em; text-transform: uppercase; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .flow-counter { font-family: var(--mono); font-size: 10px; color: var(--txt2); }
+
     /* RIGHT */
     .panel-analysis { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
     .confidence-block { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -462,6 +475,7 @@
           <button class="example-chip" onclick="setExample(this)">ver mi perfil con datos y configuración</button>
           <button class="example-chip" onclick="setExample(this)">error de conexión al cargar el mercado</button>
           <button class="example-chip" onclick="setExample(this)">lista de notificaciones y alertas recientes</button>
+          <button class="example-chip" onclick="setExample(this)">quiero hacer una transferencia bancaria</button>
         </div>
       </div>
       <div class="divider"></div>
@@ -489,6 +503,7 @@
               <option value="notificaciones">notificaciones</option>
               <option value="detalle">detalle</option>
               <option value="dashboard">dashboard</option>
+              <option value="transferencia-bancaria">transferencia-bancaria</option>
             </select>
           </div>
           <div class="setting-item">
@@ -555,6 +570,15 @@
       <div id="patternBadge" style="display:none">
         <div style="font-family:var(--mono);font-size:11px;color:var(--txt2);text-align:center;margin-top:4px" id="patternBadgeText"></div>
       </div>
+      <!-- Navegación multipantalla -->
+      <div class="flow-nav" id="flowNav">
+        <button class="flow-nav-btn" id="flowPrev" onclick="flowNavigate(-1)">&#8249;</button>
+        <div class="flow-nav-center">
+          <div class="flow-dots" id="flowDots"></div>
+          <div class="flow-screen-label" id="flowScreenLabel"></div>
+        </div>
+        <button class="flow-nav-btn" id="flowNext" onclick="flowNavigate(1)">&#8250;</button>
+      </div>
     </div>
 
     <!-- RIGHT -->
@@ -614,6 +638,63 @@
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate();
   });
 
+  // Navegación de flujo con flechas del teclado
+  document.addEventListener('keydown', function(e) {
+    if (flowScreens.length === 0) return;
+    if (document.activeElement === document.getElementById('briefInput')) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); flowNavigate(1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); flowNavigate(-1); }
+  });
+
+  // ── ESTADO MULTISCREEN ────────────────────────────────────────────────────
+  var flowScreens = [];
+  var flowCurrentIndex = 0;
+
+  function flowNavigate(delta) {
+    var newIdx = flowCurrentIndex + delta;
+    if (newIdx < 0 || newIdx >= flowScreens.length) return;
+    flowCurrentIndex = newIdx;
+    renderFlowScreen(flowCurrentIndex);
+  }
+
+  function renderFlowScreen(idx) {
+    var screen = flowScreens[idx];
+    // Construir un objeto compatible con renderScreen()
+    var fakeData = {
+      components: screen.components,
+      pattern: screen.pattern,
+      intent: lastResult.intent,
+      flow_type: 'multiscreen',
+    };
+    renderScreen(fakeData);
+    // Actualizar dots
+    var dots = document.querySelectorAll('.flow-dot');
+    dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+    // Actualizar label
+    document.getElementById('flowScreenLabel').textContent = screen.screen_title;
+    // Actualizar botones
+    document.getElementById('flowPrev').disabled = idx === 0;
+    document.getElementById('flowNext').disabled = idx === flowScreens.length - 1;
+    // Actualizar badge
+    document.getElementById('patternBadgeText').textContent = screen.pattern + ' · ' + (idx+1) + '/' + flowScreens.length;
+    document.getElementById('patternBadge').style.display = 'block';
+  }
+
+  function initFlow(data) {
+    flowScreens = data.screens;
+    flowCurrentIndex = 0;
+    // Construir dots
+    var dotsEl = document.getElementById('flowDots');
+    dotsEl.innerHTML = flowScreens.map(function(s, i) {
+      return '<div class="flow-dot' + (i===0?' active':'') + '" onclick="flowNavigate(' + (i - flowCurrentIndex) + ')"></div>';
+    }).join('');
+    document.getElementById('flowNav').classList.add('visible');
+    renderFlowScreen(0);
+    // Análisis con datos del flujo completo (primera pantalla)
+    var fakeData = Object.assign({}, data, { components: data.screens[0].components });
+    renderAnalysis(fakeData);
+  }
+
   async function generate() {
     var brief = document.getElementById('briefInput').value.trim();
     if (!brief) { document.getElementById('briefInput').focus(); return; }
@@ -624,6 +705,10 @@
     btn.disabled = true;
     document.getElementById('spinner').style.display = 'block';
     document.getElementById('btnText').textContent = 'GENERATING...';
+    // Resetear navegación
+    document.getElementById('flowNav').classList.remove('visible');
+    flowScreens = [];
+    flowCurrentIndex = 0;
     try {
       var body = { brief: brief };
       if (pattern) body.pattern = pattern;
@@ -635,8 +720,12 @@
       if (!res.ok) { var e = await res.json(); renderError(e); return; }
       var data = await res.json();
       lastResult = data;
-      renderScreen(data);
-      renderAnalysis(data);
+      if (data.flow_type === 'multiscreen' && data.screens && data.screens.length > 0) {
+        initFlow(data);
+      } else {
+        renderScreen(data);
+        renderAnalysis(data);
+      }
     } catch (err) {
       renderError({ error: 'NetworkError', message: 'No se pudo conectar con el engine en ' + url });
     } finally {
@@ -649,6 +738,9 @@
   function renderScreen(data) {
     document.getElementById('figmaBtn').disabled = false;
     var screen = document.getElementById('phoneScreen');
+
+    // ── COMPATIBILIDAD MULTISCREEN ─────────────────────────────────────────
+    if (!data.components) data.components = [];
 
     // ── ORDEN GARANTIZADO ──────────────────────────────────────────────────
     // navigation-header SIEMPRE primero, tab-bar/buttons/modal SIEMPRE al final
@@ -957,7 +1049,7 @@
       spawnCard(html, cat);
     });
 
-    var compsHTML = data.components.map(function(c, i) {
+    var compsHTML = (data.components || []).map(function(c, i) {
       return '<div class="comp-row" style="animation-delay:' + (i*50) + 'ms"><div class="comp-order">' + String(c.order).padStart(2,'0') + '</div><div class="comp-info"><div class="comp-name">' + c.component + '</div><div class="comp-variant">' + c.variant + '</div></div><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end"><div class="badge ' + (c.required?'required':'optional') + '">' + (c.required?'req':'opt') + '</div><div class="badge ' + (c.node_id==='pending'?'pending':'resolved') + '">' + (c.node_id==='pending'?'pending':c.node_id) + '</div></div></div>';
     }).join('');
 
