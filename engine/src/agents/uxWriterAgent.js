@@ -85,7 +85,7 @@ Para props que sean arrays (filters, tabs), usa arrays JSON: ["Todos", "Renta fi
 
   try {
     const response = await client.messages.create({
-      model:      'claude-sonnet-4-20250514',
+      model:      'claude-sonnet-4-6',
       max_tokens: 2000,
       messages:   [{ role: 'user', content: prompt }],
     });

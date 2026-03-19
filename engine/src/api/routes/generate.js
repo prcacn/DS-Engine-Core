@@ -5,7 +5,9 @@ const router                   = express.Router();
 const { parseIntent }          = require('../../core/intentParser');
 const { calculateScore }       = require('../../core/confidenceScore');
 const { loadContracts }        = require('../../loaders/contractLoader');
-const { loadPatterns }         = require('../../loaders/patternLoader');
+const { loadPatterns }         = require("../../loaders/patternLoader");
+const { runAgents }            = require("../../agents/orchestrator");
+const { search: kbSearch }     = require("../../core/knowledgeBase");
 
 const INTENT_TO_PATTERN = {
   'lista-con-filtros':     'lista-con-filtros',
@@ -336,6 +338,21 @@ function buildViolationsSummary(briefViolations, components) {
   return violations;
 }
 
+// ─── SUSTITUCIÓN FINANCIERA ────────────────────────────────────────────────
+function applyFinancialVariant(components, intent, brief) {
+  const b = brief.toLowerCase();
+  const financialKeywords = ["movimiento", "transaccion", "transferencia", "pago", "ingreso", "gasto", "extracto", "cargo", "abono"];
+  const isFinancial = financialKeywords.some(k => b.includes(k));
+  if (!isFinancial) return components;
+  return components.map(c => {
+    if (c.component !== "card-item") return c;
+    const contracts = loadContracts();
+    const financialContract = contracts["card-item/financial"];
+    if (!financialContract) return c;
+    return { ...c, component: "card-item/financial", node_id: financialContract.nodeId };
+  });
+}
+
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 router.post('/', async function(req, res, next) {
   try {
@@ -411,7 +428,14 @@ router.post('/', async function(req, res, next) {
     const rawResult = buildCompositionPlan(brief, intent, patternData, contracts);
     const rawComponents = rawResult.components;
     const compositionRules = rawResult.compositionRules;
-    const components = reorderComponents(resolveExclusivity(rawComponents, brief));
+    // ── AGENTES (UXWriter + UXSpec en paralelo) ──────────────────────────
+    const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.65 }).catch(() => []);
+    const agentResult = await runAgents({ brief, components: rawComponents, intent, kbRules, contracts });
+    const enrichedComponents = agentResult.components;
+    const agentMeta = agentResult.agent_meta;
+
+    const financialComponents = applyFinancialVariant(enrichedComponents, intent, brief);
+    const components = reorderComponents(resolveExclusivity(financialComponents, brief));
     const confidence = calculateScore({ pattern: patternName, components, intent, contracts: Object.values(contracts) });
     const violations = buildViolationsSummary(intent.brief_violations || [], components);
     const screenId = 'gen_' + Date.now();
@@ -429,6 +453,7 @@ router.post('/', async function(req, res, next) {
       violations,
       components,
       composition_rules: compositionRules,
+      agent_meta: agentMeta,
       meta: { engine_version: '1.0.0', phase: 'Fase 3+ — Quantity Parsing', generated_at: new Date().toISOString() }
     });
 
