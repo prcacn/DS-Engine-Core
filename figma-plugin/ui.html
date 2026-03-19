@@ -770,10 +770,11 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
 function renderGenerateResult(data) {
   const conf = data.confidence || {};
   animScore('scoreArc', 'scoreNumber', Math.round((conf.global    || 0) * 100));
-  setBar('barIntent',    'pctIntent',    Math.round((conf.intent    || 0) * 100));
-  setBar('barContract',  'pctContract',  Math.round((conf.contract  || 0) * 100));
-  setBar('barPrecedent', 'pctPrecedent', Math.round((conf.precedent || 0) * 100));
-  setBar('barRules',     'pctRules',     Math.round((conf.rules     || 0) * 100));
+  const sig = conf.signals || {};
+  setBar('barIntent',    'pctIntent',    Math.round((sig.intent_clarity     || conf.intent    || 0) * 100));
+  setBar('barContract',  'pctContract',  Math.round((sig.contract_coverage  || conf.contract  || 0) * 100));
+  setBar('barPrecedent', 'pctPrecedent', Math.round((sig.precedent          || conf.precedent || 0) * 100));
+  setBar('barRules',     'pctRules',     Math.round((sig.rule_compliance    || conf.rules     || 0) * 100));
 
   const kbSec = document.getElementById('kbSection');
   if (data.kb_changes?.length > 0) {
