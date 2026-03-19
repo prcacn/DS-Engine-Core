@@ -610,6 +610,24 @@ select:focus { outline: none; border-color: var(--accent); }
           <div id="studioLockText">Calculando...</div>
         </div>
 
+        <!-- Componentes detectados con contratos -->
+        <div id="studioComponents" style="display:none; flex-direction:column; gap:5px;">
+          <div class="section-title">Componentes detectados</div>
+          <div id="studioCompList"></div>
+        </div>
+
+        <!-- Errores y warnings -->
+        <div id="studioIssues" style="display:none; flex-direction:column; gap:5px;">
+          <div class="section-title">Problemas detectados</div>
+          <div id="studioIssueList"></div>
+        </div>
+
+        <!-- Contratos recuperados -->
+        <div id="studioContracts" style="display:none; flex-direction:column; gap:5px;">
+          <div class="section-title">Contratos DS</div>
+          <div id="studioContractList"></div>
+        </div>
+
         <button class="btn btn-primary" id="btnGoExport" disabled>
           Continuar a Exportar →
         </button>
@@ -886,6 +904,61 @@ function renderStudioResult(data) {
   setBar('sBarRules',     'sPctRules',     Math.round((data.confidence?.rules     || 0) * 100));
   setBar('sBarPrecedent', 'sPctPrecedent', Math.round((data.confidence?.precedent || 0) * 100));
 
+  // ── Componentes detectados ──────────────────────────────
+  const comps = data.components_detail || state.studioValidation?.components || [];
+  const unknowns = data.unknown_components || [];
+  if (comps.length > 0) {
+    document.getElementById('studioComponents').style.display = 'flex';
+    document.getElementById('studioCompList').innerHTML = comps.map((c, i) => {
+      const isUnknown = unknowns.includes(c.component);
+      return `<div class="comp-row" style="${isUnknown ? 'opacity:0.5' : ''}">
+        <div class="comp-order">${i + 1}</div>
+        <div class="comp-name">${c.component}</div>
+        ${isUnknown ? '<div class="comp-kb" style="background:var(--warning);color:#000">?</div>' : '<div class="comp-kb" style="background:var(--success);color:#000">✓</div>'}
+      </div>`;
+    }).join('');
+  }
+
+  // ── Problemas estructurales y KB ────────────────────────
+  const errors   = data.struct_errors   || [];
+  const warnings = data.struct_warnings || [];
+  const kbViol   = data.kb_violations   || [];
+  const allIssues = [
+    ...errors.map(e   => ({ sev: 'error',   text: e.detail })),
+    ...warnings.map(w => ({ sev: 'warning', text: w.detail })),
+    ...kbViol.map(v   => ({ sev: 'error',   text: `KB: ${(v.rule || '').slice(0, 80)}` })),
+  ];
+  if (allIssues.length > 0) {
+    document.getElementById('studioIssues').style.display = 'flex';
+    document.getElementById('studioIssueList').innerHTML = allIssues.map(issue =>
+      `<div class="violation-row ${issue.sev}">
+        <div class="violation-rule">${issue.sev === 'error' ? '✗ Error' : '⚠ Warning'}</div>
+        <div class="violation-detail">${issue.text}</div>
+      </div>`
+    ).join('');
+  } else {
+    document.getElementById('studioIssues').style.display = 'none';
+  }
+
+  // ── Contratos recuperados ───────────────────────────────
+  const kbRules = data.kb_rules || [];
+  if (kbRules.length > 0) {
+    document.getElementById('studioContracts').style.display = 'flex';
+    document.getElementById('studioContractList').innerHTML = kbRules.map(r => {
+      const cat = r.categoria || r.tipo || 'regla';
+      const text = r.content || r.text || '';
+      return `<div class="kb-block" style="margin-bottom:4px;">
+        <div class="kb-block-header active" style="justify-content:space-between;">
+          <span style="font-size:10px;opacity:0.6;">${cat}</span>
+        </div>
+        <div style="padding:7px 10px;font-size:11px;color:var(--txt2);line-height:1.45;">${text.slice(0, 120)}${text.length > 120 ? '…' : ''}</div>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('studioContracts').style.display = 'none';
+  }
+
+  // ── Lock / unlock ───────────────────────────────────────
   const lock = document.getElementById('studioLock');
   const btn  = document.getElementById('btnGoExport');
   if (score >= 80) {
