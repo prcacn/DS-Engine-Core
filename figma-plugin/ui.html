@@ -384,6 +384,32 @@ select:focus { outline: none; border-color: var(--accent); }
 .dot:nth-child(2) { animation-delay: 0.2s; }
 .dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+  /* ── KB TAB ── */
+  .kb-filter-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--txt2); border-radius: 20px; padding: 3px 10px;
+    font-size: 10px; font-family: var(--font); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .kb-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .kb-filter-btn:hover:not(.active) { color: var(--text); border-color: var(--txt2); }
+  .kb-rule-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .kb-rule-card-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .kb-rule-cat { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 10px; }
+  .kb-rule-cat.restriccion  { background: rgba(248,113,113,0.15); color: #f87171; }
+  .kb-rule-cat.recomendacion { background: rgba(99,102,241,0.15); color: var(--accent); }
+  .kb-rule-cat.normativa    { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .kb-rule-cat.ds-pattern   { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .kb-rule-cat.screen-doc   { background: rgba(148,163,184,0.15); color: #94a3b8; }
+  .kb-rule-priority { font-size: 9px; color: var(--txt2); }
+  .kb-rule-text { font-size: 11px; color: var(--txt2); line-height: 1.45; }
+  .kb-rule-delete { font-size: 10px; color: var(--txt2); background: none; border: none; cursor: pointer; padding: 0 2px; opacity: 0.5; }
+  .kb-rule-delete:hover { opacity: 1; color: #f87171; }
 </style>
 </head>
 <body>
@@ -408,6 +434,7 @@ select:focus { outline: none; border-color: var(--accent); }
   <div class="tabs">
     <div class="tab active" data-tab="generate">Generate</div>
     <div class="tab" data-tab="studio">Studio</div>
+    <div class="tab" data-tab="kb">KB</div>
   </div>
 </div>
 
@@ -693,6 +720,79 @@ select:focus { outline: none; border-color: var(--accent); }
     </div><!-- /step2 -->
 
   </div><!-- /studio -->
+
+  <div class="panel" id="panel-kb">
+
+    <div style="display:flex; flex-direction:column; gap:14px; padding-bottom:16px;">
+
+      <!-- Añadir regla -->
+      <div>
+        <div class="section-title">Añadir regla a la KB</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+
+          <div>
+            <div class="field-label">Categoría</div>
+            <select id="kbCat" style="width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:12px; font-family:var(--font);">
+              <option value="restriccion">🚫 Restricción — regla que no se puede incumplir</option>
+              <option value="recomendacion">💡 Recomendación — buena práctica del equipo</option>
+              <option value="normativa">⚖️ Normativa — legal o regulatoria</option>
+              <option value="ds-pattern">🧩 DS Pattern — decisión de composición o UX</option>
+              <option value="screen-doc">📄 Screen Doc — documentación de pantalla</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="field-label">Prioridad</div>
+            <select id="kbPriority" style="width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:12px; font-family:var(--font);">
+              <option value="alta">Alta</option>
+              <option value="media" selected>Media</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="field-label">Geografía</div>
+            <select id="kbGeo" style="width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:12px; font-family:var(--font);">
+              <option value="global" selected>Global — aplica en todos los mercados</option>
+              <option value="españa">España</option>
+              <option value="mexico">México</option>
+              <option value="colombia">Colombia</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="field-label">Regla</div>
+            <textarea id="kbText" placeholder="Escribe la regla, decisión o patrón..." style="height:90px; resize:none;"></textarea>
+          </div>
+
+          <button class="btn btn-primary" id="btnAddKB">Añadir a la KB</button>
+          <div class="status-msg" id="kbAddStatus"></div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border); padding-top:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div class="section-title" style="margin:0;">Reglas actuales</div>
+          <button class="btn btn-secondary btn-sm" id="btnRefreshKB" style="padding:4px 10px; font-size:11px;">↺ Actualizar</button>
+        </div>
+
+        <!-- Filtro por categoría -->
+        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px;" id="kbFilterBar">
+          <button class="kb-filter-btn active" data-cat="all">Todas</button>
+          <button class="kb-filter-btn" data-cat="restriccion">Restricción</button>
+          <button class="kb-filter-btn" data-cat="recomendacion">Recom.</button>
+          <button class="kb-filter-btn" data-cat="normativa">Normativa</button>
+          <button class="kb-filter-btn" data-cat="ds-pattern">Pattern</button>
+          <button class="kb-filter-btn" data-cat="screen-doc">Doc</button>
+        </div>
+
+        <div id="kbRulesList" style="display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:11px; color:var(--txt2); text-align:center; padding:20px 0;">Pulsa Actualizar para cargar las reglas</div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /kb -->
 
 </div><!-- /panels -->
 
@@ -1138,6 +1238,135 @@ function animScore(arcId, numId, score) {
 function spin() {
   return '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span> ';
 }
+
+// ── KB TAB ─────────────────────────────────────────────────
+let kbAllRules = [];
+let kbActiveCat = 'all';
+
+// Filtros
+document.getElementById('kbFilterBar').addEventListener('click', (e) => {
+  const btn = e.target.closest('.kb-filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.kb-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  kbActiveCat = btn.dataset.cat;
+  renderKBRules();
+});
+
+// Cargar reglas
+document.getElementById('btnRefreshKB').addEventListener('click', loadKBRules);
+
+async function loadKBRules() {
+  const list = document.getElementById('kbRulesList');
+  list.innerHTML = '<div style="font-size:11px;color:var(--txt2);text-align:center;padding:20px 0;">Cargando...</div>';
+  try {
+    const r = await fetch(ENGINE_URL + '/knowledge/list', {
+      headers: { 'X-API-Key': ENGINE_KEY }
+    });
+    const data = await r.json();
+    kbAllRules = data.entries || [];
+    renderKBRules();
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--warning);padding:10px 0;">✗ Error cargando KB: ' + e.message + '</div>';
+  }
+}
+
+function renderKBRules() {
+  const list = document.getElementById('kbRulesList');
+  const filtered = kbActiveCat === 'all'
+    ? kbAllRules
+    : kbAllRules.filter(r => r.categoria === kbActiveCat);
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--txt2);text-align:center;padding:20px 0;">Sin reglas en esta categoría</div>';
+    return;
+  }
+
+  const CAT_ICONS = {
+    restriccion: '🚫', recomendacion: '💡', normativa: '⚖️',
+    'ds-pattern': '🧩', 'screen-doc': '📄'
+  };
+
+  list.innerHTML = filtered.map(r => {
+    const cat   = r.categoria || 'sin-categoria';
+    const icon  = CAT_ICONS[cat] || '·';
+    const text  = (r.text || '').slice(0, 100) + ((r.text||'').length > 100 ? '…' : '');
+    const prio  = r.prioridad || '';
+    return `<div class="kb-rule-card">
+      <div class="kb-rule-card-header">
+        <span class="kb-rule-cat ${cat}">${icon} ${cat}</span>
+        <span class="kb-rule-priority">${prio}</span>
+        <button class="kb-rule-delete" onclick="deleteKBRule('${r.id}')" title="Eliminar">✕</button>
+      </div>
+      <div class="kb-rule-text">${text}</div>
+    </div>`;
+  }).join('');
+}
+
+async function deleteKBRule(id) {
+  try {
+    await fetch(ENGINE_URL + '/knowledge/delete/' + id, {
+      method: 'DELETE',
+      headers: { 'X-API-Key': ENGINE_KEY }
+    });
+    kbAllRules = kbAllRules.filter(r => r.id !== id);
+    renderKBRules();
+  } catch(e) {
+    console.error('Error eliminando regla:', e.message);
+  }
+}
+
+// Añadir regla
+document.getElementById('btnAddKB').addEventListener('click', async () => {
+  const text = document.getElementById('kbText').value.trim();
+  if (!text) {
+    setStatus('kbAddStatus', 'warn', '⚠ Escribe el contenido de la regla');
+    return;
+  }
+
+  const cat      = document.getElementById('kbCat').value;
+  const priority = document.getElementById('kbPriority').value;
+  const geo      = document.getElementById('kbGeo').value;
+
+  setStatus('kbAddStatus', 'loading', spin() + 'Añadiendo a la KB...');
+  document.getElementById('btnAddKB').disabled = true;
+
+  try {
+    const r = await fetch(ENGINE_URL + '/knowledge/ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
+      body: JSON.stringify({
+        text,
+        categoria: cat,
+        prioridad: priority,
+        geografia: geo,
+        autor: 'plugin',
+        tipo: cat,
+      })
+    });
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error || 'Error desconocido');
+
+    setStatus('kbAddStatus', 'success', '✓ Regla añadida a la KB');
+    document.getElementById('kbText').value = '';
+    // Recargar lista automáticamente
+    await loadKBRules();
+  } catch(e) {
+    setStatus('kbAddStatus', 'error', '✗ ' + e.message);
+  } finally {
+    document.getElementById('btnAddKB').disabled = false;
+  }
+});
+
+// Cargar al entrar al tab KB
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    if (tab.dataset.tab === 'kb' && kbAllRules.length === 0) {
+      loadKBRules();
+    }
+  });
+});
+
 </script>
 </body>
 </html>
