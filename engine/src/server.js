@@ -8,6 +8,7 @@ const validateRoute   = require('./api/routes/validate');
 const registryRoute   = require('./api/routes/registry');
 const paintRoute      = require('./api/routes/paint');
 const knowledgeRoute  = require('./api/routes/knowledge');
+const generateDocRoute = require('./api/routes/generate-doc');
 const errorHandler    = require('./api/middleware/errorHandler');
 const auth            = require('./api/middleware/auth');
 
@@ -40,6 +41,7 @@ app.use('/validate',   auth, validateRoute);
 app.use('/registry',   auth, registryRoute);
 app.use('/paint',      auth, paintRoute);
 app.use('/knowledge',  auth, knowledgeRoute);
+app.use('/generate-doc', auth, generateDocRoute);
 
 // ── Error handler global ───────────────────────────────────────────────────
 app.use(errorHandler);
