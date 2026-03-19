@@ -276,21 +276,58 @@ function handleGetSelection() {
     return;
   }
 
-  // Leer los componentes del frame por nombre
+  // IDs canónicos invertidos para lookup rápido: nodeId → componentName
+  var NODE_ID_TO_NAME = {};
+  Object.keys(COMPONENT_NODE_IDS).forEach(function(name) {
+    NODE_ID_TO_NAME[COMPONENT_NODE_IDS[name]] = name;
+  });
+
   var components = [];
   var knownNames = Object.keys(COMPONENT_NODE_IDS);
 
   frame.children.forEach(function(child, index) {
-    var name = child.name.toLowerCase().replace(/\s+/g, '-');
-    // Intentar matchear con nombres canónicos
-    var matched = knownNames.find(function(k) {
-      return name.includes(k) || k.includes(name);
-    });
+    var isInstance = child.type === 'INSTANCE';
+    var isDetached = child.type === 'FRAME' || child.type === 'GROUP';
+    var detached = false;
+    var matched = null;
+
+    if (isInstance) {
+      // Caso ideal: es una instancia — leer el mainComponent para saber qué es
+      var mainComp = child.mainComponent;
+      if (mainComp) {
+        var mainId = mainComp.id;
+        // Buscar por node ID exacto del componente padre
+        matched = NODE_ID_TO_NAME[mainId] || null;
+        // Si no hay match por ID, intentar por nombre del mainComponent
+        if (!matched) {
+          var mainName = mainComp.name.toLowerCase().replace(/\s+/g, '-');
+          matched = knownNames.find(function(k) {
+            return mainName.includes(k) || k.includes(mainName);
+          }) || null;
+        }
+      }
+    }
+
+    if (!matched) {
+      // Fallback: buscar por nombre del layer (cubre detaches que conservan el nombre)
+      var layerName = child.name.toLowerCase().replace(/\s+/g, '-');
+      matched = knownNames.find(function(k) {
+        return layerName.includes(k) || k.includes(layerName);
+      }) || null;
+
+      // Si el nodo no es instancia pero tiene nombre canónico → está detacheado
+      if (matched && !isInstance) {
+        detached = true;
+      }
+    }
+
     if (matched) {
       components.push({
         component: matched,
         order: index + 1,
         node_id: COMPONENT_NODE_IDS[matched],
+        is_instance: isInstance,
+        detached: detached,
       });
     }
   });
@@ -300,11 +337,14 @@ function handleGetSelection() {
     return;
   }
 
+  var detachedCount = components.filter(function(c) { return c.detached; }).length;
+
   figma.ui.postMessage({
     type: 'selection-data',
     components: components,
     frameId: frame.id,
     frameName: frame.name,
+    detached_count: detachedCount,
   });
 }
 
