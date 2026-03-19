@@ -637,6 +637,12 @@ select:focus { outline: none; border-color: var(--accent); }
           <div id="studioLockText">Calculando...</div>
         </div>
 
+        <!-- Componentes detacheados -->
+        <div id="studioDetached" style="display:none; flex-direction:column; gap:5px;">
+          <div class="section-title" style="color:var(--warning);">⚠ Componentes detacheados</div>
+          <div id="studioDetachedList"></div>
+        </div>
+
         <!-- Componentes detectados con contratos -->
         <div id="studioComponents" style="display:none; flex-direction:column; gap:5px;">
           <div class="section-title">Componentes detectados</div>
@@ -1005,17 +1011,39 @@ function renderStudioResult(data) {
   setBar('sBarRules',     'sPctRules',     Math.round((data.confidence?.rules     || 0) * 100));
   setBar('sBarPrecedent', 'sPctPrecedent', Math.round((data.confidence?.precedent || 0) * 100));
 
+  // ── Componentes detacheados ─────────────────────────────
+  const detached = data.detached_components || [];
+  const detachedSection = document.getElementById('studioDetached');
+  const detachedList    = document.getElementById('studioDetachedList');
+  if (detached.length > 0) {
+    detachedSection.style.display = 'flex';
+    detachedList.innerHTML = detached.map(d =>
+      `<div class="violation-row warning">
+        <div class="violation-rule">⚠ Detach — ${d.component}</div>
+        <div class="violation-detail">${d.reason}</div>
+      </div>`
+    ).join('');
+  } else {
+    detachedSection.style.display = 'none';
+  }
+
   // ── Componentes detectados ──────────────────────────────
   const comps = data.components_detail || state.studioValidation?.components || [];
   const unknowns = data.unknown_components || [];
   if (comps.length > 0) {
     document.getElementById('studioComponents').style.display = 'flex';
     document.getElementById('studioCompList').innerHTML = comps.map((c, i) => {
-      const isUnknown = unknowns.includes(c.component);
-      return `<div class="comp-row" style="${isUnknown ? 'opacity:0.5' : ''}">
+      const isUnknown  = unknowns.includes(c.component);
+      const isDetached = detached.some(d => d.component === c.component);
+      const badge = isUnknown
+        ? '<div class="comp-kb" style="background:var(--warning);color:#000">?</div>'
+        : isDetached
+          ? '<div class="comp-kb" style="background:#f59e0b;color:#000">detach</div>'
+          : '<div class="comp-kb" style="background:var(--success);color:#000">✓</div>';
+      return `<div class="comp-row" style="${isDetached ? 'opacity:0.7' : ''}">
         <div class="comp-order">${i + 1}</div>
         <div class="comp-name">${c.component}</div>
-        ${isUnknown ? '<div class="comp-kb" style="background:var(--warning);color:#000">?</div>' : '<div class="comp-kb" style="background:var(--success);color:#000">✓</div>'}
+        ${badge}
       </div>`;
     }).join('');
   }
