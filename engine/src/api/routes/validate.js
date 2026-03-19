@@ -150,17 +150,33 @@ function checkKBViolations(components, kbRules, intent) {
 // Calcula un confidence score basado en la composición real del frame
 
 function calculateValidationScore(components, intent, contracts, kbViolations, structErrors) {
-  // CONTRACT: % de componentes que existen en los contratos
-  const total     = components.length;
-  const inContract = components.filter(c => contracts[c.component]).length;
-  const contract  = total > 0 ? inContract / total : 0;
+  const total = components.length;
 
-  // RULES: penalizar errores estructurales y violaciones KB
-  const rulesPenalty = (structErrors.length * 0.15) + (kbViolations.length * 0.20);
+  // CONTRACT: % de componentes en contrato, penalizando detaches
+  // - Componente en contrato y es instancia  → 1.0 (perfecto)
+  // - Componente en contrato pero detacheado → 0.5 (penalización -50%)
+  // - Componente no reconocido              → 0.0
+  const DETACH_PENALTY = 0.5;
+  const contractScore = components.reduce((sum, c) => {
+    const inContract = contracts[c.component] ? 1 : 0;
+    if (!inContract) return sum; // 0 para desconocidos
+    const detachFactor = c.detached ? DETACH_PENALTY : 1.0;
+    return sum + detachFactor;
+  }, 0);
+  const contract = total > 0 ? contractScore / total : 0;
+
+  // Identificar detaches para incluirlos en la respuesta
+  const detachedComponents = components
+    .filter(c => c.detached)
+    .map(c => ({ component: c.component, reason: 'Componente detacheado — usa la instancia del DS en su lugar' }));
+
+  // RULES: penalizar errores estructurales, violaciones KB y detaches graves
+  const detachPenalty   = detachedComponents.length * 0.10; // -10% por cada detach
+  const rulesPenalty    = (structErrors.length * 0.15) + (kbViolations.length * 0.20) + detachPenalty;
   const rules = Math.max(0, 1 - rulesPenalty);
 
   // PRECEDENT: usar el del calculateScore normal si hay intent
-  let precedent = 0.5; // baseline si no hay ejemplos
+  let precedent = 0.5;
   try {
     const scoreResult = calculateScore({
       pattern:   intent?.intent_type || 'unknown',
@@ -171,14 +187,15 @@ function calculateValidationScore(components, intent, contracts, kbViolations, s
     precedent = scoreResult.precedent || 0.5;
   } catch (e) { /* usar baseline */ }
 
-  // GLOBAL: promedio ponderado (sin intent — no lo podemos medir en validación)
+  // GLOBAL: promedio ponderado
   const global = (contract * 0.35) + (rules * 0.40) + (precedent * 0.25);
 
   return {
-    global:   parseFloat(global.toFixed(2)),
-    contract: parseFloat(contract.toFixed(2)),
-    rules:    parseFloat(rules.toFixed(2)),
-    precedent: parseFloat(precedent.toFixed(2)),
+    global:              parseFloat(global.toFixed(2)),
+    contract:            parseFloat(contract.toFixed(2)),
+    rules:               parseFloat(rules.toFixed(2)),
+    precedent:           parseFloat(precedent.toFixed(2)),
+    detached_components: detachedComponents,
     status:   global >= 0.8 ? 'approved' : global >= 0.6 ? 'review' : 'blocked',
   };
 }
