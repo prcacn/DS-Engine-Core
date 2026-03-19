@@ -20,6 +20,7 @@ const SYSTEM_PROMPT = `Eres el Intent Parser de un Design System IA-Ready.
 Tu única tarea es analizar un brief de diseño y devolver un JSON estructurado.
 
 Los tipos de pantalla disponibles son:
+- dashboard: pantalla principal o home con resumen de estado, KPIs, accesos rápidos
 - lista-con-filtros: listados navegables con filtros por categoría
 - formulario-simple: captura de datos del usuario (login, registro, edición)
 - confirmacion: confirmación de acciones importantes o irreversibles
@@ -55,7 +56,7 @@ Analiza el brief e identifica si pide algo que viola estas restricciones.
 Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin markdown, sin explicaciones.
 El JSON debe tener exactamente esta estructura:
 {
-  "intent_type": "lista-con-filtros | formulario-simple | confirmacion | detalle | onboarding | perfil-usuario | error-estado | notificaciones | transferencia-bancaria",
+  "intent_type": "dashboard | lista-con-filtros | formulario-simple | confirmacion | detalle | onboarding | perfil-usuario | error-estado | notificaciones | transferencia-bancaria",
   "domain": "string corto describiendo el dominio (ej: fondos, login, transacciones)",
   "required_capabilities": ["array de capacidades necesarias"],
   "constraints": {
@@ -138,8 +139,18 @@ function fallbackParse(brief) {
   let confidence  = 0.50;
   let is_multiscreen_flow = false;
 
+  // dashboard — home, inicio, resumen, pantalla principal
+  if (b.includes('dashboard') || b.includes('home') || b.includes('inicio') ||
+      b.includes('pantalla principal') || b.includes('pantalla de inicio') ||
+      b.includes('pantalla home') || b.includes('bienvenida al cliente') ||
+      b.includes('resumen de cuenta') || b.includes('vista general') ||
+      b.includes('página principal') || b.includes('kpi') ||
+      b.includes('accesos rápidos')) {
+    intent_type = 'dashboard';
+    confidence  = 0.80;
+
   // transferencia-bancaria — tiene prioridad sobre formulario-simple
-  if (b.includes('transferencia') || b.includes('transferir') ||
+  } else if (b.includes('transferencia') || b.includes('transferir') ||
       b.includes('enviar dinero') || b.includes('pago a tercero') ||
       b.includes('bizum') || b.includes('sepa') ||
       b.includes('mover fondos') || b.includes('mandar dinero') ||
@@ -220,7 +231,11 @@ function fallbackParse(brief) {
 
   return {
     intent_type,
-    domain:   intent_type === 'transferencia-bancaria' ? 'transferencias' : 'general',
+    domain:   intent_type === 'transferencia-bancaria' ? 'transferencias'
+               : intent_type === 'dashboard' ? 'home'
+               : intent_type === 'lista-con-filtros' ? 'listados'
+               : intent_type === 'formulario-simple' ? 'formularios'
+               : 'general',
     required_capabilities: intent_type === 'transferencia-bancaria' ? ['multi-screen-flow', 'form-validation', 'confirmation'] : [],
     constraints: {
       has_filters:         false,
