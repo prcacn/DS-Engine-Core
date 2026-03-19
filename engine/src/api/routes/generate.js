@@ -10,6 +10,7 @@ const { runAgents }            = require("../../agents/orchestrator");
 const { search: kbSearch }     = require("../../core/knowledgeBase");
 
 const INTENT_TO_PATTERN = {
+  'dashboard':             'dashboard',
   'lista-con-filtros':     'lista-con-filtros',
   'formulario-simple':     'formulario-simple',
   'confirmacion':          'confirmacion',
