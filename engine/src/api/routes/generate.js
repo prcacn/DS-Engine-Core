@@ -442,20 +442,22 @@ router.post('/', async function(req, res, next) {
 
     console.log('  ✓ Plan generado: ' + components.length + ' componentes, status: ' + confidence.status);
 
-    res.json({
-      screen_id:         screenId,
-      brief:             brief.trim(),
-      pattern:           patternName,
-      flow_type:         'single',
-      intent,
-      status:            confidence.status,
-      confidence,
-      violations,
-      components,
-      composition_rules: compositionRules,
-      agent_meta: agentMeta,
-      meta: { engine_version: '1.0.0', phase: 'Fase 3+ — Quantity Parsing', generated_at: new Date().toISOString() }
-    });
+  res.json({
+  screen_id:         screenId,
+  brief:             brief.trim(),
+  pattern:           patternName,
+  flow_type:         'single',
+  intent,
+  status:            confidence.status,
+  confidence,
+  violations,
+  components,
+  composition_rules: compositionRules,
+  agent_meta:        agentMeta,
+  kb_rules:          kbRules,
+  kb_changes:        agentMeta?.kb_changes || [],
+  meta: { engine_version: '1.0.0', phase: 'Fase 3+ — Quantity Parsing', generated_at: new Date().toISOString() }
+});
 
   } catch (err) {
     next(err);
