@@ -172,8 +172,20 @@ function extractQuantities(brief) {
 
 // ─── RESOLVER VARIANTE DE COMPONENTE ─────────────────────────────────────────
 function resolveVariant(component, intent) {
+  // C1: navigation-header variant basada en nivel de navegación
+  // L0 (dashboard, onboarding): default — sin back, es la raíz
+  // L1 (listas, perfil, notificaciones): default — es tab del app shell
+  // L2 (detalle, formulario): with-back — viene de una pantalla anterior
+  // L3 (confirmacion, error): close — modal o paso final
+  const navLevel = INTENT_TO_LEVEL[intent.intent_type] || 'L1';
   const variants = {
-    'navigation-header':  function() { return intent.intent_type === 'lista-con-filtros' ? 'default' : 'with-back'; },
+    'navigation-header':  function() {
+      if (navLevel === 'L0') return 'default';
+      if (navLevel === 'L1') return 'default';
+      if (navLevel === 'L2') return 'with-back';
+      if (navLevel === 'L3') return 'close';
+      return 'default';
+    },
     'button-primary':     function() { return intent.constraints && intent.constraints.is_destructive ? 'destructive' : 'default'; },
     'empty-state':        function() { return intent.constraints && intent.constraints.has_filters ? 'no-results' : 'default'; },
     'modal-bottom-sheet': function() { return (intent.constraints && intent.constraints.is_destructive) || intent.intent_type === 'confirmacion' ? 'confirmation' : 'default'; },
@@ -208,6 +220,15 @@ function resolveOptional(component, intent, brief) {
     'button-primary':     function() { return { include: intent.intent_type === 'lista-con-filtros' && (b.includes('crear') || b.includes('nuevo') || b.includes('añadir')), confidence: 0.75 }; },
     'modal-bottom-sheet': function() { return { include: (intent.constraints && intent.constraints.needs_confirmation) || (intent.constraints && intent.constraints.is_destructive), confidence: 0.85 }; },
     'button-secondary':   function() { return { include: intent.intent_type === 'confirmacion' || (intent.constraints && intent.constraints.needs_confirmation), confidence: 0.90 }; },
+    // C1: tab-bar obligatorio en L0 (dashboard, onboarding autenticado) y L1 (listas raíz)
+    // El engine infiere esto del nivel de navegación — el diseñador no necesita pedirlo
+    'tab-bar': function() {
+      const level = INTENT_TO_LEVEL[intent.intent_type] || 'L2';
+      const L0_intents = ['dashboard'];
+      const L1_intents = ['lista-con-filtros', 'notificaciones', 'perfil-usuario'];
+      const include = L0_intents.includes(intent.intent_type) || L1_intents.includes(intent.intent_type);
+      return { include, confidence: include ? 0.95 : 0 };
+    },
     'card-item':          function() { return { include: intent.intent_type === 'confirmacion', confidence: 0.75 }; },
   };
   return rules[component] ? rules[component]() : { include: false, confidence: 0 };
