@@ -1,5 +1,8 @@
 # input-text
 
+## Node ID en Figma
+1:21
+
 ## Descripción
 Campo de entrada de texto. Elemento de formulario para captura de datos del usuario. Incluye label superior y texto de placeholder. Base para todos los campos de formulario.
 
