@@ -98,24 +98,26 @@ async function pcDelete(id) {
 }
 
 // ── Embedding OpenAI (opcional) ────────────────────────────────────────────
+// Mismo modelo que knowledgeBase.js — Pinecone Inference multilingual-e5-large
+// Sin dependencia de OpenAI API key
 async function embed(text) {
-  if (!process.env.OPENAI_API_KEY) return null;
   try {
-    const r = await fetch('https://api.openai.com/v1/embeddings', {
+    const r = await fetch('https://api.pinecone.io/embed', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
-        'Content-Type': 'application/json'
+        'Api-Key': process.env.PINECONE_API_KEY,
+        'Content-Type': 'application/json',
+        'X-Pinecone-API-Version': '2024-10',
       },
       body: JSON.stringify({
-        model: 'text-embedding-3-small',
-        input: text,
-        dimensions: parseInt(process.env.PINECONE_DIMENSION || '1024'),
+        model: 'multilingual-e5-large',
+        inputs: [{ text }],
+        parameters: { input_type: 'passage', truncate: 'END' },
       }),
     });
     const d = await r.json();
-    return d.data?.[0]?.embedding || null;
-  } catch(e) { return null; }
+    return d.data?.[0]?.values || null;
+  } catch(e) { console.error('  ✗ [KB/embed]', e.message); return null; }
 }
 
 // ── Carga inicial desde Pinecone ───────────────────────────────────────────
