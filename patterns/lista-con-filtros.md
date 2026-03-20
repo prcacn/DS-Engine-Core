@@ -9,7 +9,7 @@ Pantalla de listado con capacidad de filtrado por categorías. El caso de uso m�
 - Cuando el listado puede quedar vacío tras filtrar
 
 ## Componentes requeridos (en este orden)
-1. navigation-header — variant: with-back o default según profundidad
+1. navigation-header — variant: Type=Predeterminada (L1) — con título y campana
 2. filter-bar — siempre debajo del header
 3. card-item × N — mínimo 1, máximo 20 en primera carga
 4. empty-state — CONDICIONAL: solo si card-item count = 0
