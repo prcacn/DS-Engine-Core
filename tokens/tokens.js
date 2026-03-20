@@ -252,11 +252,51 @@ export const componentTokens = {
   },
 };
 
+
+// ─── TYPOGRAPHY ───────────────────────────────────────────────────────────────
+// Fuente: DM Sans — sincronizado desde colección Typography de Figma
+
+export const primitiveTypography = {
+  fontFamily: { base: 'DM Sans' },
+  fontSize:   { 10: 10, 12: 12, 14: 14, 16: 16, 20: 20, 24: 24, 30: 30, 36: 36 },
+  fontWeight: { regular: 400, medium: 500, semiBold: 600, bold: 700 },
+  lineHeight: { tight: 1.20, normal: 1.40, relaxed: 1.60 },
+  letterSpacing: { tight: -0.3, normal: 0, wide: 0.3 },
+};
+
+export const typography = {
+  display:       { fontFamily: 'DM Sans', fontSize: 24, fontWeight: 700, lineHeight: 1.20 },
+  heading:       { fontFamily: 'DM Sans', fontSize: 16, fontWeight: 600, lineHeight: 1.40 },
+  bodyStrong:    { fontFamily: 'DM Sans', fontSize: 14, fontWeight: 500, lineHeight: 1.40 },
+  body:          { fontFamily: 'DM Sans', fontSize: 14, fontWeight: 400, lineHeight: 1.60 },
+  label:         { fontFamily: 'DM Sans', fontSize: 12, fontWeight: 400, lineHeight: 1.20 },
+  captionStrong: { fontFamily: 'DM Sans', fontSize: 12, fontWeight: 400, lineHeight: 1.40 },
+  caption:       { fontFamily: 'DM Sans', fontSize: 12, fontWeight: 400, lineHeight: 1.40 },
+  micro:         { fontFamily: 'DM Sans', fontSize: 10, fontWeight: 400, lineHeight: 1.20 },
+};
+
+// ─── GRID — MOBILE ────────────────────────────────────────────────────────────
+// Retícula 4 columnas · 8px gutter · 16px margen · base 8px · 390×844
+// Sincronizado desde colección Grid / Mobile de Figma
+
+export const grid = {
+  mobile: {
+    columns:     4,
+    margin:      16,   // → Spacing/Padding/Horizontal/MD → Size/16
+    gutter:      8,    // → Spacing/Gap/MD → Size/8
+    rowBase:     8,    // → Spacing/Gap/MD → Size/8
+    columnWidth: 82,   // (390 - 16×2 - 8×3) / 4 = 82.25 ≈ 82
+    screen:      { width: 390, height: 844 },
+    safeZone:    { top: 16, bottom: 34 },  // 34px iOS safe area bottom
+  },
+};
+
 // ─── DEFAULT EXPORT ───────────────────────────────────────────────────────────
 
 const tokens = {
-  primitive: { colors: primitiveColors, spacing: primitiveSpacing },
-  semantic:  { colors, spacing },
+  primitive: { colors: primitiveColors, spacing: primitiveSpacing, typography: primitiveTypography },
+  semantic:  { colors, spacing, typography },
+  grid,
   components: componentTokens,
 };
 
