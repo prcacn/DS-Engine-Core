@@ -1,5 +1,8 @@
 # badge
 
+## Node ID en Figma
+20:800
+
 ## Descripción
 Etiqueta de estado compacta. Muestra un valor numérico o texto corto con fondo de color semántico. Indica variación, estado o categoría de forma visual y concisa.
 
