@@ -737,6 +737,9 @@
 
   function renderScreen(data) {
     document.getElementById('figmaBtn').disabled = false;
+    // Mostrar violaciones del brief encima del teléfono si las hay
+    var violBox = document.getElementById('briefViolationsBox');
+    if (violBox) violBox.innerHTML = renderBriefViolations(data);
     var screen = document.getElementById('phoneScreen');
 
     // ── COMPATIBILIDAD MULTISCREEN ─────────────────────────────────────────
@@ -969,6 +972,27 @@
   }
 
   // ── RENDER ANALYSIS con KB catalogado ────────────────────────────────────────
+  function renderBriefViolations(data) {
+    var violations = (data.intent && data.intent.brief_violations) || [];
+    var errors = violations.filter(function(v) { return v.severity === 'error'; });
+    var warnings = violations.filter(function(v) { return v.severity === 'warning'; });
+    if (errors.length === 0 && warnings.length === 0) return '';
+
+    var html = '<div style="margin:8px 0;border-radius:8px;overflow:hidden;border:1px solid ' + (errors.length > 0 ? '#fecaca' : '#fde68a') + '">';
+    html += '<div style="padding:8px 12px;background:' + (errors.length > 0 ? '#fef2f2' : '#fffbeb') + ';font-family:var(--mono);font-size:10px;font-weight:700;color:' + (errors.length > 0 ? '#dc2626' : '#b45309') + ';letter-spacing:0.05em">';
+    html += errors.length > 0 ? '⛔ VIOLACIÓN DEL DESIGN SYSTEM' : '⚠ ADVERTENCIA DEL DESIGN SYSTEM';
+    html += '</div>';
+    violations.forEach(function(v) {
+      var isErr = v.severity === 'error';
+      html += '<div style="padding:8px 12px;background:white;border-top:1px solid #f1f5f9;display:flex;gap:8px;align-items:flex-start">';
+      html += '<span style="font-size:12px;flex-shrink:0">' + (isErr ? '⛔' : '⚠️') + '</span>';
+      html += '<div><div style="font-family:var(--sans);font-size:11px;font-weight:600;color:#0f172a">' + v.rule + '</div>';
+      html += '<div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">' + v.detail + '</div></div></div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
   function renderAnalysis(data) {
     var conf = data.confidence;
     var score = conf.global;
