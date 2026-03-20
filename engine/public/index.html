@@ -884,6 +884,85 @@
         var nbs=nbColors[v]||nbColors.info;
         return '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:'+nbs.bg+';border-bottom:1px solid rgba(0,0,0,0.06)"><div style="width:8px;height:8px;border-radius:50%;background:'+nbs.dot+';flex-shrink:0"></div><div style="flex:1"><div style="font-family:var(--sans);font-size:12px;font-weight:500;color:#0f172a">'+t('title','Notificación')+'</div>'+(p.message?'<div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">'+p.message+'</div>':'')+'</div>'+(p.action_label?'<div style="font-family:var(--sans);font-size:11px;font-weight:600;color:#1d4ed8;white-space:nowrap">'+p.action_label+'</div>':'')+'</div>';
 
+      case 'card-item/financial':
+        var fi = (comp.quantity_index ? comp.quantity_index - 1 : 0);
+        var fAmounts = ['+€2.450,00', '+€1.200,00', '+€850,00', '+€3.100,00'];
+        var fTitles  = ['Nómina Empresa', 'Dividendos', 'Reembolso', 'Venta fondo'];
+        var fSubs    = ['15 mar · Transferencia', '10 mar · Dividendo', '8 mar · Devolución', '5 mar · Liquidación'];
+        var fAmt = t('value', fAmounts[fi % fAmounts.length]);
+        var fColor = fAmt.includes('+') ? '#16a34a' : '#dc2626';
+        return '<div style="display:flex;align-items:center;padding:12px 16px;background:white;border-bottom:1px solid #f1f5f9;gap:12px">'
+          + '<div style="width:40px;height:40px;border-radius:20px;background:#e0fdf4;flex-shrink:0;display:flex;align-items:center;justify-content:center">'
+          + '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8l5-5 5 5" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round"/></svg></div>'
+          + '<div style="flex:1"><div style="font-family:var(--sans);font-size:13px;font-weight:500;color:#0f172a">' + t('title', fTitles[fi % fTitles.length]) + '</div>'
+          + '<div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">' + t('subtitle', fSubs[fi % fSubs.length]) + '</div></div>'
+          + '<div style="font-family:var(--sans);font-size:13px;font-weight:600;color:' + fColor + '">' + fAmt + '</div></div>';
+
+      case 'card-item/financial-expense':
+        var ei = (comp.quantity_index ? comp.quantity_index - 1 : 0);
+        var eAmounts = ['-€320,00', '-€89,50', '-€1.200,00', '-€45,00'];
+        var eTitles  = ['Supermercado', 'Suscripción', 'Alquiler', 'Restaurante'];
+        var eSubs    = ['Hoy · Pago', '14 mar · Cargo', '1 mar · Domiciliación', '13 mar · Pago'];
+        var eAmt = t('value', eAmounts[ei % eAmounts.length]);
+        return '<div style="display:flex;align-items:center;padding:12px 16px;background:white;border-bottom:1px solid #f1f5f9;gap:12px">'
+          + '<div style="width:40px;height:40px;border-radius:20px;background:#fef2f2;flex-shrink:0;display:flex;align-items:center;justify-content:center">'
+          + '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M3 8l5 5 5-5" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/></svg></div>'
+          + '<div style="flex:1"><div style="font-family:var(--sans);font-size:13px;font-weight:500;color:#0f172a">' + t('title', eTitles[ei % eTitles.length]) + '</div>'
+          + '<div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">' + t('subtitle', eSubs[ei % eSubs.length]) + '</div></div>'
+          + '<div style="font-family:var(--sans);font-size:13px;font-weight:600;color:#dc2626">' + eAmt + '</div></div>';
+
+      case 'card-item/account':
+        var ai = (comp.quantity_index ? comp.quantity_index - 1 : 0);
+        var aNames   = ['Cuenta corriente', 'Cuenta ahorro', 'Cuenta inversión'];
+        var aNumbers = ['•••• 4821', '•••• 2930', '•••• 7712'];
+        var aBalances= ['€12.340,00', '€8.750,00', '€24.100,00'];
+        var aTypes   = ['Principal', 'Ahorro', 'Inversión'];
+        var aInitials= ['B', 'S', 'I'];
+        var aIdx = ai % aNames.length;
+        return '<div style="display:flex;align-items:center;padding:12px 16px;background:white;border-bottom:1px solid #f1f5f9;gap:12px">'
+          + '<div style="width:40px;height:40px;border-radius:20px;background:#eef2ff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:14px;font-weight:600;color:#4f46e5">' + t('initials', aInitials[aIdx]) + '</div>'
+          + '<div style="flex:1"><div style="font-family:var(--sans);font-size:13px;font-weight:500;color:#0f172a">' + t('account-name', aNames[aIdx]) + '</div>'
+          + '<div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-top:2px">' + t('account-number', '•••• ' + aNumbers[aIdx].split(' ')[1]) + '</div></div>'
+          + '<div style="text-align:right"><div style="font-family:var(--sans);font-size:13px;font-weight:600;color:#0f172a">' + t('balance', aBalances[aIdx]) + '</div>'
+          + '<div style="font-family:var(--sans);font-size:10px;color:#94a3b8;margin-top:2px">' + t('account-type', aTypes[aIdx]) + '</div></div></div>';
+
+      case 'amount-display':
+        return '<div style="padding:20px 16px 12px;background:white;border-bottom:1px solid #f1f5f9">'
+          + '<div style="font-family:var(--sans);font-size:11px;color:#64748b;margin-bottom:4px">' + t('label', 'Saldo total') + '</div>'
+          + '<div style="font-family:var(--sans);font-size:32px;font-weight:700;color:#0f172a;letter-spacing:-0.5px">' + t('amount', '€45.230,00') + '</div>'
+          + '<div style="display:flex;align-items:center;gap:6px;margin-top:6px">'
+          + '<span style="background:#dcfce7;color:#16a34a;font-size:10px;font-family:var(--sans);font-weight:600;padding:2px 8px;border-radius:8px">↑ +2,4%</span>'
+          + '<span style="font-family:var(--sans);font-size:11px;color:#94a3b8">este mes</span></div></div>';
+
+      case 'chart-sparkline':
+        var spPath = 'M0 50 C20 45 40 55 60 40 C80 25 100 35 120 30 C140 25 160 15 180 20 C200 25 220 10 240 8 C260 6 280 15 300 12 C320 9 340 5 360 8';
+        return '<div style="padding:8px 16px 12px;background:white;border-bottom:1px solid #f1f5f9">'
+          + '<svg width="100%" height="60" viewBox="0 0 360 60" preserveAspectRatio="none">'
+          + '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4f46e5" stop-opacity="0.15"/><stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/></linearGradient></defs>'
+          + '<path d="' + spPath + ' L360 60 L0 60 Z" fill="url(#sg)"/>'
+          + '<path d="' + spPath + '" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>'
+          + '</svg>'
+          + '<div style="display:flex;justify-content:space-between;font-family:var(--sans);font-size:10px;color:#94a3b8;padding:0 2px">'
+          + '<span>Ene</span><span>Feb</span><span>Mar</span></div></div>';
+
+      case 'card-summary':
+        return '<div style="margin:12px 16px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:16px;padding:20px;color:white">'
+          + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
+          + '<div style="font-family:var(--sans);font-size:12px;opacity:0.8">' + t('account-label', 'Cuenta corriente') + '</div>'
+          + '<span style="background:rgba(255,255,255,0.2);font-size:10px;font-family:var(--sans);font-weight:600;padding:2px 8px;border-radius:8px">' + t('variation', '+2,4%') + '</span></div>'
+          + '<div style="font-family:var(--sans);font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:12px">' + t('amount', '€24.850,00') + '</div>'
+          + '<div style="display:flex;justify-content:space-between;align-items:center">'
+          + '<div style="font-family:var(--sans);font-size:11px;opacity:0.7">' + t('updated-at', 'Actualizado hoy') + '</div>'
+          + '<div style="font-family:var(--sans);font-size:11px;font-weight:600;opacity:0.9">' + t('cta', 'Ver movimientos →') + '</div></div></div>';
+
+      case 'skeleton-loader':
+        return '<div style="padding:12px 16px;background:white;border-bottom:1px solid #f1f5f9;display:flex;gap:12px;align-items:center">'
+          + '<div style="width:40px;height:40px;border-radius:20px;background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200%"></div>'
+          + '<div style="flex:1;display:flex;flex-direction:column;gap:6px">'
+          + '<div style="height:12px;border-radius:6px;background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200%;width:60%"></div>'
+          + '<div style="height:10px;border-radius:5px;background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200%;width:40%"></div></div>'
+          + '<div style="width:50px;height:14px;border-radius:7px;background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200%"></div></div>';
+
       default:
         return '<div style="padding:12px 16px;font-family:var(--sans);font-size:12px;color:#64748b;background:white;border-bottom:1px solid #f1f5f9">'+comp.component+'</div>';
     }
