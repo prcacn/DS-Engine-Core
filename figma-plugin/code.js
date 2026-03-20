@@ -119,6 +119,11 @@ function handleGenerate(brief, patternOverride, geography) {
 async function handlePaint(engineResponse) {
   figma.ui.postMessage({ type: 'status', text: 'Pintando pantalla...' });
 
+  // ── Flujo multipantalla ───────────────────────────────────────────────────
+  if (engineResponse.screens && engineResponse.screens.length > 1) {
+    return paintFlow(engineResponse);
+  }
+
   var components = engineResponse.components || [];
   var pattern    = engineResponse.pattern || 'unknown';
   var confidence = engineResponse.confidence || {};
@@ -197,6 +202,159 @@ async function handlePaint(engineResponse) {
     screenId: screenFrame.id,
     pattern: pattern,
     score: score,
+  });
+}
+
+// ─── PAINT FLOW — pinta un flujo multipantalla con conectores ─────────────────
+
+async function paintFlow(engineResponse) {
+  var screens = engineResponse.screens || [];
+  var pattern = engineResponse.pattern || 'flujo';
+  var score   = Math.round(((engineResponse.confidence || {}).global || 0) * 100);
+
+  figma.ui.postMessage({ type: 'status', text: 'Pintando flujo de ' + screens.length + ' pantallas...' });
+
+  var SCREEN_W  = 390;
+  var SCREEN_H  = 844;
+  var GAP       = 120;   // espacio entre pantallas
+  var ARROW_H   = 24;    // alto del conector visual
+
+  // Punto de partida — a la derecha del último frame existente
+  var existingFrames = figma.currentPage.children.filter(function(n) { return n.type === 'FRAME'; });
+  var startX = 0;
+  if (existingFrames.length > 0) {
+    var last = existingFrames[existingFrames.length - 1];
+    startX = last.x + last.width + 60;
+  }
+
+  var allFrames = [];
+  await figma.loadFontAsync({ family: 'Inter', style: 'Medium' });
+  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+
+  for (var si = 0; si < screens.length; si++) {
+    var screen     = screens[si];
+    var xPos       = startX + si * (SCREEN_W + GAP);
+    var components = screen.components || [];
+    var navLevel   = screen.nav_level || ('L' + si);
+    var screenName = screen.screen_name || screen.pattern || ('Pantalla ' + (si + 1));
+    var screenScore = Math.round(((screen.confidence || {}).global || score) * 100);
+
+    // ── Crear frame ──────────────────────────────────────────────────────────
+    var frame = figma.createFrame();
+    frame.name = navLevel + ' — ' + screenName + ' — ' + screenScore + '%';
+    frame.resize(SCREEN_W, SCREEN_H);
+    frame.x = xPos;
+    frame.y = 60; // dejar espacio arriba para el label
+    frame.fills = [{ type: 'SOLID', color: { r: 0.98, g: 0.98, b: 0.99 } }];
+    frame.clipsContent = true;
+    figma.currentPage.appendChild(frame);
+    allFrames.push(frame);
+
+    // ── Pintar componentes ───────────────────────────────────────────────────
+    var topComps     = components.filter(function(c) { return isSticky(c.component, 'top'); });
+    var bottomComps  = components.filter(function(c) { return isSticky(c.component, 'bottom'); });
+    var contentComps = components.filter(function(c) {
+      return !isSticky(c.component, 'top') && !isSticky(c.component, 'bottom');
+    });
+
+    var yPos = 0;
+    for (var hi = 0; hi < topComps.length; hi++) {
+      yPos = await paintComponent(frame, topComps[hi], 0, yPos, SCREEN_W);
+    }
+    yPos += 12;
+    for (var ci = 0; ci < contentComps.length; ci++) {
+      if (ci > 0) yPos += getGap(contentComps[ci-1].component, contentComps[ci].component);
+      yPos = await paintComponent(frame, contentComps[ci], 0, yPos, SCREEN_W);
+    }
+    var bottomOffset = SCREEN_H;
+    var sortedBottom = bottomComps.slice().reverse();
+    for (var bi = 0; bi < sortedBottom.length; bi++) {
+      var bh = HEIGHT_MAP[sortedBottom[bi].component] || 56;
+      bottomOffset -= bh;
+      await paintComponent(frame, sortedBottom[bi], 0, bottomOffset, SCREEN_W);
+    }
+
+    // ── Label sobre el frame ─────────────────────────────────────────────────
+    var badge = figma.createText();
+    badge.fontName = { family: 'Inter', style: 'Medium' };
+    badge.fontSize = 11;
+    badge.characters = navLevel + ' · ' + screenName + ' · ' + screenScore + '%';
+    badge.fills = [{ type: 'SOLID', color: { r: 0.31, g: 0.29, b: 0.9 } }];
+    badge.x = xPos;
+    badge.y = 30;
+    figma.currentPage.appendChild(badge);
+
+    // ── Número de paso ───────────────────────────────────────────────────────
+    var stepLabel = figma.createText();
+    stepLabel.fontName = { family: 'Inter', style: 'Medium' };
+    stepLabel.fontSize = 10;
+    stepLabel.characters = (si + 1) + ' / ' + screens.length;
+    stepLabel.fills = [{ type: 'SOLID', color: { r: 0.6, g: 0.6, b: 0.6 } }];
+    stepLabel.x = xPos + SCREEN_W - 40;
+    stepLabel.y = 30;
+    figma.currentPage.appendChild(stepLabel);
+
+    // ── Conector → entre pantallas ───────────────────────────────────────────
+    if (si < screens.length - 1) {
+      var arrowX = xPos + SCREEN_W + 20;
+      var arrowY = 60 + (SCREEN_H / 2) - 10;
+
+      // Línea
+      var line = figma.createLine();
+      line.x = arrowX;
+      line.y = arrowY;
+      line.resize(GAP - 40, 0);
+      line.strokes = [{ type: 'SOLID', color: { r: 0.31, g: 0.29, b: 0.9 } }];
+      line.strokeWeight = 2;
+      figma.currentPage.appendChild(line);
+
+      // Flecha (texto)
+      var arrow = figma.createText();
+      arrow.fontName = { family: 'Inter', style: 'Medium' };
+      arrow.fontSize = 18;
+      arrow.characters = '→';
+      arrow.fills = [{ type: 'SOLID', color: { r: 0.31, g: 0.29, b: 0.9 } }];
+      arrow.x = arrowX + (GAP - 40) / 2 - 8;
+      arrow.y = arrowY - 14;
+      figma.currentPage.appendChild(arrow);
+
+      // Acción que dispara la transición
+      var nextScreen = screens[si + 1];
+      var actionText = (nextScreen && nextScreen.screen_name) ? '→ ' + nextScreen.screen_name : '';
+      if (actionText) {
+        var actionLabel = figma.createText();
+        actionLabel.fontName = { family: 'Inter', style: 'Regular' };
+        actionLabel.fontSize = 9;
+        actionLabel.characters = actionText;
+        actionLabel.fills = [{ type: 'SOLID', color: { r: 0.5, g: 0.5, b: 0.6 } }];
+        actionLabel.x = arrowX;
+        actionLabel.y = arrowY + 14;
+        figma.currentPage.appendChild(actionLabel);
+      }
+    }
+  }
+
+  // ── Título del flujo ─────────────────────────────────────────────────────
+  var flowTitle = figma.createText();
+  flowTitle.fontName = { family: 'Inter', style: 'Medium' };
+  flowTitle.fontSize = 13;
+  flowTitle.characters = '⚡ Flujo: ' + pattern + ' · ' + screens.length + ' pantallas · ' + score + '%';
+  flowTitle.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.2, b: 0.2 } }];
+  flowTitle.x = startX;
+  flowTitle.y = 8;
+  figma.currentPage.appendChild(flowTitle);
+
+  // ── Seleccionar todos los frames del flujo ────────────────────────────────
+  figma.currentPage.selection = allFrames;
+  figma.viewport.scrollAndZoomIntoView(allFrames);
+
+  figma.ui.postMessage({
+    type: 'paint-done',
+    screenId: allFrames[0] ? allFrames[0].id : null,
+    pattern:  pattern,
+    score:    score,
+    is_flow:  true,
+    screen_count: screens.length,
   });
 }
 
