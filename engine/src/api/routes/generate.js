@@ -267,12 +267,21 @@ function buildCompositionPlan(brief, intent, patternData, contracts) {
     }
   });
 
+  // A3: detectar si hay modal en requeridos para excluir botones del fondo
+  const modalInRequired = components.some(c => c.component === "modal-bottom-sheet");
+
   patternData.optionalComponents.forEach(function(opt) {
     const contract = contracts[opt.component];
     if (!contract) return;
     let count = 1;
     if (!SINGLETON_COMPONENTS.includes(opt.component) && quantities[opt.component]) {
       count = quantities[opt.component];
+    }
+    // A3: si hay modal, excluir button-primary y button-secondary del fondo
+    // La lógica estaba hardcodeada en el renderer — ahora vive en el plan de composición
+    if (modalInRequired && (opt.component === "button-primary" || opt.component === "button-secondary")) {
+      console.log("  → [A3] Excluyendo " + opt.component + " del fondo — modal-bottom-sheet presente");
+      return;
     }
     const r = resolveOptional(opt.component, intent, brief);
     const include = r.include || (quantities[opt.component] && quantities[opt.component] > 0);
@@ -467,18 +476,44 @@ function applyKBRules(components, kbRules, intent) {
   return { components: result, kb_changes: kb_changes };
 }
 
+// ─── A1: DETECCIÓN DE DOMINIO FINTECH (AMPLIADA) ─────────────────────────────
+const FINTECH_KEYWORDS = [
+  "movimiento", "transaccion", "transacción", "transferencia", "pago", "pagos",
+  "ingreso", "gasto", "extracto", "cargo", "abono",
+  "fondo", "fondos", "inversion", "inversión", "cartera", "portfolio",
+  "saldo", "cuenta", "cuentas", "posicion", "posición",
+  "rentabilidad", "rendimiento", "revalorizacion",
+  "hipoteca", "prestamo", "préstamo", "credito", "crédito",
+  "banca", "bancario", "fintech", "finanzas",
+  "retiro", "deposito", "depósito", "ahorro", "ahorros",
+  "divisa", "divisas", "mercado",
+];
+
+function isFintechDomain(brief, intent) {
+  const b = (brief || "").toLowerCase();
+  const domain = ((intent && intent.domain) || "").toLowerCase();
+  const fintechDomains = ["fondos", "transferencias", "saldo", "transacciones",
+    "banca", "fintech", "inversión", "inversion", "cartera", "hipoteca",
+    "préstamo", "prestamo", "crédito", "credito", "pagos", "movimientos"];
+  if (fintechDomains.some(d => domain.includes(d))) return true;
+  return FINTECH_KEYWORDS.some(kw => b.includes(kw));
+}
+
 function applyFinancialVariant(components, intent, brief) {
-  const b = brief.toLowerCase();
-  const financialKeywords = ["movimiento", "transaccion", "transferencia", "pago", "ingreso", "gasto", "extracto", "cargo", "abono"];
-  const isFinancial = financialKeywords.some(k => b.includes(k));
-  if (!isFinancial) return components;
-  return components.map(c => {
+  if (!isFintechDomain(brief, intent)) return components;
+  const contracts = loadContracts();
+  const financialContract = contracts["card-item/financial"];
+  if (!financialContract) return components;
+  const changed = [];
+  const result = components.map(c => {
     if (c.component !== "card-item") return c;
-    const contracts = loadContracts();
-    const financialContract = contracts["card-item/financial"];
-    if (!financialContract) return c;
+    changed.push(c.slot || c.component);
     return { ...c, component: "card-item/financial", node_id: financialContract.nodeId };
   });
+  if (changed.length > 0) {
+    console.log("  → [A1] card-item → card-item/financial (" + changed.length + " instancias, dominio fintech)");
+  }
+  return result;
 }
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
