@@ -1,45 +1,106 @@
 # card-item
 
 ## Descripción
-Tarjeta de item para listas. Unidad básica de información en cualquier listado. Representa un elemento individual con su información más relevante y permite interacción para ver el detalle.
+Fila de lista genérica. Elemento repetible para mostrar items en listados. Contiene título, subtítulo y zona derecha para valor o acción. Base para todas las variantes de card.
+
+---
+
+## Variantes
+
+| Nombre | Node ID | Dimensiones | Uso |
+|---|---|---|---|
+| `card-item` | `1:13` | 390×72px | Lista genérica |
+| `card-item/financial` | `137:1758` | 390×72px | Item financiero con valor y variabilidad |
+| `card-item/financial-expense` | `137:1769` | 390×72px | Item de gasto con valor negativo |
+
+---
+
+## Estructura visual
+```
+390px · 72px altura
+┌─────────────────────────────────────────────────────────┐
+│ ←16px                                           16px→   │
+│  [card-content 284×44]              [card-right 58×16]  │
+│  título / subtítulo                       valor / acción │
+└─────────────────────────────────────────────────────────┘
+```
+- Fondo: `#FFFFFF` — `Background/Default/Default`
+- Layout: HORIZONTAL · padding H: 16px · padding V: 12px · gap: 16px · radius: 8px
+
+---
 
 ## Propiedades
-| Propiedad      | Tipo     | Valores posibles               | Valor por defecto |
-|----------------|----------|--------------------------------|-------------------|
-| title          | string   | Cualquier texto                | ""                |
-| subtitle       | string   | Cualquier texto                | ""                |
-| value          | string   | Cualquier texto                | ""                |
-| badge          | string   | Cualquier texto corto          | ""                |
-| badge_color    | enum     | neutral, positive, negative, warning | neutral    |
-| show_chevron   | boolean  | true, false                    | true              |
-| show_thumbnail | boolean  | true, false                    | false             |
-| state          | enum     | default, selected, disabled    | default           |
+
+| Propiedad | Tipo | Default | Editable |
+|---|---|---|---|
+| `title` | TEXT | — | Sí |
+| `subtitle` | TEXT | — | Sí |
+| `value` | TEXT | — | Sí |
+
+---
+
+## Layout
+
+| Propiedad | Valor |
+|---|---|
+| layoutMode | HORIZONTAL |
+| paddingLeft / Right | 16px → `Spacing/Padding/Horizontal/MD` |
+| paddingTop / Bottom | 12px → `Spacing/Padding/Vertical/LG` |
+| gap | 16px → `Spacing/Gap/XL` |
+| borderRadius | 8px → `Spacing/Radius/Component/SM` |
+| width | 390px (fill) |
+| height | 72px |
+
+---
+
+## Tokens aplicados
+
+| Elemento | Token semántico | Valor |
+|---|---|---|
+| Fondo | `Background/Default/Default` | `#FFFFFF` |
+| Título | `Text/Default/Default` | `rgb(15,23,42)` |
+| Subtítulo | `Text/Neutral/Default` | `rgb(100,116,139)` |
+| Padding H | `Spacing/Padding/Horizontal/MD` | `16px` |
+| Gap | `Spacing/Gap/XL` | `16px` |
+| Radio | `Spacing/Radius/Component/SM` | `8px` |
+
+---
 
 ## Cuándo usarlo
-- En cualquier listado de items navegables: productos, transacciones, fondos, usuarios
-- Cuando cada item tiene título, subtítulo y un valor destacado
-- Para mostrar colecciones homogéneas donde cada elemento lleva al mismo tipo de detalle
-- En resultados de búsqueda
+- En listados de secciones L1 (fondos, transacciones, contactos)
+- Como ítem repetible en patrones `lista-con-filtros` y `detalle`
+- Usar `card-item/financial` para datos con valor monetario y variación
 
 ## Cuándo NO usarlo
-- Para contenido editorial o artículos (usa un componente de card-content)
-- Cuando el item no es navegable ni interactuable
-- Para mostrar un único item — en ese caso usa una sección de detalle
-- En formularios
+- Cuando no hay datos — usar `empty-state`
+- En la misma pantalla que `empty-state` (mutuamente excluyentes)
+- En `modal-bottom-sheet` — usar layout propio del modal
+
+---
 
 ## Restricciones
-- Siempre dentro de un contenedor de lista (nunca suelto en el layout)
-- El title no debe superar 2 líneas
-- El value debe ser una sola línea
-- No mezclar card-item con show_thumbnail: true y sin thumbnail en el mismo listado
+- **Mutuamente excluyente con `empty-state`** — no pueden coexistir en la misma pantalla
+- Repetible sin límite máximo definido — usar paginación si >20 items
+- Sin margen entre items consecutivos (gap: 0 entre cards)
+- `card-item/financial` solo en contextos financieros (dominio: inversiones, cuentas, movimientos)
 
-## Node ID en Figma
-1:13
+---
 
-## Tokens asociados
-- background: color-surface-primary
-- title: color-text-primary, size-text-md, weight-medium
-- subtitle: color-text-secondary, size-text-sm
-- value: color-text-primary, size-text-md, weight-bold
-- border-bottom: color-border-subtle
-- height: size-card-item (72px mínimo)
+## Uso en patrones
+
+| Patrón | Variante | Repeticiones |
+|---|---|---|
+| `lista-con-filtros` | `card-item` o `card-item/financial` | N (dinámico) |
+| `detalle` | `card-item` | 3-4 (datos del item) |
+| `dashboard` | `card-item/financial` | ×3 |
+| `confirmacion` | `card-item` | 3-4 (resumen operación) |
+
+---
+
+## Errores frecuentes
+
+| Error | Causa | Solución |
+|---|---|---|
+| card-item + empty-state juntos | Violación de exclusividad | Solo uno según si hay datos |
+| card-item genérico para datos financieros | Variante incorrecta | Usar `card-item/financial` |
+| Gap entre cards | Espaciado incorrecto | Gap 0 entre items consecutivos |
