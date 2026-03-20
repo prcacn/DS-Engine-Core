@@ -3,6 +3,9 @@
 ## Node ID en Figma
 20:784
 
+## Component Set ID
+185:3900  ← COMPONENT_SET padre (no instanciar directamente)
+
 ## Descripción
 Barra de navegación principal por pestañas. Anclada en la parte inferior de la pantalla. Permite al usuario moverse entre las secciones principales de la app. Solo visible en L0 y L1.
 
