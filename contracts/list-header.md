@@ -1,5 +1,8 @@
 # list-header
 
+## Node ID en Figma
+20:797
+
 ## Descripción
 Cabecera de sección dentro de un listado. Separa grupos de contenido con un título y una acción secundaria ("Ver todo"). Siempre precede a un grupo de `card-item`.
 
