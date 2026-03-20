@@ -153,7 +153,7 @@ async function handlePaint(engineResponse) {
   screenFrame.resize(SCREEN_W, SCREEN_H);
   screenFrame.x = xPos;
   screenFrame.y = 0;
-  screenFrame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }  // Background/Default/Default }];
+  screenFrame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
   screenFrame.clipsContent = true;
 
   figma.currentPage.appendChild(screenFrame);
@@ -250,7 +250,7 @@ async function paintFlow(engineResponse) {
     frame.resize(SCREEN_W, SCREEN_H);
     frame.x = xPos;
     frame.y = 60; // dejar espacio arriba para el label
-    frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }  // Background/Default/Default }];
+    frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
     frame.clipsContent = true;
     figma.currentPage.appendChild(frame);
     allFrames.push(frame);
