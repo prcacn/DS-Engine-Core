@@ -78,8 +78,11 @@ function loadTemplates() {
   if (cache) return cache;
 
   const repoPath      = process.env.DS_REPO_PATH;
-  const templatesPath = path.join(repoPath, 'templates');
-
+  // Buscar /templates en DS_REPO_PATH primero, luego junto al engine como fallback
+  let templatesPath = path.join(repoPath, 'templates');
+  if (!fs.existsSync(templatesPath)) {
+    templatesPath = path.join(__dirname, '..', '..', 'templates');
+  }
   if (!fs.existsSync(templatesPath)) {
     console.log('  ℹ [templates] Carpeta /templates no encontrada — sin templates aprobados');
     cache = {};
