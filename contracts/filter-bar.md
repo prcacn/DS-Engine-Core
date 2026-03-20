@@ -1,43 +1,101 @@
 # filter-bar
 
 ## Descripción
-Barra de filtros horizontales con scroll. Permite al usuario reducir el conjunto de items visibles en un listado seleccionando una o varias categorías. Siempre aparece anclada debajo del navigation-header.
+Barra de filtros con chips seleccionables. Permite al usuario filtrar el contenido de una lista sin abandonar la pantalla. Siempre va justo debajo del `navigation-header`.
+
+---
+
+## Variantes
+Componente simple — sin variantes de tipo.
+
+| Node ID | Dimensiones | Uso |
+|---------|-------------|-----|
+| `1:24` | 230×48px (base) — se estira a 390px en pantalla | Filtros de categoría en listados |
+
+---
+
+## Estructura visual
+```
+390px · 48px altura
+┌─────────────────────────────────────────────────────────┐
+│ ←16px                                           16px→   │
+│  [chip-active 47×23]  [chip 68×23]  [chip 67×23]  ...  │
+└─────────────────────────────────────────────────────────┘
+```
+- Fondo: `#FFFFFF` — `Background/Default/Default`
+- Chip activo: fondo brand · texto blanco
+- Chip inactivo: fondo neutral · texto neutral
+- Layout: HORIZONTAL · padding H: 16px · padding V: 8px · gap: 8px
+
+---
 
 ## Propiedades
-| Propiedad      | Tipo     | Valores posibles         | Valor por defecto |
-|----------------|----------|--------------------------|-------------------|
-| filters        | array    | Lista de strings         | []                |
-| multi_select   | boolean  | true, false              | false             |
-| show_count     | boolean  | true, false              | false             |
-| default_filter | string   | Cualquier valor del array| "Todos"           |
-| variant        | enum     | chips, tabs              | chips             |
+
+| Propiedad | Tipo | Default | Editable |
+|---|---|---|---|
+| chips | Contenido interno | 3 chips (1 activo, 2 inactivos) | Sí (añadir/quitar chips) |
+
+---
+
+## Layout
+
+| Propiedad | Valor |
+|---|---|
+| layoutMode | HORIZONTAL |
+| paddingLeft / Right | 16px → `Spacing/Padding/Horizontal/MD` |
+| paddingTop / Bottom | 8px → `Spacing/Padding/Vertical/MD` |
+| gap | 8px → `Spacing/Gap/MD` |
+| width | 390px (fill) |
+| height | 48px |
+
+---
+
+## Tokens aplicados
+
+| Elemento | Token semántico | Valor |
+|---|---|---|
+| Fondo | `Background/Default/Default` | `#FFFFFF` |
+| Chip activo fondo | `Background/Brand/Default` | `rgb(79,70,229)` |
+| Chip activo texto | `Text/Default/nochange` | `#FFFFFF` |
+| Chip inactivo fondo | `Background/Neutral/Default` | neutral/300 |
+| Chip inactivo texto | `Text/Neutral/Default` | neutral/700 |
+| Gap | `Spacing/Gap/MD` | `8px` |
+
+---
 
 ## Cuándo usarlo
-- En pantallas de listado donde el contenido puede categorizarse
-- Cuando hay entre 2 y 8 categorías de filtrado
-- Para filtros de primer nivel que el usuario usa frecuentemente
-- Siempre que el listado tenga más de 10 items en total
+- En listados L1 con categorías filtrables
+- Inmediatamente debajo del `navigation-header`
+- Cuando hay entre 2 y 6 categorías de filtrado
 
 ## Cuándo NO usarlo
-- Con menos de 2 filtros (no tiene sentido filtrar con una sola opción)
-- Con más de 8 filtros — usa un panel de filtros avanzados en su lugar
-- En pantallas de formulario
-- En pantallas de detalle
-- Junto a search-bar en la misma posición — search-bar va siempre encima
+- En pantallas L2/L3 (detalle o confirmación)
+- En formularios — no es un elemento de input
+- Cuando hay más de 6 filtros (usar modal de filtros)
+- En pantallas L0 (dashboard) — los filtros pertenecen a secciones, no al home
+
+---
 
 ## Restricciones
-- Siempre debajo del navigation-header, nunca flotante
-- Máximo 1 filter-bar por pantalla
-- No puede coexistir con tab-bar en la misma posición vertical
-- Cuando multi_select: false, seleccionar un filtro deselecciona el anterior automáticamente
-- Siempre debe haber un filtro "Todos" o equivalente como primera opción
+- **Máximo 1 por pantalla**
+- Siempre va inmediatamente debajo del `navigation-header` (order: 1)
+- Siempre hay un chip activo por defecto ("Todos" o el primero)
+- No combinar con `formulario-simple` en la misma pantalla
 
-## Node ID en Figma
-1:24
+---
 
-## Tokens asociados
-- background: color-surface-primary
-- chip-default: color-surface-secondary, color-text-secondary
-- chip-selected: color-action-primary, color-text-on-primary
-- border-bottom: color-border-subtle
-- height: size-filter-bar (48px)
+## Uso en patrones
+
+| Patrón | Posición | Notas |
+|---|---|---|
+| `lista-con-filtros` | Order 1, bajo navigation-header | Filtro por categoría |
+
+---
+
+## Errores frecuentes
+
+| Error | Causa | Solución |
+|---|---|---|
+| filter-bar en pantalla de detalle | Variante de patrón incorrecta | filter-bar solo en L1 |
+| Ningún chip activo | Estado inicial incorrecto | "Todos" siempre activo por defecto |
+| Más de 6 chips | Demasiadas categorías | Usar modal de filtros avanzados |
