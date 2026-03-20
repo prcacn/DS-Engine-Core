@@ -124,4 +124,76 @@
   --radius-component-xl: var(--radius-xl);
   --radius-component-full: var(--radius-full);
 
+  /* ─── TYPOGRAPHY ──────────────────────────────────────────────────────────── */
+
+  /* Font family */
+  --font-family-base: 'DM Sans', sans-serif;
+
+  /* Font sizes */
+  --font-size-10: 10px;
+  --font-size-12: 12px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-20: 20px;
+  --font-size-24: 24px;
+  --font-size-30: 30px;
+  --font-size-36: 36px;
+
+  /* Font weights */
+  --font-weight-regular:   400;
+  --font-weight-medium:    500;
+  --font-weight-semibold:  600;
+  --font-weight-bold:      700;
+
+  /* Line heights */
+  --line-height-tight:   1.20;
+  --line-height-normal:  1.40;
+  --line-height-relaxed: 1.60;
+
+  /* Letter spacing */
+  --letter-spacing-tight:  -0.3px;
+  --letter-spacing-normal:  0px;
+  --letter-spacing-wide:    0.3px;
+
+  /* Text styles (semantic) */
+  --text-display-size:   var(--font-size-24);
+  --text-display-weight: var(--font-weight-bold);
+  --text-display-lh:     var(--line-height-tight);
+
+  --text-heading-size:   var(--font-size-16);
+  --text-heading-weight: var(--font-weight-semibold);
+  --text-heading-lh:     var(--line-height-normal);
+
+  --text-body-strong-size:   var(--font-size-14);
+  --text-body-strong-weight: var(--font-weight-medium);
+  --text-body-strong-lh:     var(--line-height-normal);
+
+  --text-body-size:   var(--font-size-14);
+  --text-body-weight: var(--font-weight-regular);
+  --text-body-lh:     var(--line-height-relaxed);
+
+  --text-label-size:   var(--font-size-12);
+  --text-label-weight: var(--font-weight-regular);
+  --text-label-lh:     var(--line-height-tight);
+
+  --text-caption-size:   var(--font-size-12);
+  --text-caption-weight: var(--font-weight-regular);
+  --text-caption-lh:     var(--line-height-normal);
+
+  --text-micro-size:   var(--font-size-10);
+  --text-micro-weight: var(--font-weight-regular);
+  --text-micro-lh:     var(--line-height-tight);
+
+  /* ─── GRID — MOBILE ────────────────────────────────────────────────────────── */
+
+  --grid-columns:      4;
+  --grid-margin:       16px;   /* → --space-7 */
+  --grid-gutter:       8px;    /* → --space-4 */
+  --grid-row-base:     8px;    /* → --space-4 */
+  --grid-column-width: 82px;   /* (390 - 16×2 - 8×3) / 4 */
+  --grid-screen-width: 390px;
+  --grid-screen-height:844px;
+  --safe-zone-top:     16px;
+  --safe-zone-bottom:  34px;   /* iOS safe area */
+
 }
