@@ -200,8 +200,21 @@ function buildSmartProps(contract, intent, componentName) {
   contract.properties.forEach(function(p) {
     if (p.default && p.default !== '""') props[p.name] = p.default.replace(/"/g, '');
   });
-  if (componentName === 'navigation-header' && intent.domain) {
-    props.title = intent.domain.charAt(0).toUpperCase() + intent.domain.slice(1);
+  if (componentName === 'navigation-header') {
+    // Título desde el dominio
+    if (intent.domain) {
+      props.title = intent.domain.charAt(0).toUpperCase() + intent.domain.slice(1);
+    }
+    // node_id de la variante correcta según el nivel de navegación
+    const navVariantIds = {
+      'default':   '112:1853',  // Type=Predeterminada — L1
+      'with-back': '170:2843',  // Type=Modal — L2/L3
+      'close':     '170:2843',  // Type=Modal
+      'dashboard': '170:2660',  // Type=Dashboard — L0
+    };
+    const navLevel = INTENT_TO_LEVEL[intent.intent_type] || 'L1';
+    const variantKey = navLevel === 'L0' ? 'dashboard' : navLevel === 'L2' ? 'with-back' : navLevel === 'L3' ? 'close' : 'default';
+    props._variant_node_id = navVariantIds[variantKey];
   }
   if (componentName === 'empty-state' && intent.constraints && intent.constraints.has_filters) {
     props.action_label = 'Limpiar filtros';
