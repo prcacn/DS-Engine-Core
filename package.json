@@ -2,7 +2,7 @@
   "name": "ds-ia-ready-root",
   "version": "1.0.0",
   "scripts": {
-    "start": "cd engine && node src/server.js",
+    "start": "node engine/src/server.js",
     "postinstall": "cd engine && npm install"
   },
   "dependencies": {
