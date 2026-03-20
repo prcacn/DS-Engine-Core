@@ -1,5 +1,8 @@
 # empty-state
 
+## Node ID en Figma
+1:31
+
 ## Descripción
 Estado vacío de una pantalla o sección. Se muestra cuando no hay datos que mostrar. Siempre incluye una ilustración, título, descripción y una acción para salir del estado vacío. Nunca debe ser solo informativo.
 
