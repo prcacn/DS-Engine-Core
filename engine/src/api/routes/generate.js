@@ -629,7 +629,9 @@ router.post('/', async function(req, res, next) {
     console.log('  → [nav] nivel: ' + navLevel + ' | intent: ' + intent.intent_type);
 
     // ── TEMPLATE APROBADO — si existe, usarlo directamente ────────────────
-    const approvedTemplate = findTemplate(intent.intent_type, brief);
+    // NO usar template si hay violaciones de error en el brief — el brief es inválido
+    const hasErrorViolations = (intent.brief_violations || []).some(v => v.severity === 'error');
+    const approvedTemplate = !hasErrorViolations ? findTemplate(intent.intent_type, brief) : null;
     if (approvedTemplate) {
       console.log('  ✓ [template] Template aprobado encontrado: ' + approvedTemplate.id);
       const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(() => []);
