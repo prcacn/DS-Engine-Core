@@ -471,13 +471,18 @@ select:focus { outline: none; border-color: var(--accent); }
         <div class="select-wrap">
           <select id="patternSelect">
             <option value="">auto-detect</option>
-            <option value="lista-con-filtros">lista-con-filtros</option>
-            <option value="formulario-simple">formulario-simple</option>
-            <option value="confirmacion">confirmacion</option>
-            <option value="detalle">detalle</option>
-            <option value="onboarding">onboarding</option>
-            <option value="error-estado">error-estado</option>
-            <option value="dashboard">dashboard</option>
+            <optgroup label="── Pantalla única">
+              <option value="dashboard">dashboard (L0)</option>
+              <option value="lista-con-filtros">lista-con-filtros (L1)</option>
+              <option value="detalle">detalle (L2)</option>
+              <option value="formulario-simple">formulario-simple (L2)</option>
+              <option value="confirmacion">confirmacion (L3)</option>
+              <option value="onboarding">onboarding</option>
+              <option value="error-estado">error-estado</option>
+            </optgroup>
+            <optgroup label="── Flujo multipantalla">
+              <option value="transferencia-bancaria">⚡ transferencia bancaria (5 pantallas)</option>
+            </optgroup>
           </select>
         </div>
       </div>
@@ -539,6 +544,12 @@ select:focus { outline: none; border-color: var(--accent); }
       <div>
         <div class="section-title">Composición</div>
         <div class="comp-list" id="compList"></div>
+      </div>
+
+      <!-- Flujo multipantalla -->
+      <div id="flowSection" style="display:none; flex-direction:column; gap:5px;">
+        <div class="section-title">⚡ Pantallas del flujo</div>
+        <div id="flowScreenList"></div>
       </div>
 
       <!-- Paint -->
@@ -906,6 +917,27 @@ function renderGenerateResult(data) {
       ${c.kb_injected ? '<div class="comp-kb">KB</div>' : ''}
     </div>`).join('');
 
+  // ── Flujo multipantalla — mostrar listado de pantallas ──────────────────
+  const flowSec  = document.getElementById('flowSection');
+  const flowList = document.getElementById('flowScreenList');
+  if (data.screens && data.screens.length > 1) {
+    flowSec.style.display = 'flex';
+    flowList.innerHTML = data.screens.map((s, i) => {
+      const lvl   = s.nav_level || ('L' + i);
+      const name  = s.screen_name || s.pattern || ('Pantalla ' + (i+1));
+      const sc    = Math.round(((s.confidence || {}).global || 0) * 100);
+      const comps = (s.components || []).length;
+      return `<div class="comp-row">
+        <div class="comp-order" style="background:var(--accent);color:#fff;border-radius:4px;padding:1px 5px;font-size:10px;">${lvl}</div>
+        <div class="comp-name">${name}</div>
+        <div class="comp-variant">${comps} comp.</div>
+        <div class="comp-kb" style="background:${sc>=80?'var(--success)':sc>=60?'var(--accent)':'var(--warning)'};color:#fff">${sc}%</div>
+      </div>`;
+    }).join('');
+  } else if (flowSec) {
+    flowSec.style.display = 'none';
+  }
+
   document.getElementById('genResult').style.display = 'flex';
   document.getElementById('feedbackBar').style.display = 'flex';
 }
@@ -966,7 +998,11 @@ window.addEventListener('message', async (event) => {
   if (!msg) return;
 
   if (msg.type === 'paint-done') {
-    setStatus('genStatus', 'success', `✓ Pintado en Figma · ${msg.score}%`);
+    if (msg.is_flow) {
+      setStatus('genStatus', 'success', `✓ Flujo pintado en Figma · ${msg.screen_count} pantallas · ${msg.score}%`);
+    } else {
+      setStatus('genStatus', 'success', `✓ Pintado en Figma · ${msg.score}%`);
+    }
   }
   if (msg.type === 'selection-data') {
     await runValidation(msg.components, msg.frameId);
