@@ -10,7 +10,7 @@ Pantalla de captura de datos con campos de entrada y acción de submit. Para for
 - Cualquier flujo que requiera capturar información del usuario en una sola pantalla
 
 ## Componentes requeridos (en este orden)
-1. navigation-header — variant: with-back siempre (el usuario puede cancelar)
+1. navigation-header — variant: Type=Modal (L2 — arrow-left izquierda, cierre derecha)
 2. input-text × N — entre 1 y 5 campos
 3. button-primary — al final del formulario, label descriptivo de la acción
 
