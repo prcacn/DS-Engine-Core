@@ -9,7 +9,7 @@ Pantalla de detalle de un item. Muestra la información completa de un elemento 
 - Pantallas de perfil de un elemento específico
 
 ## Componentes requeridos (en este orden)
-1. navigation-header — variant: with-back siempre
+1. navigation-header — variant: Type=Modal (L2 — arrow-left izquierda)
 2. card-item × N — información del detalle en formato de filas de datos (show_chevron: false)
 
 ## Componentes opcionales
