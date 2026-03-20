@@ -1,8 +1,5 @@
 [phases.install]
 cmds = ["cd engine && npm ci"]
 
-[phases.build]
-cmds = ["echo 'DS_REPO_PATH will be: ' && ls -la"]
-
 [start]
 cmd = "node engine/src/server.js"
