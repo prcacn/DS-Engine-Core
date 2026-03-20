@@ -1106,7 +1106,7 @@
       kbChanges.forEach(function(ch, ci) {
         if (usedChangeIndexes.indexOf(ci) !== -1) return;
         if ((rule.id && ch.rule_id && rule.id === ch.rule_id) ||
-            (ch.reason && rule.content && ch.reason === rule.content)) {
+            (ch.reason && (rule.text || rule.content) && ch.reason === (rule.text || rule.content))) {
           if (matchIdx === -1) matchIdx = ci;
         }
       });
@@ -1146,7 +1146,7 @@
             '<span class="kb-pri-tag ' + pri + '">' + pri + '</span>' +
             (score ? '<span class="kb-float-score">' + score + '</span>' : '') +
           '</div>' +
-          '<div class="kb-float-text">' + rule.content + '</div>' +
+          '<div class="kb-float-text">' + (rule.text || rule.content || '') + '</div>' +
           (autor ? '<div class="kb-float-author">— ' + autor + '</div>' : '') +
         '</div>';
       spawnCard(html, cat);
