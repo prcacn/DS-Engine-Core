@@ -3,6 +3,9 @@
 ## Node ID en Figma
 20:797
 
+## Component Set ID
+185:3901  ← COMPONENT_SET padre (no instanciar directamente)
+
 ## Descripción
 Cabecera de sección dentro de un listado. Separa grupos de contenido con un título y una acción secundaria ("Ver todo"). Siempre precede a un grupo de `card-item`.
 
