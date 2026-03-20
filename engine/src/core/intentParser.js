@@ -40,10 +40,27 @@ Los componentes disponibles y sus restricciones son:
 - filter-bar: solo en listados, máximo 1
 - empty-state: mutuamente excluyente con card-item
 - modal-bottom-sheet: máximo 1 por pantalla
-- tab-bar: máximo 1, solo en pantallas de usuario autenticado, NUNCA en onboarding
+- tab-bar: máximo 1. Reglas de nivel de navegación:
+  * L0 (dashboard): tab-bar OBLIGATORIO — es la raíz de la app
+  * L1 (lista-con-filtros, notificaciones, perfil-usuario): tab-bar OBLIGATORIO — son tabs del app shell
+  * L2 (detalle, formulario-simple): tab-bar NUNCA — son pantallas secundarias con back
+  * L3 (confirmacion, error-estado): tab-bar NUNCA — son modales o pasos finales
+  * onboarding: tab-bar NUNCA — el usuario no está autenticado
 - list-header: máximo 3, siempre precede a grupos de card-items
 - badge: elemento auxiliar, máximo 3 por pantalla
 - notification-banner: máximo 5 en patrón notificaciones, máximo 1 en otros patrones
+
+Jerarquía de navegación — cada intent tiene un nivel fijo:
+- L0 (raíz autenticada): dashboard — lleva tab-bar, navigation-header sin back
+- L1 (tabs del app shell): lista-con-filtros, notificaciones, perfil-usuario — llevan tab-bar, navigation-header sin back
+- L2 (pantallas secundarias): detalle, formulario-simple, transferencia-bancaria — llevan navigation-header con back (with-back), sin tab-bar
+- L3 (modales y pasos finales): confirmacion, error-estado — llevan navigation-header con close, sin tab-bar
+- L0 especial: onboarding — sin tab-bar aunque sea L0 (usuario no autenticado aún)
+
+Detecta como violación si el brief pide explícitamente una configuración que contradice el nivel:
+- tab-bar en un formulario o confirmación → warning
+- navigation-header con back en un dashboard → warning
+- Pedir omitir tab-bar en dashboard → warning
 
 Reglas especiales para transferencia-bancaria:
 - Este intent genera SIEMPRE 5 pantallas en orden fijo: origen, destino-importe, revision, confirmacion, resultado
@@ -238,12 +255,19 @@ function fallbackParse(brief) {
                : 'general',
     required_capabilities: intent_type === 'transferencia-bancaria' ? ['multi-screen-flow', 'form-validation', 'confirmation'] : [],
     constraints: {
-      has_filters:         false,
+      has_filters:         intent_type === 'lista-con-filtros',
       has_form_fields:     intent_type === 'transferencia-bancaria' || intent_type === 'formulario-simple',
       is_destructive:      intent_type === 'confirmacion' || intent_type === 'transferencia-bancaria',
       needs_confirmation:  intent_type === 'confirmacion' || intent_type === 'transferencia-bancaria',
       estimated_items:     null,
-      is_multiscreen_flow: is_multiscreen_flow
+      is_multiscreen_flow: is_multiscreen_flow,
+      // C1: nivel de navegación inferido del intent
+      nav_level: {
+        'dashboard': 'L0', 'onboarding': 'L0',
+        'lista-con-filtros': 'L1', 'notificaciones': 'L1', 'perfil-usuario': 'L1',
+        'detalle': 'L2', 'formulario-simple': 'L2', 'transferencia-bancaria': 'L2',
+        'confirmacion': 'L3', 'error-estado': 'L3',
+      }[intent_type] || 'L1',
     },
     confidence,
     reasoning: 'Fallback keyword matching — sin Claude API',
