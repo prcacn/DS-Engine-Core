@@ -3,6 +3,9 @@
 ## Node ID en Figma
 1:24
 
+## Component Set ID
+185:3897  ← COMPONENT_SET padre (no instanciar directamente)
+
 ## Descripción
 Barra de filtros con chips seleccionables. Permite al usuario filtrar el contenido de una lista sin abandonar la pantalla. Siempre va justo debajo del `navigation-header`.
 
