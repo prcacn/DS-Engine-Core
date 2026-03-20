@@ -1,5 +1,8 @@
 # modal-bottom-sheet
 
+## Node ID en Figma
+1:36
+
 ## Descripción
 Modal que emerge desde la parte inferior de la pantalla. Se usa para confirmaciones, acciones destructivas o contenido contextual que requiere atención sin abandonar el flujo principal.
 
