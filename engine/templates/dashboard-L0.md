@@ -37,7 +37,7 @@ Pantalla raíz de la aplicación. Punto de entrada tras el login. Muestra el est
 
 | Orden | Componente | Node ID | Variante Figma | Notas |
 |-------|------------|---------|----------------|-------|
-| 0 | navigation-header | `170:2660` | `Type=Dashboard` | Sin título en header. Icono menú izquierda, campana derecha. Padding H: 16px |
+| 0 | navigation-header | `170:2660` | Type=Dashboard | Sin título en header. Icono menú izquierda, campana derecha. Padding H: 16px |
 | 1 | amount-display | `137:1740` | default | Saldo principal o resumen financiero clave. 126px altura |
 | 2 | card-item/financial ×3 | `137:1758` | default | Accesos rápidos a productos. Se repite 3 veces. 72px altura c/u |
 | 3 | tab-bar | `20:784` | home-active | SIEMPRE el último. Pestaña Inicio activa. 56px altura |
