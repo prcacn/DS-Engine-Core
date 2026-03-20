@@ -40,17 +40,29 @@ function parseTemplate(filename, content) {
   const components = [];
   if (compsMatch) {
     const lines = compsMatch[1].trim().split('\n').filter(l => l.startsWith('|'));
-    lines.forEach((line, idx) => {
+    let orderIdx = 0;
+    lines.forEach((line) => {
       const cols = line.split('|').map(c => c.trim()).filter(Boolean);
       if (cols.length >= 3) {
         const nodeIdMatch = cols[2].match(/`([^`]+)`/);
-        components.push({
-          order:     idx,
-          component: cols[1],
-          node_id:   nodeIdMatch ? nodeIdMatch[1] : 'pending',
-          variant:   cols[3] || 'default',
-          notes:     cols[4] || '',
-        });
+        const notes   = cols[4] || '';
+        const variant = cols[3] || 'default';
+
+        // Detectar cantidad: ×3, x3, ×N en notas o en el nombre del componente
+        const quantityMatch = (notes + ' ' + cols[1]).match(/[×x](\d+)/);
+        const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
+        const compName = cols[1].replace(/\s*[×x]\d+.*$/, '').trim();
+
+        for (let q = 0; q < quantity; q++) {
+          components.push({
+            order:     orderIdx++,
+            component: compName,
+            node_id:   nodeIdMatch ? nodeIdMatch[1] : 'pending',
+            variant:   variant,
+            notes:     notes,
+            required:  true,
+          });
+        }
       }
     });
   }
