@@ -3,6 +3,9 @@
 ## Node ID en Figma
 1:36
 
+## Component Set ID
+185:3899  ← COMPONENT_SET padre (no instanciar directamente)
+
 ## Descripción
 Modal que emerge desde la parte inferior de la pantalla. Se usa para confirmaciones, acciones destructivas o contenido contextual que requiere atención sin abandonar el flujo principal.
 
