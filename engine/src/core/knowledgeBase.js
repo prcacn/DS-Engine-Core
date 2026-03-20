@@ -5,29 +5,9 @@ const { Pinecone } = require('@pinecone-database/pinecone');
 const pinecone  = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
 const INDEX_NAME = process.env.PINECONE_INDEX || 'ds-knowledge-base';
 
-// ─── EMBEDDINGS VIA PINECONE INFERENCE ───────────────────────────────────────
-async function embed(text) {
-  const response = await fetch('https://api.pinecone.io/embed', {
-    method: 'POST',
-    headers: {
-      'Api-Key': process.env.PINECONE_API_KEY,
-      'Content-Type': 'application/json',
-      'X-Pinecone-API-Version': '2024-10',
-    },
-    body: JSON.stringify({
-      model: 'multilingual-e5-large',
-      inputs: [{ text }],
-      parameters: { input_type: 'query', truncate: 'END' },
-    }),
-  });
-
-  if (!response.ok) throw new Error('Pinecone embed error: ' + await response.text());
-
-  const data   = await response.json();
-  const vector = data.data?.[0]?.values;
-  if (!vector || vector.length === 0) throw new Error('Pinecone no devolvió vector válido');
-  return vector;
-}
+// ─── EMBEDDINGS — importado desde pineconeEmbed.js (fuente única) ────────────
+// ⚠ NO redefinir embed aquí. Usar siempre pineconeEmbed.js
+const { embed } = require('./pineconeEmbed');
 
 // ─── GUARDAR CONOCIMIENTO ─────────────────────────────────────────────────────
 async function save({ content, tipo = 'general', geografia = 'global', tags = [], autor = 'sistema', categoria = 'recomendacion', prioridad = 'media', expira = null }) {
@@ -64,7 +44,7 @@ async function save({ content, tipo = 'general', geografia = 'global', tags = []
 
 // ─── BUSCAR CONOCIMIENTO ──────────────────────────────────────────────────────
 async function search(query, { geografia = null, tipo = null, categoria = null, prioridad = null, topK = 3, minScore = 0.70 } = {}) {
-  const vector = await embed(query);
+  const vector = await embed(query, 'query');
   const index  = pinecone.index(INDEX_NAME);
 
   const filter = {};
