@@ -23,7 +23,7 @@ Componentes:
 Cuando la confirmación es el paso final de un flujo y requiere mostrar el resumen completo.
 
 Componentes:
-1. navigation-header — variant: with-back
+1. navigation-header — variant: Type=Modal (L3 — solo cierre, sin icono izquierdo)
 2. card-item × N — resumen de lo que se va a confirmar (solo lectura)
 3. button-primary — confirmar acción
 4. button-secondary — cancelar o modificar
