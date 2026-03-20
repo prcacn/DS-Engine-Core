@@ -3,6 +3,9 @@
 ## Node ID en Figma
 1:13
 
+## Component Set ID
+185:3895  ← COMPONENT_SET padre (no instanciar directamente)
+
 ## Descripción
 Fila de lista genérica. Elemento repetible para mostrar items en listados. Contiene título, subtítulo y zona derecha para valor o acción. Base para todas las variantes de card.
 
