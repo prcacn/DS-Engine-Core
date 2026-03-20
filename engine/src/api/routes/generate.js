@@ -634,7 +634,7 @@ router.post('/', async function(req, res, next) {
     const approvedTemplate = !hasErrorViolations ? findTemplate(intent.intent_type, brief) : null;
     if (approvedTemplate) {
       console.log('  ✓ [template] Template aprobado encontrado: ' + approvedTemplate.id);
-      const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(() => []);
+      const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(err => { console.error('  ✗ [KB] kbSearch error:', err.message); return []; });
       const confidence = calculateScore({
         pattern:   patternName,
         components: approvedTemplate.components,
@@ -671,7 +671,7 @@ router.post('/', async function(req, res, next) {
     const rawComponents = rawResult.components;
     const compositionRules = rawResult.compositionRules;
     // ── AGENTES (UXWriter + UXSpec en paralelo) ──────────────────────────
-    const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(() => []);
+    const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(err => { console.error('  ✗ [KB] kbSearch error:', err.message); return []; });
 
     // ── Aplicar reglas KB sobre la composición ────────────────────────────
     const kbResult     = applyKBRules(rawComponents, kbRules, intent);
