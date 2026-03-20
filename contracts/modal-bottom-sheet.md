@@ -1,43 +1,107 @@
 # modal-bottom-sheet
 
 ## Descripción
-Hoja inferior modal. Aparece desde la parte inferior de la pantalla para mostrar contenido contextual, confirmaciones o acciones adicionales sin salir de la pantalla actual. Bloquea la interacción con el fondo mientras está abierto.
+Modal que emerge desde la parte inferior de la pantalla. Se usa para confirmaciones, acciones destructivas o contenido contextual que requiere atención sin abandonar el flujo principal.
+
+---
+
+## Variantes
+Componente simple — sin variantes de tipo.
+
+| Node ID | Dimensiones | Uso |
+|---------|-------------|-----|
+| `1:36` | 390×255px | Modal de confirmación o acción contextual |
+
+---
+
+## Estructura visual
+```
+390px · 255px altura
+┌─────────────────────────────────────────────────────────┐
+│ padding 24px H · 24px V                                 │
+│              [handle 36×4px]           ← barra de drag  │
+│                                                         │
+│  [title "Título del modal"]            24px DM Sans Bold│
+│                                                         │
+│  [description]                         14px DM Sans Reg │
+│                                                         │
+│  [buttons: primary + secondary 104px]                  │
+└─────────────────────────────────────────────────────────┘
+```
+- Fondo: `#FFFFFF`
+- Layout: VERTICAL · padding H: 16px · padding V: 24px · gap: 12px
+- Handle: rectángulo 36×4px centrado — indica que es arrastrable
+
+---
 
 ## Propiedades
-| Propiedad     | Tipo     | Valores posibles             | Valor por defecto |
-|---------------|----------|------------------------------|-------------------|
-| title         | string   | Cualquier texto              | ""                |
-| variant       | enum     | default, confirmation, menu  | default           |
-| height        | enum     | auto, half, full             | auto              |
-| show_handle   | boolean  | true, false                  | true              |
-| show_close    | boolean  | true, false                  | true              |
-| backdrop_close| boolean  | true, false                  | true              |
+
+| Propiedad | Tipo | Default | Editable |
+|---|---|---|---|
+| `title` | TEXT | `"Título del modal"` | Sí |
+| `description` | TEXT | `"Descripción de la acción..."` | Sí |
+| `buttons` | FRAME | primary + secondary | Sí |
+
+---
+
+## Layout
+
+| Propiedad | Valor |
+|---|---|
+| layoutMode | VERTICAL |
+| paddingLeft / Right | 16px → `Spacing/Padding/Horizontal/MD` |
+| paddingTop / Bottom | 24px → `Spacing/Padding/Vertical/LG` |
+| gap | 12px → `Spacing/Gap/LG` |
+| width | 390px |
+| height | 255px |
+
+---
+
+## Tokens aplicados
+
+| Elemento | Token semántico | Valor |
+|---|---|---|
+| Fondo | `Background/Default/Default` | `#FFFFFF` |
+| Título | `Text/Default/Default` 24px Bold | `rgb(15,23,42)` |
+| Descripción | `Text/Neutral/Default` 14px Regular | `rgb(71,85,105)` |
+| Handle | `Background/Neutral/Default` | neutral/400 |
+
+---
 
 ## Cuándo usarlo
-- Para confirmaciones de acciones importantes sin redirigir a otra pantalla
-- Para mostrar opciones contextuales de un item (menú de acciones)
-- Para formularios cortos que no justifican una pantalla completa (máx. 3 campos)
-- Para información adicional de un elemento sin perder el contexto del listado
+- Confirmación de acciones importantes antes de ejecutarlas
+- Acciones destructivas (eliminar, cancelar contrato)
+- Contenido contextual complementario sin salir del flujo
 
 ## Cuándo NO usarlo
-- Para flujos de más de 2 pasos (usa una pantalla nueva)
-- Para formularios largos (más de 3 campos)
-- Para contenido que el usuario necesita comparar con la pantalla de fondo
-- Anidado dentro de otro modal-bottom-sheet
+- Como pantalla completa — usar `Full modal` (L2/L3)
+- En L0 (dashboard) salvo avisos de sistema no bloqueantes
+- Para mostrar formularios largos — usar pantalla L2 completa
+- Cuando la acción no requiere confirmación
+
+---
 
 ## Restricciones
-- Máximo 1 abierto al mismo tiempo
-- No anidar modales
-- Si variant: confirmation siempre debe tener button-primary y button-secondary
-- Con height: full se comporta como pantalla completa y debe tener navigation-header interno
-- El backdrop siempre oscurece el fondo — nunca transparente
+- **Máximo 1 abierto al mismo tiempo**
+- El título siempre describe la acción, no el componente: "¿Cancelar transferencia?"
+- La descripción explica consecuencias: "Esta acción no se puede deshacer"
+- Siempre incluye `button-secondary` (cancelar) además del `button-primary`
 
-## Node ID en Figma
-1:36
+---
 
-## Tokens asociados
-- background: color-surface-primary
-- backdrop: color-overlay (rgba negro 40%)
-- handle: color-border-default
-- radius-top: radius-modal
-- shadow: shadow-modal
+## Uso en patrones
+
+| Patrón | Cuándo | Variante |
+|---|---|---|
+| `confirmacion` | Acción principal antes de ejecutar | `confirmation` |
+| `detalle` | Inicio de contratación antes de ir a L3 | `default` |
+
+---
+
+## Errores frecuentes
+
+| Error | Causa | Solución |
+|---|---|---|
+| Modal sin botón cancelar | Falta button-secondary | Siempre incluir opción de escape |
+| Título genérico "Confirmar" | Sin descripción de la acción | "¿Confirmar transferencia de 500€?" |
+| Modal en L0 | Contexto incorrecto | Reservar para L2/L3 o avisos de sistema |
