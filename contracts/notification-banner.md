@@ -1,5 +1,8 @@
 # notification-banner
 
+## Node ID en Figma
+20:802
+
 ## Descripción
 Banner de notificación contextual. Muestra avisos del sistema, alertas regulatorias, errores de conexión o información relevante. Siempre va justo debajo del `navigation-header` cuando está presente.
 
