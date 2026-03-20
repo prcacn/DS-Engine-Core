@@ -596,6 +596,8 @@ router.post('/', async function(req, res, next) {
 
       console.log('  ✓ Flujo multipantalla generado: ' + screens.length + ' pantallas para intent: ' + intent.intent_type);
 
+      const kbRulesMulti = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(err => { console.error('  ✗ [KB] kbSearch error:', err.message); return []; });
+
       return res.json({
         screen_id:    screenId,
         brief:        brief.trim(),
@@ -616,6 +618,8 @@ router.post('/', async function(req, res, next) {
         },
         violations:   intent.brief_violations || [],
         screens:      screens,
+        kb_rules:     kbRulesMulti,
+        kb_changes:   [],
         meta: {
           engine_version: '1.0.0',
           phase: 'Fase 3+ — Multiscreen Flow Support',
