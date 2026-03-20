@@ -3,6 +3,6 @@ WORKDIR /app
 COPY engine/package*.json ./engine/
 RUN cd engine && npm ci
 COPY . .
-ENV DS_REPO_PATH=/app/Simple
+ENV DS_REPO_PATH=/app
 EXPOSE 3000
 CMD ["node", "engine/src/server.js"]
