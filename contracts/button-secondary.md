@@ -1,5 +1,8 @@
 # button-secondary
 
+## Node ID en Figma
+1:11
+
 ## Descripción
 Botón de acción secundaria. Representa una alternativa a la acción principal — normalmente "cancelar", "volver" o una acción de menor peso. Siempre aparece junto a un `button-primary`, nunca solo.
 
