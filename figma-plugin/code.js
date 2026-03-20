@@ -6,7 +6,10 @@ var ENGINE_API_KEY = 'dev-key-local-2025';
 
 // Node IDs canónicos del Simple DS
 var COMPONENT_NODE_IDS = {
-  'navigation-header':        '1:3',
+  // navigation-header — 3 variantes reales según nivel de navegación
+  'navigation-header':              '112:1853', // Type=Predeterminada (L1) — por defecto
+  'navigation-header/dashboard':    '170:2660', // Type=Dashboard (L0)
+  'navigation-header/modal':        '170:2843', // Type=Modal (L2/L3)
   'button-primary':           '1:9',
   'button-secondary':         '1:11',
   'card-item':                '1:13',
@@ -26,7 +29,9 @@ var COMPONENT_NODE_IDS = {
 };
 
 var HEIGHT_MAP = {
-  'navigation-header':           56,
+  'navigation-header':              56,
+  'navigation-header/dashboard':    56,
+  'navigation-header/modal':        56,
   'filter-bar':                  48,
   'card-item':                   72,
   'button-primary':              52,
@@ -362,7 +367,22 @@ async function paintFlow(engineResponse) {
 
 function paintComponent(parent, comp, x, y, screenW) {
   var name   = comp.component;
-  var nodeId = comp.node_id && comp.node_id !== 'pending' ? comp.node_id : COMPONENT_NODE_IDS[name];
+
+  // Resolver variante del navigation-header según lo que indica el engine/template
+  var resolvedName = name;
+  if (name === 'navigation-header') {
+    var variant = (comp.variant || '').toLowerCase();
+    if (variant.includes('dashboard') || variant === 'type=dashboard') {
+      resolvedName = 'navigation-header/dashboard';
+    } else if (variant.includes('modal') || variant === 'type=modal') {
+      resolvedName = 'navigation-header/modal';
+    }
+    // Type=Predeterminada usa el default 'navigation-header'
+  }
+
+  var nodeId = comp.node_id && comp.node_id !== 'pending'
+    ? comp.node_id
+    : COMPONENT_NODE_IDS[resolvedName] || COMPONENT_NODE_IDS[name];
   var h      = HEIGHT_MAP[name] || 56;
   var margin = getMarginH(name);
   var w      = screenW - (margin * 2);
