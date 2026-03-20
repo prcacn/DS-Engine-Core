@@ -1,5 +1,8 @@
 # card-item
 
+## Node ID en Figma
+1:13
+
 ## Descripción
 Fila de lista genérica. Elemento repetible para mostrar items en listados. Contiene título, subtítulo y zona derecha para valor o acción. Base para todas las variantes de card.
 

@@ -224,31 +224,31 @@ router.post('/feedback', async (req, res) => {
 
     const entries = [];
 
+    // B2: las pantallas aprobadas NO se guardan en Pinecone KB como screen-docs.
+    // Los ejemplos aprobados van a /examples (templateLoader) — no a la KB semántica.
+    // Solo se guardan en KB las decisiones de rechazo con motivo claro (reglas de negocio)
+    // y las modificaciones con un aprendizaje explícito. Sin listas de componentes
+    // que generen falsos positivos semánticos.
     if (status === 'approved') {
-      const compList = (components || []).map(c => c.component).join(', ');
-      entries.push({
-        text: 'PANTALLA APROBADA: ' + brief + ' patron: ' + (pattern || 'desconocido') + '. Componentes: ' + compList,
-        categoria: 'ds-pattern',
-        prioridad: 'alta',
-        tipo: 'ejemplo-aprobado',
-        autor: 'feedback-loop',
-        geografia: 'global',
-      });
+      // No guardamos en KB — el ejemplo aprobado va a /examples via templateLoader
+      console.log('  [KB/feedback] approved — no se guarda en Pinecone (evitar screen-doc noise)');
     } else if (status === 'rejected' && motivo) {
+      // Solo guardamos el motivo de rechazo como regla, sin mencionar componentes
       entries.push({
-        text: 'PANTALLA RECHAZADA: ' + brief + '. Motivo: ' + motivo,
-        categoria: 'recomendacion',
+        text: 'DECISION DE DISEÑO — RECHAZO: Para briefs similares a "' + brief.substring(0, 60) + '": ' + motivo,
+        categoria: 'restriccion',
         prioridad: 'alta',
-        tipo: 'rechazo',
+        tipo: 'decision',
         autor: 'feedback-loop',
         geografia: 'global',
       });
     } else if (status === 'modified' && modificaciones) {
+      // Solo guardamos el aprendizaje, sin mencionar componentes específicos
       entries.push({
-        text: 'PANTALLA MODIFICADA: ' + brief + '. Cambios: ' + modificaciones,
+        text: 'APRENDIZAJE DE DISEÑO: Para briefs similares a "' + brief.substring(0, 60) + '": ' + modificaciones,
         categoria: 'recomendacion',
         prioridad: 'media',
-        tipo: 'modificacion',
+        tipo: 'decision',
         autor: 'feedback-loop',
         geografia: 'global',
       });

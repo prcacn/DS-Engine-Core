@@ -1,5 +1,8 @@
 # tab-bar
 
+## Node ID en Figma
+20:784
+
 ## Descripción
 Barra de navegación principal por pestañas. Anclada en la parte inferior de la pantalla. Permite al usuario moverse entre las secciones principales de la app. Solo visible en L0 y L1.
 
