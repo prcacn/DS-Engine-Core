@@ -5,30 +5,27 @@ const { Pinecone } = require('@pinecone-database/pinecone');
 const pinecone  = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
 const INDEX_NAME = process.env.PINECONE_INDEX || 'ds-knowledge-base';
 
-// ─── EMBEDDINGS VIA OPENAI text-embedding-3-small (1024 dim) ─────────────────
-// Mismo modelo que usa knowledge.js para ingestar — DEBEN ser el mismo modelo
+// ─── EMBEDDINGS VIA PINECONE INFERENCE ───────────────────────────────────────
 async function embed(text) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY no configurada — necesaria para búsqueda KB');
-  }
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
+  const response = await fetch('https://api.pinecone.io/embed', {
     method: 'POST',
     headers: {
-      'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
+      'Api-Key': process.env.PINECONE_API_KEY,
       'Content-Type': 'application/json',
+      'X-Pinecone-API-Version': '2024-10',
     },
     body: JSON.stringify({
-      model: 'text-embedding-3-small',
-      input: text,
-      dimensions: parseInt(process.env.PINECONE_DIMENSION || '1024'),
+      model: 'multilingual-e5-large',
+      inputs: [{ text }],
+      parameters: { input_type: 'query', truncate: 'END' },
     }),
   });
 
-  if (!response.ok) throw new Error('OpenAI embed error: ' + await response.text());
+  if (!response.ok) throw new Error('Pinecone embed error: ' + await response.text());
 
   const data   = await response.json();
-  const vector = data.data?.[0]?.embedding;
-  if (!vector || vector.length === 0) throw new Error('OpenAI no devolvió vector válido');
+  const vector = data.data?.[0]?.values;
+  if (!vector || vector.length === 0) throw new Error('Pinecone no devolvió vector válido');
   return vector;
 }
 
