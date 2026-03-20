@@ -3,6 +3,9 @@
 ## Node ID en Figma
 20:800
 
+## Component Set ID
+185:3902  ← COMPONENT_SET padre (no instanciar directamente)
+
 ## Descripción
 Etiqueta de estado compacta. Muestra un valor numérico o texto corto con fondo de color semántico. Indica variación, estado o categoría de forma visual y concisa.
 
