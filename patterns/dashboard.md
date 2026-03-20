@@ -1,49 +1,44 @@
 # dashboard
+
 ## Descripción
-Pantalla inicial que ofrece una visión resumida del estado general del usuario o del producto. Presenta información clave, accesos rápidos y módulos priorizados según el uso más frecuente.
+Pantalla de inicio autenticada (L0) con resumen de la posición global del usuario, accesos rápidos y actividad reciente. Es siempre la raíz de la aplicación — el punto de entrada tras el login.
 
 ## Cuándo aplicar este pattern
-- Home de la aplicación (punto de entrada tras login)
-- Superficies donde se resumen productos, cuentas o estados
-- Cuando el usuario necesita orientación rápida hacia acciones frecuentes
-- Flujos donde la información es más importante que la navegación por secciones
+- Home de la aplicación tras autenticación
+- Vista resumen de cartera o posición financiera global
+- Panel de control con KPIs y accesos directos a acciones frecuentes
 
 ## Componentes requeridos (en este orden)
-1. navigation-header — variant: Type=Dashboard (L0 — sin título en header, icono menú + campana)
-2. summary-cards × N — tarjetas con datos clave (KPIs, estado, saldo, progreso)
-3. quick-actions — accesos rápidos principales (entre 2 y 5)
-4. section-header × N — título de cada bloque de contenido
-5. card-item × N — listas cortas o módulos informativos
+1. navigation-header — variant: default (L0 — sin back, icono de campana opcional)
+2. tab-bar — SIEMPRE presente en L0. sticky en la parte inferior
+3. card-item × N — mínimo 1. Muestra la posición o producto principal. En dominio fintech usar card-item/financial
 
 ## Componentes opcionales
-- avatar-user — acceso al perfil desde el header
-- banner-informativo — campañas, avisos o novedades (máx. 1)
-- carousel — para módulos desplazables (solo si es imprescindible)
-- chip-filters — para cambiar la vista (p. ej., “Hoy / Semana / Mes”)
-- empty-state — en módulos que puedan estar vacíos
-- notification-icon — en el header
+- list-header — para separar secciones ("Tu posición", "Actividad reciente")
+- notification-banner — alertas activas, variant: info o warning. Máximo 1
+- button-primary — acción principal del dashboard ("Añadir fondos", "Nueva transferencia")
+- badge — indicadores de estado en cards
+- skeleton-loader — estado de carga inicial antes de tener datos reales
 
 ## Reglas de composición
-- navigation-header siempre fijo arriba; evitar sobrecargarlo
-- El primer scroll debe mostrar: summary-cards + quick-actions
-- summary-cards se agrupan visualmente (máx. 3 por fila según diseño)
-- quick-actions siempre con icono + label; ordenados por frecuencia
-- Cada sección debe usar section-header claro antes de sus card-item
-- No abusar de módulos; priorizar 3–5 bloques principales por pantalla
-- Si hay banner, se coloca bajo el header y antes de summary-cards
+- navigation-header siempre primer elemento, sin variante back ni close
+- tab-bar es OBLIGATORIO — el dashboard es L0 por definición
+- Máximo 1 notification-banner por pantalla
+- Si dominio es fintech (fondos, cartera, saldo, transferencias), usar card-item/financial
+- No usar filter-bar — la exploración se gestiona con list-header y secciones
+- No usar input-text — el dashboard no tiene formularios
+- No usar modal-bottom-sheet — los modales son L3, incompatibles con L0
 
 ## Reglas de contenido
-- Títulos breves y orientados al usuario (“Tu situación hoy”, “Tus productos”)
-- Los summary-cards deben mostrar valores accionables y actualizados
-- quick-actions deben ser tareas frecuentes, no enlaces secundarios
-- card-item debe evitar información redundante respecto a summary-cards
-- Si hay datos sensibles, mostrarlos con modos de ocultar/mostrar (eye-button)
+- El título del navigation-header debe ser el nombre de la app o estar vacío (no el dominio)
+- list-header debe usar labels orientados al usuario: "Tu posición", "Actividad reciente"
+- card-item en el dashboard muestra el resumen — no el detalle completo
 
 ## Ejemplos aprobados
 (vacío — se irán añadiendo en /examples)
 
 ## Incompatibilidades
-- No usar como pantalla de detalle (usar `detalle.md`)
-- No incluir formularios; para eso están `formulario-simple` o `formulario-multipaso`
-- Evitar flujos profundos desde el dashboard (máx. 1 nivel)
-- No mezclar demasiados módulos distintos (riesgo de ruido visual)
+- filter-bar (L0 no filtra, tiene secciones)
+- input-text (no hay formularios en el dashboard)
+- modal-bottom-sheet (incompatible con L0)
+- empty-state (si no hay datos usar skeleton-loader o notification-banner informativo)
