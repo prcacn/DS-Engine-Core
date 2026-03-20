@@ -8,6 +8,21 @@ const { loadContracts }        = require('../../loaders/contractLoader');
 const { loadPatterns }         = require("../../loaders/patternLoader");
 const { runAgents }            = require("../../agents/orchestrator");
 const { search: kbSearch }     = require("../../core/knowledgeBase");
+const { findTemplate }         = require('../../loaders/templateLoader');
+
+// Nivel de navegación por intent
+const INTENT_TO_LEVEL = {
+  'dashboard':             'L0',
+  'lista-con-filtros':     'L1',
+  'notificaciones':        'L1',
+  'perfil-usuario':        'L1',
+  'detalle':               'L2',
+  'formulario-simple':     'L2',
+  'transferencia-bancaria':'L2',
+  'confirmacion':          'L3',
+  'error-estado':          'L3',
+  'onboarding':            'L0',
+};
 
 const INTENT_TO_PATTERN = {
   'dashboard':             'dashboard',
@@ -532,7 +547,42 @@ router.post('/', async function(req, res, next) {
       });
     }
 
-    // ── FLUJO ESTÁNDAR (pantalla única) ────────────────────────────────────────
+    // ── NIVEL DE NAVEGACIÓN ──────────────────────────────────────────────────
+    const navLevel = INTENT_TO_LEVEL[intent.intent_type] || 'L1';
+    console.log('  → [nav] nivel: ' + navLevel + ' | intent: ' + intent.intent_type);
+
+    // ── TEMPLATE APROBADO — si existe, usarlo directamente ────────────────
+    const approvedTemplate = findTemplate(intent.intent_type, brief);
+    if (approvedTemplate) {
+      console.log('  ✓ [template] Template aprobado encontrado: ' + approvedTemplate.id);
+      const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(() => []);
+      const confidence = calculateScore({
+        pattern:   patternName,
+        components: approvedTemplate.components,
+        intent,
+        contracts: Object.values(contracts),
+      });
+      return res.json({
+        screen_id:        'gen_' + Date.now(),
+        brief:            brief.trim(),
+        pattern:          patternName,
+        nav_level:        navLevel,
+        flow_type:        'single',
+        from_template:    true,
+        template_id:      approvedTemplate.id,
+        intent,
+        status:           confidence.status,
+        confidence,
+        violations:       [],
+        components:       approvedTemplate.components,
+        missing_components: [],
+        kb_rules:         kbRules,
+        kb_changes:       [],
+        meta: { engine_version: '1.0.0', generated_at: new Date().toISOString() }
+      });
+    }
+
+    // ── FLUJO ESTÁNDAR (pantalla única) — solo si no hay template aprobado ─
     const patternData = patterns[patternName];
     if (!patternData) {
       return res.status(404).json({ error: 'PatternNotFound', message: "Pattern '" + patternName + "' no encontrado" });
@@ -566,6 +616,8 @@ router.post('/', async function(req, res, next) {
 
   res.json({
   screen_id:         screenId,
+  nav_level:         navLevel,
+  from_template:     false,
   brief:             brief.trim(),
   pattern:           patternName,
   flow_type:         'single',
