@@ -3,6 +3,9 @@
 ## Node ID en Figma
 20:802
 
+## Component Set ID
+185:3903  ← COMPONENT_SET padre (no instanciar directamente)
+
 ## Descripción
 Banner de notificación contextual. Muestra avisos del sistema, alertas regulatorias, errores de conexión o información relevante. Siempre va justo debajo del `navigation-header` cuando está presente.
 
