@@ -233,6 +233,13 @@ function resolveOptional(component, intent, brief) {
     'button-primary':     function() { return { include: intent.intent_type === 'lista-con-filtros' && (b.includes('crear') || b.includes('nuevo') || b.includes('añadir')), confidence: 0.75 }; },
     'modal-bottom-sheet': function() { return { include: (intent.constraints && intent.constraints.needs_confirmation) || (intent.constraints && intent.constraints.is_destructive), confidence: 0.85 }; },
     'button-secondary':   function() { return { include: intent.intent_type === 'confirmacion' || (intent.constraints && intent.constraints.needs_confirmation), confidence: 0.90 }; },
+    'card-summary': function() {
+      return { include: intent.intent_type === 'dashboard' && isFintechDomain(brief, intent), confidence: 0.90 };
+    },
+    'card-item/account': function() {
+      const b = brief.toLowerCase();
+      return { include: b.includes('cuenta') || b.includes('cuentas') || b.includes('cuenta bancaria'), confidence: 0.85 };
+    },
     // C1: tab-bar obligatorio en L0 (dashboard, onboarding autenticado) y L1 (listas raíz)
     // El engine infiere esto del nivel de navegación — el diseñador no necesita pedirlo
     'tab-bar': function() {
@@ -412,6 +419,7 @@ const KNOWN_COMPONENTS = [
   'input-text', 'filter-bar', 'empty-state', 'modal-bottom-sheet',
   'tab-bar', 'list-header', 'badge', 'notification-banner',
   'amount-display', 'chart-sparkline', 'skeleton-loader',
+  'card-summary', 'card-item/account',
 ];
 
 function applyKBRules(components, kbRules, intent) {
