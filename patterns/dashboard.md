@@ -9,7 +9,7 @@ Pantalla inicial que ofrece una visión resumida del estado general del usuario 
 - Flujos donde la información es más importante que la navegación por secciones
 
 ## Componentes requeridos (en este orden)
-1. navigation-header — variant: default (sin back)
+1. navigation-header — variant: Type=Dashboard (L0 — sin título en header, icono menú + campana)
 2. summary-cards × N — tarjetas con datos clave (KPIs, estado, saldo, progreso)
 3. quick-actions — accesos rápidos principales (entre 2 y 5)
 4. section-header × N — título de cada bloque de contenido
