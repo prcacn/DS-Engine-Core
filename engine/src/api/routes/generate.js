@@ -587,9 +587,18 @@ router.post('/', async function(req, res, next) {
     const contracts = loadContracts();
     const patterns  = loadPatterns();
 
+    // ── LEVEL 4.0: enriquecer brief con KB ANTES de parseIntent ─────────────
+    // kbRules se recupera aquí una sola vez y se reutiliza en agentes y governance
+    const enrichResult = forcedPattern
+      ? { enrichedBrief: brief, kbRules: [], hasContext: false }
+      : await enrichBriefWithKnowledge(brief);
+    const enrichedBrief   = enrichResult.enrichedBrief;
+    const enrichedKbRules = enrichResult.kbRules;
+    const hasContext      = enrichResult.hasContext;
+
     const intent = forcedPattern
       ? { intent_type: forcedPattern, confidence: 0.99, domain: 'manual', constraints: { is_multiscreen_flow: MULTISCREEN_INTENTS.includes(forcedPattern) }, reasoning: 'Pattern forzado', brief_violations: [] }
-      : await parseIntent(brief);
+      : await parseIntent(enrichedBrief);
 
     const patternName = INTENT_TO_PATTERN[intent.intent_type] || 'lista-con-filtros';
 
