@@ -26,7 +26,11 @@ const NAV_LEVEL_MAP = {
   'notificaciones':        'L1',
   'perfil-usuario':        'L1',
   'detalle':               'L2',
-  'formulario-simple':     'L2',
+  'login':                 'L2',
+  'registro':              'L2',
+  'edicion-perfil':        'L2',
+  'formulario-producto':   'L2',
+  'formulario-default':    'L2',
   'transferencia-bancaria':'L2',
   'confirmacion':          'L3',
   'error-estado':          'L3',
@@ -47,7 +51,11 @@ Tu única tarea es analizar un brief de diseño y devolver un JSON estructurado.
 Los tipos de pantalla disponibles son:
 - dashboard: pantalla principal o home con resumen de estado, KPIs, accesos rápidos
 - lista-con-filtros: listados navegables con filtros por categoría
-- formulario-simple: captura de datos del usuario (login, registro, edición)
+- login: acceso a la app con identificador + contraseña. SIEMPRE 2 campos fijos. Usar cuando el brief mencione login, acceder, entrar, iniciar sesión, contraseña, email+password.
+- registro: creación de cuenta con N campos variables. Usar cuando el brief mencione registrarse, crear cuenta, alta, nuevo usuario, o liste campos de datos personales.
+- edicion-perfil: modificación de datos existentes. Usar cuando el brief mencione editar, modificar, actualizar, cambiar datos del perfil o cuenta.
+- formulario-producto: contratación o solicitud de producto financiero. Usar cuando el brief mencione contratar, solicitar, abrir cuenta, configurar producto financiero.
+- formulario-default: fallback para formularios no clasificables en los anteriores. Usar solo si no encaja en ninguno de los 4 tipos anteriores.
 - confirmacion: confirmación de acciones importantes o irreversibles
 - detalle: vista de detalle de un item específico
 - onboarding: bienvenida y primeros pasos para nuevo usuario
@@ -78,7 +86,7 @@ Los componentes disponibles y sus restricciones son:
 Jerarquía de navegación — cada intent tiene un nivel fijo:
 - L0 (raíz autenticada): dashboard — lleva tab-bar, navigation-header Type=Dashboard (sin título, sin back)
 - L1 (tabs del app shell): lista-con-filtros, notificaciones, perfil-usuario — llevan tab-bar, navigation-header Type=Predeterminada
-- L2 (pantallas secundarias): detalle, formulario-simple, transferencia-bancaria — navigation-header Type=Modal con arrow-left, sin tab-bar
+- L2 (pantallas secundarias): detalle, login, registro, edicion-perfil, formulario-producto, formulario-default, transferencia-bancaria — navigation-header Type=Modal con arrow-left, sin tab-bar
 - L3 (modales y pasos finales): confirmacion, error-estado — navigation-header Type=Modal sin icono izquierdo, sin tab-bar
 - L0 especial: onboarding — sin tab-bar aunque sea L0 (usuario no autenticado aún)
 
@@ -98,7 +106,7 @@ Analiza el brief e identifica si pide algo que viola estas restricciones.
 Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin markdown, sin explicaciones.
 El JSON debe tener exactamente esta estructura:
 {
-  "intent_type": "dashboard | lista-con-filtros | formulario-simple | confirmacion | detalle | onboarding | perfil-usuario | error-estado | notificaciones | transferencia-bancaria",
+  "intent_type": "dashboard | lista-con-filtros | login | registro | edicion-perfil | formulario-producto | formulario-default | confirmacion | detalle | onboarding | perfil-usuario | error-estado | notificaciones | transferencia-bancaria",
   "domain": "string corto describiendo el dominio (ej: fondos, login, transacciones)",
   "required_capabilities": ["array de capacidades necesarias"],
   "constraints": {
@@ -218,11 +226,25 @@ function fallbackParse(brief) {
     intent_type = 'transferencia-bancaria';
     confidence  = 0.85;
     is_multiscreen_flow = true;
-  } else if (b.includes('formulario') || b.includes('login') || b.includes('registr') ||
-      b.includes('contraseña') || b.includes('email') || b.includes('campo') ||
-      b.includes('editar') || b.includes('guardar datos')) {
-    intent_type = 'formulario-simple';
-    confidence  = 0.70;
+  } else if (b.includes('login') || b.includes('iniciar sesión') || b.includes('acceder') ||
+      b.includes('entrar') || b.includes('contraseña') && b.includes('email')) {
+    intent_type = 'login';
+    confidence  = 0.85;
+  } else if (b.includes('registr') || b.includes('crear cuenta') || b.includes('nuevo usuario') ||
+      b.includes('alta') || b.includes('sign up')) {
+    intent_type = 'registro';
+    confidence  = 0.80;
+  } else if (b.includes('editar') || b.includes('modificar') || b.includes('actualizar') ||
+      b.includes('cambiar') && (b.includes('perfil') || b.includes('datos') || b.includes('cuenta'))) {
+    intent_type = 'edicion-perfil';
+    confidence  = 0.80;
+  } else if (b.includes('contratar') || b.includes('solicitar') || b.includes('abrir cuenta') ||
+      b.includes('configurar') && b.includes('producto')) {
+    intent_type = 'formulario-producto';
+    confidence  = 0.80;
+  } else if (b.includes('formulario') || b.includes('campo') || b.includes('guardar datos')) {
+    intent_type = 'formulario-default';
+    confidence  = 0.65;
   } else if (b.includes('confirmar') || b.includes('confirmación') || b.includes('eliminar') ||
              b.includes('borrar') || b.includes('irreversible')) {
     intent_type = 'confirmacion';
