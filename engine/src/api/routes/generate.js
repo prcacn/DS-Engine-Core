@@ -36,7 +36,14 @@ const INTENT_TO_LEVEL = {
 const INTENT_TO_PATTERN = {
   'dashboard':             'dashboard',
   'lista-con-filtros':     'lista-con-filtros',
-  'formulario-simple':     'formulario-simple',
+  // Formularios específicos — reemplazan formulario-simple
+  'login':                 'login',
+  'registro':              'registro',
+  'edicion-perfil':        'edicion-perfil',
+  'formulario-producto':   'formulario-producto',
+  'formulario-default':    'formulario-default',
+  // Legacy fallback — mantener por compatibilidad
+  'formulario-simple':     'formulario-default',
   'confirmacion':          'confirmacion',
   'detalle':               'detalle',
   'onboarding':            'onboarding',
