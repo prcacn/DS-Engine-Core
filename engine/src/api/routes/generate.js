@@ -9,8 +9,17 @@ const { loadPatterns }         = require("../../loaders/patternLoader");
 const { runAgents }            = require("../../agents/orchestrator");
 const { search: kbSearch }     = require("../../core/knowledgeBase");
 const { findTemplate }         = require('../../loaders/templateLoader');
+const {
+  getNavLevel,
+  getHeaderVariant,
+  getHeaderNodeId,
+  isTabBarAllowed,
+  loadGlobalRules,
+  getCompositionOrder,
+} = require('../../core/globalRulesParser');
 
-// Nivel de navegación por intent
+// DEPRECADO: este mapa se leerá de global-rules/navigation.md vía globalRulesParser.
+// Mantenido como fallback hasta migración completa. No editar aquí — editar el .md.
 const INTENT_TO_LEVEL = {
   'dashboard':             'L0',
   'lista-con-filtros':     'L1',
@@ -175,17 +184,13 @@ function resolveVariant(component, intent) {
   // navigation-header: usa el header_variant del intent si viene del intentParser
   // Si no, infiere desde navigation_level o INTENT_TO_LEVEL
   // Nombres alineados con Figma: Type=Dashboard | Type=Predeterminada | Type=Modal
-  const navLevel = intent.navigation_level || INTENT_TO_LEVEL[intent.intent_type] || 'L1';
+  // Nivel leído de global-rules/navigation.md via parser — no hardcodeado
+  const navLevel = intent.navigation_level || getNavLevel(intent.intent_type);
   const variants = {
     'navigation-header':  function() {
-      // Usar header_variant del intent si está disponible (viene de intentParser v1.1)
+      // Prioridad: intent.header_variant (intentParser) > getHeaderVariant (parser) > fallback
       if (intent.header_variant) return intent.header_variant;
-      // Fallback: inferir desde nivel
-      if (navLevel === 'L0') return 'Type=Dashboard';
-      if (navLevel === 'L1') return 'Type=Predeterminada';
-      if (navLevel === 'L2') return 'Type=Modal';
-      if (navLevel === 'L3') return 'Type=Modal';
-      return 'Type=Predeterminada';
+      return getHeaderVariant(navLevel) || 'Type=Predeterminada';
     },
     'button-primary':     function() { return intent.constraints && intent.constraints.is_destructive ? 'destructive' : 'default'; },
     'empty-state':        function() { return intent.constraints && intent.constraints.has_filters ? 'no-results' : 'default'; },
@@ -206,17 +211,11 @@ function buildSmartProps(contract, intent, componentName) {
     if (intent.domain) {
       props.title = intent.domain.charAt(0).toUpperCase() + intent.domain.slice(1);
     }
-    // node_id de la variante correcta — alineado con Figma y global-rules/navigation.md
-    const navVariantIds = {
-      'Type=Dashboard':      '170:2660',  // L0
-      'Type=Predeterminada': '112:1853',  // L1
-      'Type=Modal':          '170:2843',  // L2 y L3
-    };
-    const resolvedVariant = intent.header_variant ||
-      ({'L0':'Type=Dashboard','L1':'Type=Predeterminada','L2':'Type=Modal','L3':'Type=Modal'}
-        [intent.navigation_level || INTENT_TO_LEVEL[intent.intent_type]] || 'Type=Predeterminada');
-    props._variant_node_id = navVariantIds[resolvedVariant] || '112:1853';
-    props._figma_variant    = resolvedVariant;
+    // node_id leído de global-rules/navigation.md via parser — no hardcodeado
+    const navLevel2        = intent.navigation_level || getNavLevel(intent.intent_type);
+    const resolvedVariant  = intent.header_variant || getHeaderVariant(navLevel2);
+    props._variant_node_id = getHeaderNodeId(resolvedVariant);
+    props._figma_variant   = resolvedVariant;
   }
   if (componentName === 'empty-state' && intent.constraints && intent.constraints.has_filters) {
     props.action_label = 'Limpiar filtros';
