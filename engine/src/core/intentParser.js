@@ -1,6 +1,7 @@
 // core/intentParser.js
 // Fase 2+ — Usa Claude API para interpretar el brief en lenguaje natural
 // y devolver un IntentObject estructurado + brief_violations[]
+// v1.1 — Añade navigation_level al output (L0/L1/L2/L3) según global-rules/navigation.md
 
 const Anthropic = require('@anthropic-ai/sdk');
 
@@ -15,6 +16,30 @@ function getClient() {
   }
   return client;
 }
+
+// Mapa canónico de nivel de navegación por intent_type
+// Fuente de verdad: engine/global-rules/navigation.md
+const NAV_LEVEL_MAP = {
+  'dashboard':             'L0',
+  'onboarding':            'L0',
+  'lista-con-filtros':     'L1',
+  'notificaciones':        'L1',
+  'perfil-usuario':        'L1',
+  'detalle':               'L2',
+  'formulario-simple':     'L2',
+  'transferencia-bancaria':'L2',
+  'confirmacion':          'L3',
+  'error-estado':          'L3',
+};
+
+// Variante obligatoria del navigation-header por nivel
+// Fuente de verdad: engine/contracts/navigation-header.md
+const HEADER_VARIANT_MAP = {
+  'L0': 'Type=Dashboard',
+  'L1': 'Type=Predeterminada',
+  'L2': 'Type=Modal',
+  'L3': 'Type=Modal',
+};
 
 const SYSTEM_PROMPT = `Eres el Intent Parser de un Design System IA-Ready.
 Tu única tarea es analizar un brief de diseño y devolver un JSON estructurado.
@@ -51,10 +76,10 @@ Los componentes disponibles y sus restricciones son:
 - notification-banner: máximo 5 en patrón notificaciones, máximo 1 en otros patrones
 
 Jerarquía de navegación — cada intent tiene un nivel fijo:
-- L0 (raíz autenticada): dashboard — lleva tab-bar, navigation-header sin back
-- L1 (tabs del app shell): lista-con-filtros, notificaciones, perfil-usuario — llevan tab-bar, navigation-header sin back
-- L2 (pantallas secundarias): detalle, formulario-simple, transferencia-bancaria — llevan navigation-header con back (with-back), sin tab-bar
-- L3 (modales y pasos finales): confirmacion, error-estado — llevan navigation-header con close, sin tab-bar
+- L0 (raíz autenticada): dashboard — lleva tab-bar, navigation-header Type=Dashboard (sin título, sin back)
+- L1 (tabs del app shell): lista-con-filtros, notificaciones, perfil-usuario — llevan tab-bar, navigation-header Type=Predeterminada
+- L2 (pantallas secundarias): detalle, formulario-simple, transferencia-bancaria — navigation-header Type=Modal con arrow-left, sin tab-bar
+- L3 (modales y pasos finales): confirmacion, error-estado — navigation-header Type=Modal sin icono izquierdo, sin tab-bar
 - L0 especial: onboarding — sin tab-bar aunque sea L0 (usuario no autenticado aún)
 
 Detecta como violación si el brief pide explícitamente una configuración que contradice el nivel:
@@ -104,6 +129,20 @@ Ejemplos de violaciones:
 - Pedir card-item y empty-state juntos → error: "card-item y empty-state son mutuamente excluyentes"
 - Pedir saltarse la revisión en transferencia → error: "La pantalla de revisión es obligatoria en flujos de transferencia"`;
 
+// Enriquece el intent con navigation_level y header_variant
+// basándose en el mapa canónico — no depende de lo que devuelva Claude
+function enrichWithNavigation(intent) {
+  const level = NAV_LEVEL_MAP[intent.intent_type] || 'L1';
+  intent.navigation_level = level;
+  intent.header_variant   = HEADER_VARIANT_MAP[level];
+
+  // tab-bar: obligatorio en L0/L1, prohibido en L2/L3 y onboarding
+  intent.constraints.requires_tab_bar = (level === 'L0' || level === 'L1') && intent.intent_type !== 'onboarding';
+  intent.constraints.forbids_tab_bar  = level === 'L2' || level === 'L3' || intent.intent_type === 'onboarding';
+
+  return intent;
+}
+
 async function parseIntent(brief) {
   if (!process.env.ANTHROPIC_API_KEY) {
     console.log('  ⚠ ANTHROPIC_API_KEY no configurada — usando fallback keyword');
@@ -122,22 +161,29 @@ async function parseIntent(brief) {
       ]
     });
 
-    const raw = message.content[0].text.trim();
+    const raw   = message.content[0].text.trim();
     const clean = raw.replace(/```json|```/g, '').trim();
     const intent = JSON.parse(clean);
 
-    // Asegurar que brief_violations siempre existe
-    if (!intent.brief_violations) {
-      intent.brief_violations = [];
-    }
-
-    // Asegurar is_multiscreen_flow para transferencia-bancaria
+    // Garantizar campos obligatorios
+    if (!intent.brief_violations) intent.brief_violations = [];
+    if (!intent.constraints) intent.constraints = {};
     if (intent.intent_type === 'transferencia-bancaria') {
       intent.constraints.is_multiscreen_flow = true;
     }
 
+    // Enriquecer con nivel de navegación (fuente canónica: NAV_LEVEL_MAP)
+    enrichWithNavigation(intent);
+
     const violationCount = intent.brief_violations.length;
-    console.log('  ✓ Intent parseado: ' + intent.intent_type + ' (' + intent.domain + ') confidence: ' + intent.confidence + (violationCount > 0 ? ' ⚠ ' + violationCount + ' violaciones' : ''));
+    console.log(
+      '  ✓ Intent: ' + intent.intent_type +
+      ' | nivel: ' + intent.navigation_level +
+      ' | header: ' + intent.header_variant +
+      ' | domain: ' + intent.domain +
+      ' | conf: ' + intent.confidence +
+      (violationCount > 0 ? ' ⚠ ' + violationCount + ' violaciones' : '')
+    );
 
     return intent;
 
@@ -156,7 +202,6 @@ function fallbackParse(brief) {
   let confidence  = 0.50;
   let is_multiscreen_flow = false;
 
-  // dashboard — home, inicio, resumen, pantalla principal
   if (b.includes('dashboard') || b.includes('home') || b.includes('inicio') ||
       b.includes('pantalla principal') || b.includes('pantalla de inicio') ||
       b.includes('pantalla home') || b.includes('bienvenida al cliente') ||
@@ -165,8 +210,6 @@ function fallbackParse(brief) {
       b.includes('accesos rápidos')) {
     intent_type = 'dashboard';
     confidence  = 0.80;
-
-  // transferencia-bancaria — tiene prioridad sobre formulario-simple
   } else if (b.includes('transferencia') || b.includes('transferir') ||
       b.includes('enviar dinero') || b.includes('pago a tercero') ||
       b.includes('bizum') || b.includes('sepa') ||
@@ -210,7 +253,6 @@ function fallbackParse(brief) {
     confidence  = 0.75;
   }
 
-  // Detección básica de violaciones en fallback
   const brief_violations = [];
 
   const buttonPrimaryCount = (b.match(/botón primario|button.?primary|cta principal/g) || []).length;
@@ -246,13 +288,13 @@ function fallbackParse(brief) {
     });
   }
 
-  return {
+  const baseIntent = {
     intent_type,
-    domain:   intent_type === 'transferencia-bancaria' ? 'transferencias'
-               : intent_type === 'dashboard' ? 'home'
-               : intent_type === 'lista-con-filtros' ? 'listados'
-               : intent_type === 'formulario-simple' ? 'formularios'
-               : 'general',
+    domain: intent_type === 'transferencia-bancaria' ? 'transferencias'
+           : intent_type === 'dashboard' ? 'home'
+           : intent_type === 'lista-con-filtros' ? 'listados'
+           : intent_type === 'formulario-simple' ? 'formularios'
+           : 'general',
     required_capabilities: intent_type === 'transferencia-bancaria' ? ['multi-screen-flow', 'form-validation', 'confirmation'] : [],
     constraints: {
       has_filters:         intent_type === 'lista-con-filtros',
@@ -261,18 +303,13 @@ function fallbackParse(brief) {
       needs_confirmation:  intent_type === 'confirmacion' || intent_type === 'transferencia-bancaria',
       estimated_items:     null,
       is_multiscreen_flow: is_multiscreen_flow,
-      // C1: nivel de navegación inferido del intent
-      nav_level: {
-        'dashboard': 'L0', 'onboarding': 'L0',
-        'lista-con-filtros': 'L1', 'notificaciones': 'L1', 'perfil-usuario': 'L1',
-        'detalle': 'L2', 'formulario-simple': 'L2', 'transferencia-bancaria': 'L2',
-        'confirmacion': 'L3', 'error-estado': 'L3',
-      }[intent_type] || 'L1',
     },
     confidence,
     reasoning: 'Fallback keyword matching — sin Claude API',
     brief_violations
   };
+
+  return enrichWithNavigation(baseIntent);
 }
 
-module.exports = { parseIntent };
+module.exports = { parseIntent, NAV_LEVEL_MAP, HEADER_VARIANT_MAP };
