@@ -7,7 +7,8 @@ const { calculateScore }       = require('../../core/confidenceScore');
 const { loadContracts }        = require('../../loaders/contractLoader');
 const { loadPatterns }         = require("../../loaders/patternLoader");
 const { runAgents }            = require("../../agents/orchestrator");
-const { search: kbSearch }     = require("../../core/knowledgeBase");
+const { search: kbSearch }          = require("../../core/knowledgeBase");
+const { enrichBriefWithKnowledge }  = require("../../core/briefEnricher");
 const { findTemplate }         = require('../../loaders/templateLoader');
 const {
   getNavLevel,
@@ -683,7 +684,10 @@ router.post('/', async function(req, res, next) {
     const rawComponents = rawResult.components;
     const compositionRules = rawResult.compositionRules;
     // ── AGENTES (UXWriter + UXSpec en paralelo) ──────────────────────────
-    const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(err => { console.error('  ✗ [KB] kbSearch error:', err.message); return []; });
+    // kbRules ya viene de enrichBriefWithKnowledge — no repetir búsqueda
+    const kbRules = enrichedKbRules.length > 0
+      ? enrichedKbRules
+      : await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(err => { console.error('  ✗ [KB] kbSearch error:', err.message); return []; });
 
     // ── Aplicar reglas KB sobre la composición ────────────────────────────
     const kbResult     = applyKBRules(rawComponents, kbRules, intent);
@@ -721,7 +725,7 @@ router.post('/', async function(req, res, next) {
   agent_meta:        agentMeta,
   kb_rules:          kbRules,
   kb_changes:        [...(kbChanges || []), ...(agentMeta?.kb_changes || [])],
-  meta: { engine_version: '1.0.0', phase: 'Fase 3+ — Quantity Parsing', generated_at: new Date().toISOString() }
+  meta: { engine_version: '1.0.0', phase: 'Level 4.0 — Brief Enrichment', kb_enriched: hasContext || false, generated_at: new Date().toISOString() }
 });
 
   } catch (err) {
