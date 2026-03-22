@@ -385,52 +385,63 @@ select:focus { outline: none; border-color: var(--accent); }
 .dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
 
-  /* ── KB FLOATING CARDS (plugin) ── */
-#kb-float-layer {
-  position: fixed; inset: 0; pointer-events: none; z-index: 999;
+  /* ── KB INDICATOR + DRAWER ── */
+.kb-indicator {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 10px; font-weight: 600; color: var(--text-dim);
+  cursor: pointer; user-select: none;
+  transition: all 0.15s;
 }
-.kb-float-card-plugin {
-  position: absolute; pointer-events: all;
-  width: 200px;
-  background: #1e2330; border: 1px solid #2e3548;
-  border-radius: 10px; overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  cursor: grab; user-select: none;
-  transition: box-shadow 0.15s;
+.kb-indicator:hover { border-color: var(--accent); color: var(--text); }
+.kb-indicator.has-rules { color: var(--accent); border-color: rgba(124,92,252,0.4); }
+.kb-indicator .kb-badge {
+  background: var(--accent); color: #fff;
+  border-radius: 10px; padding: 1px 6px;
+  font-size: 9px; font-weight: 700;
 }
-.kb-float-card-plugin.dragging { cursor: grabbing; box-shadow: 0 12px 32px rgba(0,0,0,0.7); }
-.kb-float-card-plugin .kf-handle {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 8px; gap: 6px;
-  border-bottom: 1px solid #2e3548;
+.kb-indicator .kb-chevron {
+  font-size: 8px; transition: transform 0.2s;
 }
-.kb-float-card-plugin .kf-dot {
-  width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0;
+.kb-indicator.open .kb-chevron { transform: rotate(180deg); }
+
+.kb-drawer {
+  display: none; flex-direction: column; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 10px;
+  margin-top: 4px;
 }
-.kb-float-card-plugin .kf-cat {
-  font-family: var(--mono); font-size: 9px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.06em; color: var(--txt2); flex: 1;
+.kb-drawer.open { display: flex; }
+.kb-drawer-rule {
+  background: var(--surface2); border-radius: var(--r-sm);
+  padding: 8px 10px; border-left: 2px solid var(--border2);
 }
-.kb-float-card-plugin .kf-close {
-  background: none; border: none; color: var(--txt2); cursor: pointer;
-  font-size: 11px; padding: 0; line-height: 1; pointer-events: all;
+.kb-drawer-rule.restriccion  { border-left-color: #f87171; }
+.kb-drawer-rule.recomendacion { border-left-color: #818cf8; }
+.kb-drawer-rule.normativa     { border-left-color: #fbbf24; }
+.kb-drawer-rule.ds-pattern    { border-left-color: #4ade80; }
+.kb-drawer-rule-header {
+  display: flex; align-items: center; gap: 5px; margin-bottom: 4px;
 }
-.kb-float-card-plugin .kf-close:hover { color: #f87171; }
-.kb-float-card-plugin .kf-body { padding: 8px 10px; }
-.kb-float-card-plugin .kf-tags {
-  display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px;
-}
-.kb-float-card-plugin .kf-tag {
+.kb-drawer-tag {
   font-family: var(--mono); font-size: 9px; font-weight: 700;
   padding: 1px 5px; border-radius: 4px; text-transform: uppercase;
 }
-.kb-float-card-plugin .kf-tag.restriccion  { background: rgba(248,113,113,0.15); color: #f87171; }
-.kb-float-card-plugin .kf-tag.recomendacion { background: rgba(99,102,241,0.15);  color: #818cf8; }
-.kb-float-card-plugin .kf-tag.normativa    { background: rgba(251,191,36,0.15);  color: #fbbf24; }
-.kb-float-card-plugin .kf-tag.ds-pattern   { background: rgba(34,197,94,0.15);   color: #4ade80; }
-.kb-float-card-plugin .kf-text {
-  font-family: var(--sans); font-size: 10px; color: var(--txt2);
-  line-height: 1.45; max-height: 72px; overflow: hidden;
+.kb-drawer-tag.restriccion  { background: rgba(248,113,113,0.15); color: #f87171; }
+.kb-drawer-tag.recomendacion { background: rgba(99,102,241,0.15);  color: #818cf8; }
+.kb-drawer-tag.normativa     { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+.kb-drawer-tag.ds-pattern    { background: rgba(34,197,94,0.15);   color: #4ade80; }
+.kb-drawer-priority {
+  font-family: var(--mono); font-size: 9px; color: var(--text-muted);
+  text-transform: uppercase;
+}
+.kb-drawer-score {
+  margin-left: auto; font-family: var(--mono); font-size: 9px;
+  color: var(--text-muted);
+}
+.kb-drawer-text {
+  font-size: 10px; color: var(--text-dim); line-height: 1.45;
 }
 
 /* ── KB TAB ── */
@@ -582,7 +593,19 @@ select:focus { outline: none; border-color: var(--accent); }
         </div>
       </div>
 
-      <!-- KB changes -->
+      <!-- KB indicator + drawer -->
+      <div id="kbIndicatorWrap" style="display:none">
+        <div class="kb-indicator" id="kbIndicator">
+          <span>⚡ KB activa</span>
+          <span class="kb-badge" id="kbBadgeCount">0</span>
+          <span class="kb-chevron">▼</span>
+        </div>
+        <div class="kb-drawer" id="kbDrawer">
+          <div id="kbDrawerRules"></div>
+        </div>
+      </div>
+
+      <!-- KB changes (aplicados por governance) -->
       <div class="kb-section" id="kbSection" style="display:none">
         <div class="kb-header"><div class="kb-dot"></div>KB aplicó cambios</div>
         <div id="kbChanges"></div>
@@ -994,69 +1017,60 @@ function renderGenerateResult(data) {
 }
 
 function spawnKBFloatingCards(rules) {
-  const layer = document.getElementById('kb-float-layer');
-  if (!layer) return;
-  layer.innerHTML = '';
-  if (!rules || rules.length === 0) return;
+  // Reemplazado por renderKBIndicator — las reglas KB ya no flotan sobre la UI
+  renderKBIndicator(rules);
+}
 
-  const CAT_ICONS = { restriccion:'🚫', recomendacion:'💡', normativa:'⚖️', 'ds-pattern':'🧩' };
-  const POSITIONS = [
-    { right: '8px', top: '80px'  },
-    { right: '8px', top: '190px' },
-    { right: '8px', top: '300px' },
-    { right: '8px', top: '410px' },
-    { right: '8px', top: '520px' },
-  ];
+function renderKBIndicator(rules) {
+  const wrap      = document.getElementById('kbIndicatorWrap');
+  const indicator = document.getElementById('kbIndicator');
+  const badge     = document.getElementById('kbBadgeCount');
+  const drawer    = document.getElementById('kbDrawer');
+  const rulesEl   = document.getElementById('kbDrawerRules');
+  if (!wrap || !indicator || !badge || !drawer || !rulesEl) return;
 
-  rules.slice(0, 5).forEach(function(rule, i) {
+  if (!rules || rules.length === 0) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  // Mostrar indicador con conteo
+  wrap.style.display = 'block';
+  badge.textContent  = rules.length;
+  indicator.classList.add('has-rules');
+  indicator.classList.remove('open');
+  drawer.classList.remove('open');
+
+  // Renderizar reglas en el drawer
+  const CAT_LABEL = { restriccion:'Restricción', recomendacion:'Recomendación', normativa:'Normativa', 'ds-pattern':'DS Pattern' };
+  rulesEl.innerHTML = rules.map(function(rule) {
     const cat   = rule.categoria || 'recomendacion';
-    const icon  = CAT_ICONS[cat] || '·';
-    const text  = (rule.text || '').slice(0, 120) + ((rule.text || '').length > 120 ? '…' : '');
-    const pos   = POSITIONS[i % POSITIONS.length];
-    const offset = Math.floor(i / POSITIONS.length) * 16;
-
-    const card = document.createElement('div');
-    card.className = 'kb-float-card-plugin';
-    Object.entries(pos).forEach(([k, v]) => card.style[k] = v);
-    if (offset) card.style.top = (parseInt(pos.top) + offset) + 'px';
-
-    card.innerHTML =
-      '<div class="kf-handle">' +
-        '<div class="kf-dot"></div>' +
-        '<div class="kf-cat">' + icon + ' ' + cat + '</div>' +
-        '<button class="kf-close">✕</button>' +
+    const text  = (rule.content || rule.text || '').slice(0, 160);
+    const score = rule.score ? Math.round(rule.score * 100) + '%' : '';
+    const prio  = rule.prioridad || '';
+    return '<div class="kb-drawer-rule ' + cat + '">' +
+      '<div class="kb-drawer-rule-header">' +
+        '<span class="kb-drawer-tag ' + cat + '">' + (CAT_LABEL[cat] || cat) + '</span>' +
+        (prio ? '<span class="kb-drawer-priority">' + prio + '</span>' : '') +
+        (score ? '<span class="kb-drawer-score">' + score + '</span>' : '') +
       '</div>' +
-      '<div class="kf-body">' +
-        '<div class="kf-tags"><span class="kf-tag ' + cat + '">' + cat + '</span></div>' +
-        '<div class="kf-text">' + text + '</div>' +
-      '</div>';
+      '<div class="kb-drawer-text">' + text + '</div>' +
+    '</div>';
+  }).join('');
 
-    // Cerrar
-    card.querySelector('.kf-close').addEventListener('click', function() {
-      card.style.transition = 'opacity 0.2s';
-      card.style.opacity = '0';
-      setTimeout(function() { card.remove(); }, 200);
-    });
+  // Toggle drawer al clicar el indicador
+  indicator.onclick = function() {
+    const isOpen = drawer.classList.contains('open');
+    drawer.classList.toggle('open', !isOpen);
+    indicator.classList.toggle('open', !isOpen);
+  };
 
-    // Drag
-    var isDrag = false, sx, sy, sl, st;
-    card.addEventListener('mousedown', function(e) {
-      if (e.target.classList.contains('kf-close')) return;
-      isDrag = true; card.classList.add('dragging');
-      sx = e.clientX; sy = e.clientY;
-      var r = card.getBoundingClientRect();
-      sl = r.left; st = r.top;
-      card.style.right = 'auto'; card.style.bottom = 'auto';
-      card.style.left = sl + 'px'; card.style.top = st + 'px';
-      e.preventDefault();
-    });
-    document.addEventListener('mousemove', function(e) {
-      if (!isDrag) return;
-      card.style.left = (sl + e.clientX - sx) + 'px';
-      card.style.top  = (st + e.clientY - sy) + 'px';
-    });
-    document.addEventListener('mouseup', function() {
-      if (!isDrag) return;
+  // Dummy para compatibilidad
+  var isDrag = false, sx, sy, sl, st;
+  var card = { style: {}, classList: { contains: function() { return false; } } };
+  card.addEventListener = function() {};
+  document.addEventListener('mousemove', function(e) {
+    if (!isDrag) return;
       isDrag = false; card.classList.remove('dragging');
     });
 
@@ -1560,7 +1574,6 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 </script>
-  <div id="kb-float-layer"></div>
 
 </body>
 </html>
