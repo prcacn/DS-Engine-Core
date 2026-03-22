@@ -1065,23 +1065,6 @@ function renderKBIndicator(rules) {
     indicator.classList.toggle('open', !isOpen);
   };
 
-  // Dummy para compatibilidad
-  var isDrag = false, sx, sy, sl, st;
-  var card = { style: {}, classList: { contains: function() { return false; } } };
-  card.addEventListener = function() {};
-  document.addEventListener('mousemove', function(e) {
-    if (!isDrag) return;
-      isDrag = false; card.classList.remove('dragging');
-    });
-
-    // Entrada animada
-    card.style.opacity = '0'; card.style.transform = 'scale(0.9) translateX(10px)';
-    layer.appendChild(card);
-    requestAnimationFrame(function() {
-      card.style.transition = 'opacity 0.2s, transform 0.2s';
-      card.style.opacity = '1'; card.style.transform = '';
-    });
-  });
 }
 
 // ── FEEDBACK LOOP ─────────────────────────────────────────
