@@ -10,6 +10,8 @@ const { runAgents }            = require("../../agents/orchestrator");
 const { search: kbSearch }          = require("../../core/knowledgeBase");
 const { enrichBriefWithKnowledge }  = require("../../core/briefEnricher");
 const { findTemplate }         = require('../../loaders/templateLoader');
+const { detect: detectVariant, loadApprovedExamples } = require('../../core/variantParser');
+const { apply: applyDelta }    = require('../../core/deltaEngine');
 const {
   getNavLevel,
   getHeaderVariant,
@@ -586,6 +588,46 @@ router.post('/', async function(req, res, next) {
 
     const contracts = loadContracts();
     const patterns  = loadPatterns();
+
+    // ── LEVEL 5.1: detectar si el brief es variante de una base aprobada ─────
+    const approvedExamples = loadApprovedExamples();
+    const variantResult    = forcedPattern
+      ? { isVariant: false }
+      : await detectVariant(brief, approvedExamples);
+
+    // Si es variante — aplicar delta sobre la base y devolver propuesta
+    if (variantResult.isVariant && variantResult.base) {
+      console.log('  → [Level5] Flujo variacional | base:', variantResult.baseId);
+      const contracts   = loadContracts();
+      const deltaResult = await applyDelta({
+        base:      variantResult.base,
+        delta:     variantResult.delta,
+        brief,
+        contracts,
+      });
+
+      return res.json({
+        screen_id:    'var_' + Date.now(),
+        brief:        brief.trim(),
+        pattern:      variantResult.base.pattern,
+        flow_type:    'variant',
+        is_proposal:  true,
+        base_id:      variantResult.baseId,
+        base_title:   variantResult.base.title,
+        variant_reasoning: variantResult.reasoning,
+        diff:         deltaResult.diff,
+        diff_summary: deltaResult.diff_summary,
+        components:   deltaResult.proposal,
+        status:       'NEEDS_REVIEW',
+        confidence:   { global: variantResult.confidence, status: 'NEEDS_REVIEW' },
+        violations:   [],
+        meta: {
+          engine_version: '1.0.0',
+          phase:          'Level 5.1 — Variant Detection',
+          generated_at:   new Date().toISOString(),
+        }
+      });
+    }
 
     // ── LEVEL 4.0: enriquecer brief con KB ANTES de parseIntent ─────────────
     // kbRules se recupera aquí una sola vez y se reutiliza en agentes y governance
