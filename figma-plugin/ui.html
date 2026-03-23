@@ -1168,9 +1168,10 @@ function renderStudioResult(data) {
   const score = Math.round((data.confidence?.global || 0) * 100);
   state.studioScore = score;
   animScore('studioScoreArc', 'studioScoreNumber', score);
+  setBar('sBarIntent',    'sPctIntent',    Math.round((data.confidence?.intent    || 0) * 100));
   setBar('sBarContract',  'sPctContract',  Math.round((data.confidence?.contract  || 0) * 100));
-  setBar('sBarRules',     'sPctRules',     Math.round((data.confidence?.rules     || 0) * 100));
   setBar('sBarPrecedent', 'sPctPrecedent', Math.round((data.confidence?.precedent || 0) * 100));
+  setBar('sBarRules',     'sPctRules',     Math.round((data.confidence?.rules     || 0) * 100));
 
   // ── Componentes detacheados ─────────────────────────────
   const detached = data.detached_components || [];
