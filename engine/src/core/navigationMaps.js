@@ -1,11 +1,12 @@
 // core/navigationMaps.js
-// Fuente de verdad única para mapas de navegación e intent.
-// INTENT_TO_LEVEL está aquí — no en generate.js ni en intentParser.js.
-// Referencia canónica: engine/global-rules/navigation.md
+// Fuente de verdad ÚNICA para mapas de navegación e intent.
+// Los mapas se inicializan desde globalRulesParser (lee global-rules/navigation.md).
+// Si el parser falla, usa los valores hardcodeados como fallback seguro.
 
-// Nivel de navegación por intent_type
-// Fuente: engine/global-rules/navigation.md
-const INTENT_TO_LEVEL = {
+const { getNavLevel: _getNavLevel, getAllRules } = require('./globalRulesParser');
+
+// ── Fallback hardcodeado — solo si globalRulesParser falla ───────────────────
+const _FALLBACK_LEVEL = {
   'dashboard':              'L0',
   'onboarding':             'L0',
   'lista-con-filtros':      'L1',
@@ -22,7 +23,7 @@ const INTENT_TO_LEVEL = {
   'error-estado':           'L3',
 };
 
-// Mapa intent → patrón de pantalla
+// Mapa intent → patrón (estático — no cambia con reglas)
 const INTENT_TO_PATTERN = {
   'dashboard':              'dashboard',
   'lista-con-filtros':      'lista-con-filtros',
@@ -40,7 +41,56 @@ const INTENT_TO_PATTERN = {
   'transferencia-bancaria': 'transferencia-bancaria',
 };
 
-// Intents que generan múltiples pantallas
 const MULTISCREEN_INTENTS = ['transferencia-bancaria'];
 
-module.exports = { INTENT_TO_LEVEL, INTENT_TO_PATTERN, MULTISCREEN_INTENTS };
+// ── INTENT_TO_LEVEL: construido desde globalRulesParser ──────────────────────
+// Se construye lazy — primera vez que se necesita
+let _cachedLevelMap = null;
+
+function getIntentToLevel() {
+  if (_cachedLevelMap) return _cachedLevelMap;
+
+  try {
+    const rules = getAllRules();
+    if (rules.navigation && rules.navigation.intentToLevel &&
+        Object.keys(rules.navigation.intentToLevel).length > 0) {
+      _cachedLevelMap = rules.navigation.intentToLevel;
+      console.log('  ✓ [NavMaps] INTENT_TO_LEVEL cargado desde global-rules/navigation.md');
+      return _cachedLevelMap;
+    }
+  } catch (err) {
+    console.warn('  ⚠ [NavMaps] globalRulesParser no disponible — usando fallback');
+  }
+
+  _cachedLevelMap = _FALLBACK_LEVEL;
+  return _cachedLevelMap;
+}
+
+// Proxy que siempre usa la fuente correcta
+const INTENT_TO_LEVEL = new Proxy({}, {
+  get(_, intent) {
+    return getIntentToLevel()[intent];
+  },
+  has(_, intent) {
+    return intent in getIntentToLevel();
+  },
+  ownKeys() {
+    return Object.keys(getIntentToLevel());
+  },
+  getOwnPropertyDescriptor(_, key) {
+    const map = getIntentToLevel();
+    if (key in map) return { value: map[key], writable: false, enumerable: true, configurable: true };
+  }
+});
+
+// Invalidar cache cuando el parser recarga sus reglas
+function invalidateNavCache() {
+  _cachedLevelMap = null;
+}
+
+module.exports = {
+  INTENT_TO_LEVEL,
+  INTENT_TO_PATTERN,
+  MULTISCREEN_INTENTS,
+  invalidateNavCache,
+};
