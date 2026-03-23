@@ -153,6 +153,90 @@
 
     /* RIGHT */
     .panel-analysis { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+
+    /* ── VARIANT REVIEW PANEL ────────────────────────────────────── */
+    .variant-review {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .variant-review.visible { display: flex; }
+    .variant-review-header {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .variant-badge {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      background: rgba(124,92,252,0.15); color: var(--accent);
+      border: 1px solid rgba(124,92,252,0.3);
+      padding: 2px 7px; border-radius: 4px;
+    }
+    .variant-base {
+      font-family: var(--mono); font-size: 10px; color: var(--txt2);
+    }
+    .variant-reasoning {
+      font-size: 11px; color: var(--txt2); line-height: 1.5;
+      padding: 8px 10px;
+      background: var(--surface2); border-radius: 6px;
+      border-left: 2px solid var(--accent);
+    }
+    .diff-title {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--txt2); margin-bottom: 4px;
+    }
+    .diff-list { display: flex; flex-direction: column; gap: 4px; }
+    .diff-item {
+      display: flex; align-items: flex-start; gap: 6px;
+      font-size: 11px; line-height: 1.4; padding: 5px 8px;
+      border-radius: 5px;
+    }
+    .diff-item.added   { background: rgba(74,222,128,0.08); color: #4ade80; border-left: 2px solid #4ade80; }
+    .diff-item.removed { background: rgba(248,113,113,0.08); color: #f87171; border-left: 2px solid #f87171; }
+    .diff-item.modified{ background: rgba(251,191,36,0.08);  color: #fbbf24; border-left: 2px solid #fbbf24; }
+    .diff-item.kept    { background: rgba(148,163,184,0.05); color: var(--txt2); border-left: 2px solid var(--border); }
+    .diff-icon { font-size: 10px; flex-shrink: 0; margin-top: 1px; }
+    .diff-empty {
+      font-size: 11px; color: var(--txt2); opacity: 0.5;
+      text-align: center; padding: 8px;
+    }
+    .approval-actions {
+      display: flex; flex-direction: column; gap: 6px;
+      padding-top: 4px; border-top: 1px solid var(--border);
+    }
+    .approval-actions .btn-approve {
+      background: #16a34a; color: white;
+      border: none; border-radius: 8px; padding: 9px 16px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: opacity 0.15s;
+    }
+    .approval-actions .btn-approve:hover { opacity: 0.85; }
+    .approval-actions .btn-modify {
+      background: rgba(251,191,36,0.1); color: #fbbf24;
+      border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 8px 16px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .approval-actions .btn-modify:hover { background: rgba(251,191,36,0.18); }
+    .approval-actions .btn-reject {
+      background: transparent; color: var(--txt2);
+      border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .approval-actions .btn-reject:hover { border-color: #f87171; color: #f87171; }
+    .approval-status {
+      font-size: 11px; text-align: center; padding: 6px;
+      border-radius: 6px; display: none;
+    }
+    .approval-status.approved { background: rgba(74,222,128,0.1); color: #4ade80; display: block; }
+    .approval-status.rejected { background: rgba(248,113,113,0.1); color: #f87171; display: block; }
     .confidence-block { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
     .confidence-score { font-family: var(--mono); font-size: 32px; font-weight: 700; line-height: 1; }
     .progress-bar-outer { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
@@ -539,6 +623,35 @@
       <div class="preview-label" style="margin-bottom:8px">// screen preview</div>
       <div style="position:relative">
       <div id="kb-cards-layer"></div>
+      <!-- VARIANT REVIEW PANEL — aparece cuando flow_type === variant -->
+      <div class="variant-review" id="variantReview">
+        <div class="variant-review-header">
+          <span class="variant-badge">⚡ Variante detectada</span>
+          <span class="variant-base" id="variantBaseLabel">base: —</span>
+        </div>
+        <div class="variant-reasoning" id="variantReasoning"></div>
+
+        <!-- Diff -->
+        <div>
+          <div class="diff-title">Cambios respecto a la base</div>
+          <div class="diff-list" id="diffList"></div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="approval-actions">
+          <button class="btn-approve" onclick="approveVariant()">
+            ✓ Aprobar variante — guardar como nueva base
+          </button>
+          <button class="btn-modify" onclick="modifyVariant()">
+            ✏️ Modificar y aprobar
+          </button>
+          <button class="btn-reject" onclick="rejectVariant()">
+            ✗ Rechazar — no es lo que busco
+          </button>
+        </div>
+        <div class="approval-status" id="approvalStatus"></div>
+      </div>
+
       <div class="iphone-wrap">
         <div class="iphone-btn-mute"></div>
         <div class="iphone-btn-vol-up"></div>
@@ -721,9 +834,14 @@
       if (!res.ok) { var e = await res.json(); renderError(e); return; }
       var data = await res.json();
       lastResult = data;
-      if (data.flow_type === 'multiscreen' && data.screens && data.screens.length > 0) {
+      if (data.flow_type === 'variant' && data.is_proposal) {
+        renderVariantReview(data);
+        renderScreen(data);
+        renderAnalysis(data);
+      } else if (data.flow_type === 'multiscreen' && data.screens && data.screens.length > 0) {
         initFlow(data);
       } else {
+        hideVariantReview();
         renderScreen(data);
         renderAnalysis(data);
       }
