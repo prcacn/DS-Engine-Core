@@ -802,6 +802,15 @@ select:focus { outline: none; border-color: var(--accent); }
           <div id="studioContractList"></div>
         </div>
 
+        <!-- Preview HTML del engine — comparación visual -->
+        <div class="studio-preview-wrap" id="studioPreviewWrap">
+          <div class="studio-preview-header">
+            <span class="studio-preview-label">⚡ Preview del engine</span>
+            <button class="studio-preview-copy" id="studioPreviewCopy">Copiar HTML</button>
+          </div>
+          <iframe class="studio-preview-frame" id="studioPreviewFrame" sandbox="allow-same-origin"></iframe>
+        </div>
+
         <button class="btn btn-primary" id="btnGoExport" disabled>
           Continuar a Exportar →
         </button>
