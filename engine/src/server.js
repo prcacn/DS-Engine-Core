@@ -28,7 +28,7 @@ app.use(express.static(publicDir));
 app.get('/health', (req, res) => {
   res.json({
     status:    'ok',
-    version:   '1.0.0',
+    version:   '2.0.0',
     engine:    'DS IA-Ready Engine Core',
     ds_repo:   process.env.DS_REPO_PATH || 'not configured',
     pinecone:  process.env.PINECONE_API_KEY ? 'configured' : 'not configured',
@@ -52,7 +52,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log('');
   console.log('  ╔═══════════════════════════════════════════════════╗');
-  console.log('  ║   DS IA-Ready — Engine Core v1.0 · Level 5.0     ║');
+  console.log('  ║   DS IA-Ready — Engine Core v2.0 · Level 5.0     ║');
   console.log('  ╚═══════════════════════════════════════════════════╝');
   console.log('');
   console.log(`  ▸ Server     http://localhost:${PORT}`);
