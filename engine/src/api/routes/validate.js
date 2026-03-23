@@ -147,56 +147,106 @@ function checkKBViolations(components, kbRules, intent) {
 }
 
 // ─── SCORE DE VALIDACIÓN ──────────────────────────────────────────────────────
-// Calcula un confidence score basado en la composición real del frame
+// Usa exactamente las mismas 4 señales y pesos que confidenceScore.js (generate)
+// para que Studio y Generate sean coherentes:
+//   CONTRACT 30% · INTENT 25% · PRECEDENT 25% · RULES 20%
 
 function calculateValidationScore(components, intent, contracts, kbViolations, structErrors) {
   const total = components.length;
 
-  // CONTRACT: % de componentes en contrato, penalizando detaches
-  // - Componente en contrato y es instancia  → 1.0 (perfecto)
-  // - Componente en contrato pero detacheado → 0.5 (penalización -50%)
-  // - Componente no reconocido              → 0.0
-  const DETACH_PENALTY = 0.5;
-  const contractScore = components.reduce((sum, c) => {
-    const inContract = contracts[c.component] ? 1 : 0;
-    if (!inContract) return sum; // 0 para desconocidos
-    const detachFactor = c.detached ? DETACH_PENALTY : 1.0;
-    return sum + detachFactor;
-  }, 0);
-  const contract = total > 0 ? contractScore / total : 0;
+  // ── SIGNAL 1: CONTRACT (30%) ─────────────────────────────────────────────
+  // Igual que scoreContractCoverage en confidenceScore.js
+  // Componente con nodeId resuelto + contrato completo → 1.0
+  // Solo nodeId → 0.5
+  // Sin nodeId ni contrato → 0
+  const contractMap = {};
+  Object.entries(contracts).forEach(([k, v]) => { contractMap[k] = v; });
 
-  // Identificar detaches para incluirlos en la respuesta
   const detachedComponents = components
     .filter(c => c.detached)
     .map(c => ({ component: c.component, reason: 'Componente detacheado — usa la instancia del DS en su lugar' }));
 
-  // RULES: penalizar errores estructurales, violaciones KB y detaches graves
-  const detachPenalty   = detachedComponents.length * 0.10; // -10% por cada detach
-  const rulesPenalty    = (structErrors.length * 0.15) + (kbViolations.length * 0.20) + detachPenalty;
-  const rules = Math.max(0, 1 - rulesPenalty);
+  let contractResolved = 0;
+  for (const comp of components) {
+    const hasNodeId    = comp.node_id && comp.node_id !== 'pending';
+    const contract     = contractMap[comp.component];
+    const hasWhenToUse = contract && contract.whenToUse && contract.whenToUse.length > 0;
+    const detachFactor = comp.detached ? 0.5 : 1.0;
 
-  // PRECEDENT: usar el del calculateScore normal si hay intent
-  let precedent = 0.5;
+    if (hasNodeId && hasWhenToUse) contractResolved += 1.0 * detachFactor;
+    else if (hasNodeId)            contractResolved += 0.5 * detachFactor;
+  }
+  const contract_score = total > 0 ? Math.min(contractResolved / total, 1.0) : 0;
+
+  // ── SIGNAL 2: INTENT (25%) ───────────────────────────────────────────────
+  // Confianza del intentParser — igual que scoreIntentClarity
+  const intent_score = (intent && typeof intent.confidence === 'number')
+    ? Math.min(Math.max(intent.confidence, 0), 1)
+    : 0.60;
+
+  // ── SIGNAL 3: PRECEDENT (25%) ────────────────────────────────────────────
+  // Reutilizar scorePrecedent del confidenceScore
+  let precedent_score = 0.30;
   try {
     const scoreResult = calculateScore({
-      pattern:   intent?.intent_type || 'unknown',
+      pattern:    intent?.intent_type || 'unknown',
       components,
       intent,
-      contracts: Object.values(contracts),
+      contracts:  Object.values(contracts),
     });
-    precedent = scoreResult.precedent || 0.5;
-  } catch (e) { /* usar baseline */ }
+    precedent_score = scoreResult.signals?.precedent ?? 0.30;
+  } catch (e) { /* baseline */ }
 
-  // GLOBAL: promedio ponderado
-  const global = (contract * 0.35) + (rules * 0.40) + (precedent * 0.25);
+  // ── SIGNAL 4: RULES (20%) ────────────────────────────────────────────────
+  // Errores estructurales + violaciones KB + detaches
+  const names = components.map(c => c.component);
+  let violations = 0;
+
+  // Singletons
+  if ((names.filter(n => n === 'navigation-header').length) > 1) violations++;
+  if ((names.filter(n => n === 'button-primary').length) > 1)    violations++;
+  if ((names.filter(n => n === 'modal-bottom-sheet').length) > 1) violations++;
+  if ((names.filter(n => n === 'filter-bar').length) > 1)        violations++;
+
+  // Exclusividad card-item / empty-state
+  const bothRequired = components.some(c => c.component === 'card-item') &&
+                       components.some(c => c.component === 'empty-state');
+  if (bothRequired) violations++;
+
+  // Errores estructurales adicionales
+  violations += structErrors.length;
+
+  // KB violations
+  violations += kbViolations.length;
+
+  // Detaches (penalización menor)
+  violations += detachedComponents.length * 0.5;
+
+  const rules_score = violations === 0 ? 1.0
+                    : violations <= 1   ? 0.60
+                    : 0.20;
+
+  // ── GLOBAL: mismos pesos que confidenceScore.js ──────────────────────────
+  const WEIGHTS = { contract: 0.30, intent: 0.25, precedent: 0.25, rules: 0.20 };
+  const global = (contract_score  * WEIGHTS.contract)
+               + (intent_score    * WEIGHTS.intent)
+               + (precedent_score * WEIGHTS.precedent)
+               + (rules_score     * WEIGHTS.rules);
+
+  const rounded = Math.round(global * 100) / 100;
+  const status  = rounded >= 0.80 ? 'AUTO_APPROVE'
+                : rounded >= 0.60 ? 'REVIEW_FLAGGED'
+                : 'NEEDS_REVIEW';
 
   return {
-    global:              parseFloat(global.toFixed(2)),
-    contract:            parseFloat(contract.toFixed(2)),
-    rules:               parseFloat(rules.toFixed(2)),
-    precedent:           parseFloat(precedent.toFixed(2)),
+    global:   rounded,
+    // Nombres alineados con generate para que la UI muestre las mismas barras
+    contract:  parseFloat(contract_score.toFixed(2)),
+    intent:    parseFloat(intent_score.toFixed(2)),
+    precedent: parseFloat(precedent_score.toFixed(2)),
+    rules:     parseFloat(rules_score.toFixed(2)),
     detached_components: detachedComponents,
-    status:   global >= 0.8 ? 'approved' : global >= 0.6 ? 'review' : 'blocked',
+    status,
   };
 }
 
