@@ -352,6 +352,25 @@ select:focus { outline: none; border-color: var(--accent); }
 .export-option-icon  { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
 .export-option-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
 .export-option-desc  { font-size: 11px; color: var(--text-dim); line-height: 1.45; }
+.btn-export-html {
+  display: none; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 9px 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 12px; font-weight: 500;
+  font-family: var(--font); cursor: pointer; transition: all 0.15s;
+}
+.btn-export-html.visible { display: flex; }
+.btn-export-html:hover { border-color: var(--accent); color: var(--accent); }
+.btn-export-html .html-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+  background: var(--accent); color: #fff;
+  padding: 1px 5px; border-radius: 3px;
+}
+.html-copy-msg {
+  font-size: 10px; color: var(--success); text-align: center;
+  display: none; padding: 3px 0;
+}
+.html-copy-msg.visible { display: block; }
 .export-badge {
   position: absolute; top: 10px; right: 10px;
   font-size: 9px; font-weight: 700;
@@ -643,7 +662,17 @@ select:focus { outline: none; border-color: var(--accent); }
       </div>
 
     </div>
-  </div><!-- /generate -->
+    <!-- Exportar HTML de producción -->
+  <div style="padding: 0 0 4px;">
+    <button class="btn-export-html" id="btnExportHTML">
+      <span>💾</span>
+      <span>Copiar HTML de producción</span>
+      <span class="html-badge">DS</span>
+    </button>
+    <div class="html-copy-msg" id="htmlCopyMsg">✓ HTML copiado al portapapeles</div>
+  </div>
+
+</div><!-- /generate -->
 
 
   <!-- ═══════════════════════════════════════════
@@ -1112,6 +1141,41 @@ document.getElementById('btnPaint').addEventListener('click', () => {
   parent.postMessage({ pluginMessage: { type: 'paint', data: state.lastResult } }, '*');
 });
 
+// ── EXPORTAR HTML DE PRODUCCIÓN ────────────────────────────
+document.getElementById('btnExportHTML')?.addEventListener('click', async () => {
+  if (!state.lastResult) return;
+  const btn = document.getElementById('btnExportHTML');
+  const msg = document.getElementById('htmlCopyMsg');
+  btn.disabled = true;
+  btn.innerHTML = '<span>⏳</span><span>Generando HTML...</span>';
+
+  try {
+    const r = await fetch(ENGINE_URL + '/render', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
+      body: JSON.stringify({
+        brief:   state.lastResult.brief   || state.lastResult.meta?.brief   || '',
+        pattern: state.lastResult.pattern || state.lastResult.meta?.pattern || '',
+      }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.message || data.error);
+
+    // Copiar al portapapeles
+    await navigator.clipboard.writeText(data.html);
+    btn.innerHTML = '<span>✓</span><span>Copiado al portapapeles</span><span class="html-badge">DS</span>';
+    if (msg) { msg.classList.add('visible'); setTimeout(() => msg.classList.remove('visible'), 3000); }
+  } catch (e) {
+    btn.innerHTML = '<span>💾</span><span>Copiar HTML de producción</span><span class="html-badge">DS</span>';
+    setStatus('genStatus', 'error', '✗ Error al generar HTML: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.innerHTML = '<span>💾</span><span>Copiar HTML de producción</span><span class="html-badge">DS</span>';
+    }, 3000);
+  }
+});
+
 // ── STUDIO: VALIDATE ───────────────────────────────────────
 document.getElementById('btnValidate').addEventListener('click', () => {
   const brief = document.getElementById('studioBrief').value.trim();
@@ -1134,6 +1198,8 @@ window.addEventListener('message', async (event) => {
     } else {
       setStatus('genStatus', 'success', `✓ Pintado en Figma · ${msg.score}%`);
     }
+    // Mostrar botón exportar HTML tras pintar en Figma
+    document.getElementById('btnExportHTML')?.classList.add('visible');
   }
   if (msg.type === 'selection-data') {
     await runValidation(msg.components, msg.frameId);
