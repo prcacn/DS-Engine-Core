@@ -1,0 +1,28 @@
+# Contrato máquina — componente Figma "Undefined" (Simple DS)
+# Origen: https://www.figma.com/design/aMiE3zUmsF6QtqycDarsqi/Simple?node-id=20-810
+
+figma:
+  file_key: aMiE3zUmsF6QtqycDarsqi
+  file_name: Simple
+  node_id: "20:810"
+  layer_name: Undefined
+  kind: COMPONENT
+
+layout:
+  width_px: 390
+  height_px: 162
+  corner_radius:
+    token: radius/xl
+    px: 16
+
+fills:
+  - type: SOLID
+    hex: "#d9d9d9"
+
+structure:
+  children:
+    - node_id: "20:809"
+      role: background
+      fills:
+        - type: SOLID
+          hex: "#d9d9d9"
