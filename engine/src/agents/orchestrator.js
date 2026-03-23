@@ -12,9 +12,16 @@ async function runAgents({ brief, components, intent, kbRules, contracts }) {
   console.log('  [Agents]   → lanzando UXWriter + UXSpec en paralelo...');
 
   // ── Correr en paralelo ────────────────────────────────────────────────────
+  // Correr en paralelo con fallback individual — si uno falla no bloquea el otro
   const [writerResult, specResult] = await Promise.all([
-    runUXWriterAgent({ brief, components, intent, kbRules }),
-    runUXSpecAgent({   brief, components, intent, kbRules }),
+    runUXWriterAgent({ brief, components, intent, kbRules }).catch(err => {
+      console.error('  ✗ [UXWriter] Error:', err.message);
+      return { components: components.map(c => ({ component: c.component, order: c.order, copy: {}, writer_note: 'error' })), tone_rationale: 'error' };
+    }),
+    runUXSpecAgent({ brief, components, intent, kbRules }).catch(err => {
+      console.error('  ✗ [UXSpec] Error:', err.message);
+      return { components: components.map(c => ({ component: c.component, order: c.order, variant: c.variant || 'default', state: 'active', ux_note: 'error' })), missing_ux_elements: [], flow_rationale: 'error' };
+    }),
   ]);
 
   // ── Fusionar sobre los componentes base ───────────────────────────────────
