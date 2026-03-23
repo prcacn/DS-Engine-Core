@@ -90,7 +90,7 @@
     .phone-home-pill { width: 156px; height: 6px; background: #000; border-radius: 10px; opacity: 0.18; }
 
     /* SCREEN COMPONENTS */
-    .sc-screen { display: flex; flex-direction: column; min-height: 100%; background: #f8fafc; overflow: hidden; }
+    .sc-screen { display: flex; flex-direction: column; min-height: 100%; background: #f8fafc; }
     .sc-header { background: white; height: 56px; display: flex; align-items: center; padding: 0 16px; justify-content: space-between; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
     .sc-header-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
     .sc-header-back svg { width:20px; height:20px; }
@@ -123,9 +123,8 @@
       padding: 16px;
       display: flex; flex-direction: column; gap: 8px;
       background: white;
-      position: sticky; bottom: 0;
+      position: sticky; bottom: 0; z-index: 10;
       border-top: 1px solid #f1f5f9;
-      margin-top: auto;
     }
     .sc-btn-primary { background: #4f46e5; border-radius: 12px; padding: 14px; text-align: center; font-size: 15px; font-weight: 600; color: white; font-family: var(--sans); }
     .sc-btn-secondary { background: white; border: 1.5px solid #4f46e5; border-radius: 12px; padding: 14px; text-align: center; font-size: 15px; font-weight: 600; color: #4f46e5; font-family: var(--sans); }
@@ -1008,13 +1007,7 @@
         html += '<div class="sc-form">' + formGroup + '</div>';
       } else { html += renderComponent(comp, { domain, hasFilters, isDestructive, data }); i++; }
     }
-    // Separar botones (sticky bottom) del contenido para layout correcto
-    var btnComponents = ['button-primary','button-secondary','tab-bar'];
-    var contentHtml = html;
-    html = '<div class="sc-screen">' +
-      '<div class="sc-content" style="flex:1;display:flex;flex-direction:column;overflow-y:auto">' + contentHtml + '</div>' +
-      (modalComp ? renderModal(modalComp, isDestructive) : '') +
-    '</div>';
+    html = '<div class="sc-screen">' + html + (modalComp ? renderModal(modalComp, isDestructive) : '') + '</div>';
     screen.innerHTML = html;
     document.getElementById('patternBadgeText').textContent = data.pattern + ' · ' + data.components.length + ' componentes';
     document.getElementById('patternBadge').style.display = 'block';
