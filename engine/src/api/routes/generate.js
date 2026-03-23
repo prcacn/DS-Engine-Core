@@ -38,6 +38,12 @@ const { loadContracts }  = require('../../loaders/contractLoader');
 const { loadPatterns }   = require('../../loaders/patternLoader');
 const { findTemplate }   = require('../../loaders/templateLoader');
 
+// ── Knowledge Base ────────────────────────────────────────────────────────────
+const { search: kbSearch } = require('../../core/knowledgeBase');
+
+// ── Agents ────────────────────────────────────────────────────────────────────
+const { runAgents } = require('../../agents/orchestrator');
+
 // ── Multiscreen flows ─────────────────────────────────────────────────────────
 // ─── MAPAS DE NAVEGACIÓN (antes en navigationMaps.js) ────────────────────────
 const INTENT_TO_PATTERN = {
