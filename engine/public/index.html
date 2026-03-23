@@ -9,6 +9,31 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
+  /* ── SIMPLE DS TOKENS — from Figma ────────────────── */
+  --ds-text-default:    #0f172a;
+  --ds-text-secondary:  #475569;
+  --ds-text-neutral:    #64748b;
+  --ds-text-white:      #ffffff;
+  --ds-bg-default:      #ffffff;
+  --ds-bg-brand:        #4f46e5;
+  --ds-border-default:  #e2e8f0;
+  --ds-border-subtle:   #f1f5f9;
+  --ds-font:            'DM Sans', -apple-system, sans-serif;
+  --ds-size-heading:    16px;
+  --ds-weight-heading:  600;
+  --ds-size-body:       14px;
+  --ds-weight-body:     400;
+  --ds-size-caption:    12px;
+  --ds-weight-caption:  400;
+  --ds-size-label:      12px;
+  --ds-weight-label:    400;
+  --ds-gap-xs:          2px;
+  --ds-gap-md:          8px;
+  --ds-gap-xl:          16px;
+  --ds-pad-h:           16px;
+  --ds-pad-v:           8px;
+  --ds-radius-xs:       4px;
+  --ds-radius-sm:       8px;
       --bg: #0a0c0f; --surface: #111318; --surface2: #191d24;
       --border: #232830; --border2: #2e3540;
       --accent: #4f46e5; --accent2: #6366f1;
@@ -109,30 +134,31 @@
     .sc-card-right { display: flex; align-items: center; gap: 8px; }
     .sc-card-value { font-size: 14px; font-weight: 700; color: #0f172a; font-family: var(--sans); }
     .sc-card-chevron { color: #94a3b8; font-size: 14px; }
-    /* ── FORM LAYOUT — basado en Figma Simple DS ────── */
+    /* ── FORM LAYOUT — Simple DS tokens ─────────────── */
     .sc-form {
-      padding: 16px;
-      display: flex; flex-direction: column; gap: 16px;
-      background: white;
+      padding: var(--ds-pad-h);
+      display: flex; flex-direction: column; gap: var(--ds-gap-xl);
+      background: var(--ds-bg-default);
     }
     .sc-input-wrap {
-      display: flex; flex-direction: column; gap: 2px;
+      display: flex; flex-direction: column; gap: var(--ds-gap-xs);
       width: 100%;
     }
     .sc-input-label {
-      font-size: 12px; font-weight: 400;
-      color: #475569;
-      font-family: 'DM Sans', sans-serif;
+      font-size: var(--ds-size-caption);
+      font-weight: var(--ds-weight-caption);
+      color: var(--ds-text-secondary);
+      font-family: var(--ds-font);
     }
     .sc-input-label { font-size: 11px; font-weight: 500; color: #64748b; font-family: var(--sans); }
     .sc-input-field {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 4px;
-      padding: 8px 16px;
-      font-size: 14px;
-      color: #64748b;
-      font-family: 'DM Sans', sans-serif;
+      background: var(--ds-bg-default);
+      border: 1px solid var(--ds-border-default);
+      border-radius: var(--ds-radius-xs);
+      padding: var(--ds-pad-v) var(--ds-pad-h);
+      font-size: var(--ds-size-body);
+      color: var(--ds-text-neutral);
+      font-family: var(--ds-font);
       min-height: 40px;
       display: flex; align-items: center;
       width: 100%; box-sizing: border-box;
@@ -142,8 +168,8 @@
       display: flex; flex-direction: column; gap: 8px;
       background: white;
     }
-    .sc-btn-primary { background: #4f46e5; border-radius: 8px; padding: 0 16px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 400; color: white; font-family: 'DM Sans', sans-serif; width: 100%; box-sizing: border-box; cursor: pointer; }
-    .sc-btn-secondary { background: white; border: 1.5px solid #4f46e5; border-radius: 8px; padding: 0 16px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 400; color: #4f46e5; font-family: 'DM Sans', sans-serif; width: 100%; box-sizing: border-box; cursor: pointer; }
+    .sc-btn-primary { background: var(--ds-bg-brand); border-radius: var(--ds-radius-sm); padding: 0 var(--ds-pad-h); height: 48px; display: flex; align-items: center; justify-content: center; font-size: var(--ds-size-label); font-weight: var(--ds-weight-label); color: var(--ds-text-white); font-family: var(--ds-font); width: 100%; box-sizing: border-box; cursor: pointer; }
+    .sc-btn-secondary { background: var(--ds-bg-default); border: 1.5px solid var(--ds-bg-brand); border-radius: var(--ds-radius-sm); padding: 0 var(--ds-pad-h); height: 48px; display: flex; align-items: center; justify-content: center; font-size: var(--ds-size-label); font-weight: var(--ds-weight-label); color: var(--ds-bg-brand); font-family: var(--ds-font); width: 100%; box-sizing: border-box; cursor: pointer; }
     .sc-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; gap: 12px; background: white; }
     .sc-empty-icon { width: 64px; height: 64px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
     .sc-empty-title { font-size: 16px; font-weight: 600; color: #0f172a; font-family: var(--sans); text-align: center; }
