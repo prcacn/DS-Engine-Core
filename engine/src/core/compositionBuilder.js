@@ -251,6 +251,37 @@ function buildMultiscreenFlow(brief, intent, flowDef, contracts) {
 
 
 
+// ─── BUILD VIOLATIONS SUMMARY ────────────────────────────────────────────────
+function buildViolationsSummary(briefViolations, components) {
+  const violations = [];
+
+  // Añadir violaciones del brief
+  (briefViolations || []).forEach(function(v) {
+    violations.push({
+      source: 'brief',
+      rule:   v.rule,
+      detail: v.detail,
+      severity: v.severity,
+      action: 'Revisar el brief y corregir la solicitud',
+    });
+  });
+
+  // Validaciones de composición
+  const names = (components || []).map(function(c) { return c.component; });
+
+  const btnCount = names.filter(function(n) { return n === 'button-primary'; }).length;
+  if (btnCount > 1) {
+    violations.push({ source: 'composition', rule: 'max-1-button-primary', detail: 'El plan final contiene ' + btnCount + ' button-primary. Solo se permite 1.', severity: 'error', action: 'Revisar manualmente antes de entregar' });
+  }
+
+  const navCount = names.filter(function(n) { return n === 'navigation-header'; }).length;
+  if (navCount > 1) {
+    violations.push({ source: 'composition', rule: 'max-1-navigation-header', detail: 'El plan final contiene ' + navCount + ' navigation-header. Solo se permite 1.', severity: 'error', action: 'Revisar manualmente antes de entregar' });
+  }
+
+  return violations;
+}
+
 module.exports = {
   buildCompositionPlan,
   buildMultiscreenFlow,
