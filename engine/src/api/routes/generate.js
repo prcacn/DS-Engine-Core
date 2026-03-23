@@ -63,84 +63,104 @@ const MULTISCREEN_INTENTS = ['transferencia-bancaria'];
 // Cada flujo define sus pantallas en orden fijo.
 // Estas pantallas son obligatorias y no se pueden omitir.
 
+// ─── SPACING TOKENS (DS) ─────────────────────────────────────────────────────
+// gap-xl = 16px → entre grupos distintos de campos (list-header nuevo)
+// gap-md = 8px  → entre campos del mismo grupo
+// gap-xs = 2px  → entre card-items de resumen (filas de datos)
+const DS_GAP = { xl: 16, md: 8, xs: 2 };
+
 const MULTISCREEN_FLOWS = {
   'transferencia-bancaria': [
     {
+      // ── PASO 1: Origen + Destino + Importe (fusionado) ──────────────────
+      // Pasos 1 y 2 del flujo anterior ahora son uno solo.
+      // Spacing: gap-xl entre grupo origen y grupo destinatario.
+      // button-primary sticky bottom según global-rules/navigation.md
       screen_number: 1,
-      screen_id_suffix: 'origen',
-      title: 'Selección de cuenta origen',
+      screen_id_suffix: 'origen-destino',
+      title: 'Nueva transferencia',
       pattern: 'formulario-simple',
-      nav_variant: 'with-back',
+      nav_level: 'L2',
       nav_title: 'Nueva transferencia',
+      spacing_rules: {
+        between_groups: DS_GAP.xl,   // 16px entre list-header y siguiente grupo
+        between_fields: DS_GAP.md,   // 8px entre campos del mismo grupo
+        button_position: 'sticky-bottom',
+      },
       required_components: [
-        { component: 'navigation-header', variant: 'with-back',  props: { title: 'Nueva transferencia' } },
-        { component: 'input-text',        variant: 'select',     props: { label: 'Cuenta de origen' } },
-        { component: 'button-primary',    variant: 'default',    props: { label: 'Continuar' } },
-      ],
-      optional_components: [],
-    },
-    {
-      screen_number: 2,
-      screen_id_suffix: 'destino-importe',
-      title: 'Destino e importe',
-      pattern: 'formulario-simple',
-      nav_variant: 'with-back',
-      nav_title: 'Destino e importe',
-      required_components: [
-        { component: 'navigation-header', variant: 'with-back', props: { title: 'Destino e importe' } },
-        { component: 'input-text',        variant: 'text',      props: { label: 'IBAN / CLABE', required: true } },
-        { component: 'input-text',        variant: 'numeric',   props: { label: 'Importe', required: true } },
-        { component: 'button-primary',    variant: 'default',   props: { label: 'Revisar transferencia' } },
+        { component: 'navigation-header', variant: 'Type=Modal', props: { title: 'Nueva transferencia' } },
+        { component: 'list-header',       variant: 'default',    props: { title: 'Cuenta de origen' }, gap_after: DS_GAP.md },
+        { component: 'input-text',        variant: 'select',     props: { label: 'Cuenta de origen', required: true }, gap_after: DS_GAP.xl },
+        { component: 'list-header',       variant: 'default',    props: { title: 'Destinatario' }, gap_after: DS_GAP.md },
+        { component: 'input-text',        variant: 'default',    props: { label: 'IBAN / CLABE', helper_text: 'ES + 22 caracteres · MX 18 dígitos', required: true }, gap_after: DS_GAP.md },
+        { component: 'input-text',        variant: 'numeric',    props: { label: 'Importe', placeholder: '0,00', required: true }, gap_after: DS_GAP.md },
+        { component: 'input-text',        variant: 'default',    props: { label: 'Concepto', required: false }, gap_after: DS_GAP.xl },
+        { component: 'button-primary',    variant: 'default',    props: { label: 'Revisar transferencia' }, position: 'sticky-bottom' },
       ],
       optional_components: [
-        { component: 'input-text',           variant: 'text',    props: { label: 'Concepto', required: false } },
-        { component: 'notification-banner',  variant: 'warning', props: { message: 'Comprueba el límite operativo antes de continuar' } },
+        { component: 'notification-banner', variant: 'warning', props: { message: 'Has alcanzado el 80% de tu límite diario' } },
       ],
     },
     {
-      screen_number: 3,
+      // ── PASO 2: Revisión (OBLIGATORIA por normativa PSD2) ───────────────
+      // Spacing: gap-xs entre card-items (son filas de datos, no tarjetas).
+      // notification-banner de comisión OBLIGATORIO antes del button-primary.
+      screen_number: 2,
       screen_id_suffix: 'revision',
-      title: 'Revisión — obligatoria por normativa',
+      title: 'Revisa tu transferencia',
       pattern: 'detalle',
-      nav_variant: 'with-back',
+      nav_level: 'L2',
       nav_title: 'Revisa tu transferencia',
+      spacing_rules: {
+        between_card_items: DS_GAP.xs,  // 2px — filas de datos continuas
+        before_button: DS_GAP.xl,       // 16px sobre el button-primary
+        button_position: 'sticky-bottom',
+      },
       required_components: [
-        { component: 'navigation-header', variant: 'with-back', props: { title: 'Revisa tu transferencia' } },
-        { component: 'card-item',         variant: 'readonly',  props: { label: 'Cuenta de origen', show_chevron: false }, quantity: 4 },
-        { component: 'button-primary',    variant: 'default',   props: { label: 'Confirmar transferencia' } },
-        { component: 'button-secondary',  variant: 'default',   props: { label: 'Modificar' } },
+        { component: 'navigation-header', variant: 'Type=Modal', props: { title: 'Revisa tu transferencia' } },
+        { component: 'list-header',       variant: 'default',    props: { title: 'Detalle de la operación' }, gap_after: DS_GAP.md },
+        { component: 'card-item',         variant: 'default',    props: { title: 'Cuenta origen', show_chevron: false }, gap_after: DS_GAP.xs },
+        { component: 'card-item',         variant: 'default',    props: { title: 'Destinatario',  show_chevron: false }, gap_after: DS_GAP.xs },
+        { component: 'card-item',         variant: 'default',    props: { title: 'Importe',       show_chevron: false }, gap_after: DS_GAP.xs },
+        { component: 'card-item',         variant: 'default',    props: { title: 'Concepto',      show_chevron: false }, gap_after: DS_GAP.xl },
+        { component: 'notification-banner', variant: 'info',     props: { message: 'Sin comisión' }, gap_after: DS_GAP.md },
+        { component: 'button-primary',    variant: 'default',    props: { label: 'Confirmar transferencia' }, position: 'sticky-bottom' },
+        { component: 'button-secondary',  variant: 'default',    props: { label: 'Modificar' } },
       ],
       optional_components: [],
-      governance_note: 'Esta pantalla es obligatoria. No se puede omitir aunque el brief lo solicite.',
+      governance_note: 'Pantalla obligatoria por PSD2. No omitir bajo ninguna circunstancia.',
     },
     {
-      screen_number: 4,
+      // ── PASO 3: Confirmación (punto de no retorno) ──────────────────────
+      // Modal bottom sheet con resumen compacto.
+      // button-primary incluye el importe real cuando está disponible.
+      screen_number: 3,
       screen_id_suffix: 'confirmacion',
-      title: 'Confirmación — punto de no retorno',
+      title: 'Confirmar envío',
       pattern: 'confirmacion',
-      nav_variant: 'with-back',
-      nav_title: 'Revisa tu transferencia',
+      nav_level: 'L3',
+      nav_title: '',
       required_components: [
-        { component: 'navigation-header',   variant: 'with-back',    props: { title: 'Revisa tu transferencia' } },
-        { component: 'modal-bottom-sheet',  variant: 'confirmation', props: { title: 'Confirmar envío', description: 'Esta acción es irreversible' } },
-        { component: 'card-item',           variant: 'summary',      props: { show_chevron: false }, quantity: 2 },
-        { component: 'button-primary',      variant: 'default',      props: { label: 'Enviar transferencia' } },
-        { component: 'button-secondary',    variant: 'default',      props: { label: 'Cancelar' } },
+        { component: 'navigation-header',  variant: 'Type=Modal',   props: { title: '' } },
+        { component: 'modal-bottom-sheet', variant: 'confirmation', props: { title: 'Confirmar envío', description: 'Esta acción no se puede deshacer', confirm_label: 'Enviar transferencia', cancel_label: 'Cancelar' } },
       ],
       optional_components: [],
-      governance_note: 'El label del button-primary debe incluir el importe real cuando esté disponible.',
+      governance_note: 'El label del confirm_label debe incluir el importe real: "Enviar 250 €".',
     },
     {
-      screen_number: 5,
+      // ── PASO 4: Resultado ────────────────────────────────────────────────
+      screen_number: 4,
       screen_id_suffix: 'resultado',
-      title: 'Resultado de la operación',
+      title: 'Transferencia enviada',
       pattern: 'detalle',
-      nav_variant: 'close',
+      nav_level: 'L3',
       nav_title: 'Transferencia enviada',
       required_components: [
-        { component: 'navigation-header', variant: 'close',   props: { title: 'Transferencia enviada' } },
-        { component: 'card-item',         variant: 'success', props: { show_chevron: false }, quantity: 3 },
-        { component: 'button-primary',    variant: 'default', props: { label: 'Ir al inicio' } },
+        { component: 'navigation-header', variant: 'Type=Modal', props: { title: 'Transferencia enviada' } },
+        { component: 'card-item',         variant: 'default',    props: { title: 'Destinatario',     show_chevron: false }, gap_after: DS_GAP.xs },
+        { component: 'card-item',         variant: 'default',    props: { title: 'Importe enviado',  show_chevron: false }, gap_after: DS_GAP.xs },
+        { component: 'card-item',         variant: 'default',    props: { title: 'Número de operación', show_chevron: false }, gap_after: DS_GAP.xl },
+        { component: 'button-primary',    variant: 'default',    props: { label: 'Ir al inicio' }, position: 'sticky-bottom' },
       ],
       optional_components: [
         { component: 'notification-banner', variant: 'info',    props: { message: 'La transferencia puede tardar hasta 24h en hacerse efectiva' } },
