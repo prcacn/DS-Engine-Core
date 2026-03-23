@@ -94,12 +94,57 @@ function handlePing() {
 
 // ─── GENERATE (compatibilidad hacia atrás) ────────────────────────────────────
 
+// ─── NORMALIZAR RESPUESTA DEL ENGINE ─────────────────────────────────────────
+// Acepta tanto el shape de /generate como el de /render y los unifica
+// antes de pasarlos a handlePaint.
+//
+// /generate devuelve: { components, pattern, confidence, screens, ... }
+// /render devuelve:   { html, components, meta: { pattern, score, intent, ... } }
+//
+function normalizeEngineResponse(data) {
+  // Si ya tiene el shape de /generate (confidence directo), no tocar
+  if (data.confidence && typeof data.confidence.global === 'number') {
+    return data;
+  }
+  // Si viene de /render (confidence dentro de meta.score)
+  if (data.meta && data.meta.score) {
+    var meta  = data.meta;
+    var score = meta.score || {};
+    return {
+      components:  data.components  || [],
+      pattern:     meta.pattern     || data.pattern || 'unknown',
+      brief:       meta.brief       || '',
+      screen_id:   'render_' + Date.now(),
+      flow_type:   'single',
+      screens:     null,
+      // Normalizar confidence al shape que usa handlePaint
+      confidence: {
+        global:   score.global   || 0,
+        status:   score.status   || 'AUTO_APPROVE',
+        signals: {
+          contract_coverage: (score.signals && score.signals.contract_coverage) || score.contract  || 0,
+          intent_clarity:    (score.signals && score.signals.intent_clarity)    || score.intent    || 0,
+          precedent:         (score.signals && score.signals.precedent)         || score.precedent || 0,
+          rule_compliance:   (score.signals && score.signals.rule_compliance)   || score.rules     || 0,
+        },
+      },
+      intent:      meta.intent    || {},
+      kb_rules:    data.kb_rules  || meta.kb_rules || [],
+      kb_changes:  data.kb_changes || [],
+      violations:  data.violations || [],
+      html:        data.html || null,
+    };
+  }
+  // Fallback — devolver tal cual
+  return data;
+}
+
 function handleGenerate(brief, patternOverride, geography) {
   figma.ui.postMessage({ type: 'status', text: 'Llamando al engine...' });
 
   var body = { brief: brief };
   if (patternOverride) body.pattern = patternOverride;
-  if (geography) body.geography = geography;
+  if (geography)       body.geography = geography;
 
   fetch(ENGINE_URL + '/generate', {
     method: 'POST',
@@ -112,7 +157,7 @@ function handleGenerate(brief, patternOverride, geography) {
       figma.ui.postMessage({ type: 'error', text: data.message || data.error });
       return;
     }
-    return handlePaint(data);
+    return handlePaint(normalizeEngineResponse(data));
   })
   .catch(function(e) {
     figma.ui.postMessage({ type: 'error', text: 'Error de red: ' + e.message });
