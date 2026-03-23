@@ -10,19 +10,26 @@ const Anthropic = require('@anthropic-ai/sdk');
 const client    = new Anthropic();
 
 // Variantes válidas por componente
+// Alineadas con nombres reales de Figma (contratos en /contracts/*.md)
+// TODO fase 3b: leer variantes directamente de los contratos cuando
+//   se añada sección ## Variantes disponibles con formato estándar
 const COMPONENT_VARIANTS = {
-  'navigation-header':   ['default', 'back', 'close', 'transparent'],
+  'navigation-header':   ['Type=Dashboard', 'Type=Predeterminada', 'Type=Modal'],
   'filter-bar':          ['chips', 'tabs', 'dropdown'],
-  'card-item':           ['default', 'compact', 'expanded', 'highlighted', 'disabled'],
+  'card-item':           ['default', 'compact', 'expanded', 'highlighted', 'disabled',
+                          'financial', 'financial-expense', 'account', 'summary'],
   'button-primary':      ['default', 'destructive', 'loading', 'disabled'],
   'button-secondary':    ['default', 'destructive', 'outline'],
   'empty-state':         ['default', 'error', 'no-results', 'cta', 'locked'],
   'notification-banner': ['info', 'success', 'warning', 'error'],
-  'input-text':          ['default', 'error', 'disabled', 'password', 'numeric'],
+  'input-text':          ['default', 'error', 'disabled', 'password', 'numeric', 'select'],
   'list-header':         ['default', 'collapsible', 'with-action'],
-  'modal-bottom-sheet':  ['default', 'destructive', 'info'],
+  'modal-bottom-sheet':  ['default', 'destructive', 'info', 'confirmation'],
   'tab-bar':             ['default', 'with-badge'],
   'badge':               ['positive', 'negative', 'neutral', 'warning'],
+  'amount-display':      ['default', 'positive', 'negative', 'hidden'],
+  'chart-sparkline':     ['default', 'positive', 'negative'],
+  'skeleton-loader':     ['default'],
 };
 
 async function runUXSpecAgent({ brief, components, intent, kbRules }) {
@@ -54,7 +61,10 @@ ${componentList}
 Tu tarea: revisar la composición desde el punto de vista de UX y proponer ajustes.
 
 Evalúa y decide para cada componente:
-1. VARIANTE correcta según el contexto (ej: button-primary → "destructive" si la acción es irreversible)
+1. VARIANTE correcta según el contexto:
+   - navigation-header: usa SIEMPRE Type=Dashboard (L0), Type=Predeterminada (L1) o Type=Modal (L2/L3)
+   - button-primary: "destructive" si la acción es irreversible
+   - empty-state: "locked" si hay restricción KB, "no-results" si hay filtros activos
 2. ESTADO inicial (activo, deshabilitado, cargando, vacío)  
 3. Si hay reglas KB con restricciones de acceso → el componente afectado debe tener variante "locked" o "disabled" con explicación
 4. Si falta algún componente crítico para el flujo → sugiérelo como "missing_ux_element"
