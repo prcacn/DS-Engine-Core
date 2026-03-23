@@ -1059,8 +1059,7 @@
 
       case 'input-text':
         var isErr = v==='error', isPass = v==='password', isNum = v==='numeric';
-        // Sin wrapper sc-form propio — el spacing lo gestiona el contenedor de grupo
-        return '<div class="sc-input-wrap" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">'
+        return '<div class="sc-input-wrap">'
           +'<div class="sc-input-label" style="'+(isErr?'color:#dc2626':'')+'">'+t('label','Campo')+'</div>'
           +'<div class="sc-input-field" style="'+(isErr?'border-color:#dc2626;background:#fff5f5':'')+'">'+( isPass?'••••••••':t('placeholder','Introduce el valor...'))+'</div>'
           +(p.helper_text?'<div style="font-size:10px;font-family:var(--sans);color:'+(isErr?'#dc2626':'#94a3b8')+';margin-top:3px">'+p.helper_text+'</div>':'')
