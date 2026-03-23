@@ -10,6 +10,7 @@ const paintRoute      = require('./api/routes/paint');
 const knowledgeRoute  = require('./api/routes/knowledge');
 const generateDocRoute = require('./api/routes/generate-doc');
 const approveRoute     = require('./api/routes/approve');
+const renderRoute      = require('./api/routes/render');
 const errorHandler    = require('./api/middleware/errorHandler');
 const auth            = require('./api/middleware/auth');
 
@@ -44,6 +45,7 @@ app.use('/paint',      auth, paintRoute);
 app.use('/knowledge',  auth, knowledgeRoute);
 app.use('/generate-doc', auth, generateDocRoute);
 app.use('/approve',      auth, approveRoute);
+app.use('/render',       auth, renderRoute);
 
 // ── Error handler global ───────────────────────────────────────────────────
 app.use(errorHandler);
@@ -59,6 +61,7 @@ app.listen(PORT, () => {
   console.log(`  ▸ Webapp     http://localhost:${PORT}/`);
   console.log(`  ▸ Health     http://localhost:${PORT}/health`);
   console.log(`  ▸ Knowledge  /knowledge/ingest · /knowledge/list · /knowledge/delete/:id`);
+  console.log(`  ▸ Render     /render  → HTML con CSS variables del DS listo para producción`);
   console.log(`  ▸ DS Repo    ${process.env.DS_REPO_PATH || '⚠️  DS_REPO_PATH not set'}`);
   console.log('');
 });
