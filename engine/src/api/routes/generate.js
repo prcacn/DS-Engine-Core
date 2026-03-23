@@ -1,61 +1,45 @@
-// api/routes/generate.js — Fase 3+ con soporte multiscreen (transferencia-bancaria)
+// api/routes/generate.js — Level 5.0
+// Router limpio. Toda la lógica vive en módulos especializados:
+//   core/navigationMaps.js      → INTENT_TO_LEVEL, INTENT_TO_PATTERN
+//   core/compositionBuilder.js  → buildCompositionPlan, resolveVariant, helpers
+//   core/kbGovernance.js        → applyKBRules, applyFinancialVariant
+//   core/briefEnricher.js       → enrichBriefWithKnowledge (Level 4.0)
+//   core/variantParser.js       → detectVariant (Level 5.1)
+//   core/deltaEngine.js         → applyDelta (Level 5.2)
 
-const express                  = require('express');
-const router                   = express.Router();
-const { parseIntent }          = require('../../core/intentParser');
-const { calculateScore }       = require('../../core/confidenceScore');
-const { loadContracts }        = require('../../loaders/contractLoader');
-const { loadPatterns }         = require("../../loaders/patternLoader");
-const { runAgents }            = require("../../agents/orchestrator");
-const { search: kbSearch }          = require("../../core/knowledgeBase");
-const { enrichBriefWithKnowledge }  = require("../../core/briefEnricher");
-const { findTemplate }         = require('../../loaders/templateLoader');
+const express  = require('express');
+const router   = express.Router();
+
+// ── Core ──────────────────────────────────────────────────────────────────────
+const { parseIntent }                             = require('../../core/intentParser');
+const { calculateScore }                          = require('../../core/confidenceScore');
+const { enrichBriefWithKnowledge }               = require('../../core/briefEnricher');
 const { detect: detectVariant, loadApprovedExamples } = require('../../core/variantParser');
-const { apply: applyDelta }    = require('../../core/deltaEngine');
+const { apply: applyDelta }                       = require('../../core/deltaEngine');
+const { getNavLevel }                             = require('../../core/globalRulesParser');
+
+// ── Navigation & Pattern maps ─────────────────────────────────────────────────
+const { INTENT_TO_LEVEL, INTENT_TO_PATTERN, MULTISCREEN_INTENTS } = require('../../core/navigationMaps');
+
+// ── Composition ───────────────────────────────────────────────────────────────
 const {
-  getNavLevel,
-  getHeaderVariant,
-  getHeaderNodeId,
-  isTabBarAllowed,
-  loadGlobalRules,
-  getCompositionOrder,
-} = require('../../core/globalRulesParser');
+  buildCompositionPlan,
+  buildMultiscreenFlow,
+  buildViolationsSummary,
+  reorderComponents,
+  resolveExclusivity,
+  extractQuantities,
+} = require('../../core/compositionBuilder');
 
-// DEPRECADO: este mapa se leerá de global-rules/navigation.md vía globalRulesParser.
-// Mantenido como fallback hasta migración completa. No editar aquí — editar el .md.
-const INTENT_TO_LEVEL = {
-  'dashboard':             'L0',
-  'lista-con-filtros':     'L1',
-  'notificaciones':        'L1',
-  'perfil-usuario':        'L1',
-  'detalle':               'L2',
-  'formulario-simple':     'L2',
-  'transferencia-bancaria':'L2',
-  'confirmacion':          'L3',
-  'error-estado':          'L3',
-  'onboarding':            'L0',
-};
+// ── KB Governance ─────────────────────────────────────────────────────────────
+const { applyKBRules, applyFinancialVariant } = require('../../core/kbGovernance');
 
-const INTENT_TO_PATTERN = {
-  'dashboard':             'dashboard',
-  'lista-con-filtros':     'lista-con-filtros',
-  // Formularios específicos — reemplazan formulario-simple
-  'login':                 'login',
-  'registro':              'registro',
-  'edicion-perfil':        'edicion-perfil',
-  'formulario-producto':   'formulario-producto',
-  'formulario-default':    'formulario-default',
-  // Legacy fallback — mantener por compatibilidad
-  'formulario-simple':     'formulario-default',
-  'confirmacion':          'confirmacion',
-  'detalle':               'detalle',
-  'onboarding':            'onboarding',
-  'perfil-usuario':        'perfil-usuario',
-  'error-estado':          'error-estado',
-  'notificaciones':        'notificaciones',
-  'transferencia-bancaria':'transferencia-bancaria',
-};
+// ── Loaders ───────────────────────────────────────────────────────────────────
+const { loadContracts }  = require('../../loaders/contractLoader');
+const { loadPatterns }   = require('../../loaders/patternLoader');
+const { findTemplate }   = require('../../loaders/templateLoader');
 
+// ── Multiscreen flows ─────────────────────────────────────────────────────────
 // Intents que generan múltiples pantallas en lugar de una sola
 const MULTISCREEN_INTENTS = ['transferencia-bancaria'];
 
@@ -170,424 +154,6 @@ const MULTISCREEN_FLOWS = {
   ],
 };
 
-// ─── PARSEAR CANTIDADES DEL BRIEF ─────────────────────────────────────────────
-function extractQuantities(brief) {
-  const b = brief.toLowerCase();
-  const quantities = {};
-
-  const WORD_TO_NUM = {
-    'un': 1, 'una': 1, 'uno': 1,
-    'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5,
-    'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10,
-  };
-
-  const TERM_TO_COMPONENT = {
-    'card item': 'card-item', 'card items': 'card-item', 'cards': 'card-item',
-    'card': 'card-item', 'tarjeta': 'card-item', 'tarjetas': 'card-item',
-    'elemento': 'card-item', 'elementos': 'card-item',
-    'filtro': 'filter-bar', 'filtros': 'filter-bar',
-    'botón primario': 'button-primary', 'botones primarios': 'button-primary',
-    'input': 'input-text', 'inputs': 'input-text', 'campo': 'input-text', 'campos': 'input-text',
-    'notificación': 'notification-banner', 'notificaciones': 'notification-banner',
-    'banner': 'notification-banner', 'badge': 'badge', 'chip': 'badge', 'chips': 'badge',
-    'sección': 'list-header', 'secciones': 'list-header',
-  };
-
-  const numPattern = Object.keys(WORD_TO_NUM).join('|');
-  const termPattern = Object.keys(TERM_TO_COMPONENT).sort((a, b) => b.length - a.length).join('|');
-  const regex = new RegExp('(\\d+|' + numPattern + ')\\s+(' + termPattern + ')', 'gi');
-
-  let match;
-  while ((match = regex.exec(b)) !== null) {
-    const rawNum = match[1].toLowerCase();
-    const rawTerm = match[2].toLowerCase();
-    const num = parseInt(rawNum) || WORD_TO_NUM[rawNum] || 1;
-    const component = TERM_TO_COMPONENT[rawTerm];
-    if (component) quantities[component] = Math.max(quantities[component] || 0, num);
-  }
-
-  return quantities;
-}
-
-// ─── RESOLVER VARIANTE DE COMPONENTE ─────────────────────────────────────────
-function resolveVariant(component, intent) {
-  // navigation-header: usa el header_variant del intent si viene del intentParser
-  // Si no, infiere desde navigation_level o INTENT_TO_LEVEL
-  // Nombres alineados con Figma: Type=Dashboard | Type=Predeterminada | Type=Modal
-  // Nivel leído de global-rules/navigation.md via parser — no hardcodeado
-  const navLevel = intent.navigation_level || getNavLevel(intent.intent_type);
-  const variants = {
-    'navigation-header':  function() {
-      // Prioridad: intent.header_variant (intentParser) > getHeaderVariant (parser) > fallback
-      if (intent.header_variant) return intent.header_variant;
-      return getHeaderVariant(navLevel) || 'Type=Predeterminada';
-    },
-    'button-primary':     function() { return intent.constraints && intent.constraints.is_destructive ? 'destructive' : 'default'; },
-    'empty-state':        function() { return intent.constraints && intent.constraints.has_filters ? 'no-results' : 'default'; },
-    'modal-bottom-sheet': function() { return (intent.constraints && intent.constraints.is_destructive) || intent.intent_type === 'confirmacion' ? 'confirmation' : 'default'; },
-    'filter-bar':         function() { return 'chips'; },
-  };
-  return variants[component] ? variants[component]() : 'default';
-}
-
-// ─── CONSTRUIR PROPS SMART ────────────────────────────────────────────────────
-function buildSmartProps(contract, intent, componentName) {
-  const props = {};
-  contract.properties.forEach(function(p) {
-    if (p.default && p.default !== '""') props[p.name] = p.default.replace(/"/g, '');
-  });
-  if (componentName === 'navigation-header') {
-    // Título desde el dominio
-    if (intent.domain) {
-      props.title = intent.domain.charAt(0).toUpperCase() + intent.domain.slice(1);
-    }
-    // node_id leído de global-rules/navigation.md via parser — no hardcodeado
-    const navLevel2        = intent.navigation_level || getNavLevel(intent.intent_type);
-    const resolvedVariant  = intent.header_variant || getHeaderVariant(navLevel2);
-    props._variant_node_id = getHeaderNodeId(resolvedVariant);
-    props._figma_variant   = resolvedVariant;
-  }
-  if (componentName === 'empty-state' && intent.constraints && intent.constraints.has_filters) {
-    props.action_label = 'Limpiar filtros';
-    props.illustration = 'no-results';
-  }
-  if (componentName === 'button-primary' && intent.constraints && intent.constraints.is_destructive) {
-    props.label = 'Confirmar';
-  }
-  return props;
-}
-
-// ─── RESOLVER OPCIONALES ─────────────────────────────────────────────────────
-function resolveOptional(component, intent, brief) {
-  const b = brief.toLowerCase();
-  const rules = {
-    'button-primary':     function() { return { include: intent.intent_type === 'lista-con-filtros' && (b.includes('crear') || b.includes('nuevo') || b.includes('añadir')), confidence: 0.75 }; },
-    'modal-bottom-sheet': function() { return { include: (intent.constraints && intent.constraints.needs_confirmation) || (intent.constraints && intent.constraints.is_destructive), confidence: 0.85 }; },
-    'button-secondary':   function() { return { include: intent.intent_type === 'confirmacion' || (intent.constraints && intent.constraints.needs_confirmation), confidence: 0.90 }; },
-    'card-summary': function() {
-      return { include: intent.intent_type === 'dashboard' && isFintechDomain(brief, intent), confidence: 0.90 };
-    },
-    'card-item/account': function() {
-      const b = brief.toLowerCase();
-      return { include: b.includes('cuenta') || b.includes('cuentas') || b.includes('cuenta bancaria'), confidence: 0.85 };
-    },
-    // C1: tab-bar obligatorio en L0 (dashboard, onboarding autenticado) y L1 (listas raíz)
-    // El engine infiere esto del nivel de navegación — el diseñador no necesita pedirlo
-    'tab-bar': function() {
-      const level = INTENT_TO_LEVEL[intent.intent_type] || 'L2';
-      const L0_intents = ['dashboard'];
-      const L1_intents = ['lista-con-filtros', 'notificaciones', 'perfil-usuario'];
-      const include = L0_intents.includes(intent.intent_type) || L1_intents.includes(intent.intent_type);
-      return { include, confidence: include ? 0.95 : 0 };
-    },
-    'card-item':          function() { return { include: intent.intent_type === 'confirmacion', confidence: 0.75 }; },
-  };
-  return rules[component] ? rules[component]() : { include: false, confidence: 0 };
-}
-
-// ─── REORDENAR COMPONENTES ────────────────────────────────────────────────────
-function reorderComponents(components) {
-  const ORDER = ['navigation-header', 'notification-banner', 'list-header', 'filter-bar',
-    'tab-bar', 'card-item', 'empty-state', 'input-text', 'modal-bottom-sheet',
-    'button-secondary', 'button-primary', 'badge'];
-  return [...components].sort((a, b) => {
-    const ai = ORDER.indexOf(a.component);
-    const bi = ORDER.indexOf(b.component);
-    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-  });
-}
-
-// ─── RESOLVER EXCLUSIVIDAD ────────────────────────────────────────────────────
-function resolveExclusivity(components, brief) {
-  const b = brief.toLowerCase();
-  const hasEmpty = components.some(c => c.component === 'empty-state');
-  const hasCard  = components.some(c => c.component === 'card-item');
-  if (hasEmpty && hasCard) {
-    return b.includes('vacío') || b.includes('sin resultados')
-      ? components.filter(c => c.component !== 'card-item')
-      : components.filter(c => c.component !== 'empty-state');
-  }
-  return components;
-}
-
-// ─── BUILD COMPOSITION PLAN (pantalla única) ──────────────────────────────────
-function buildCompositionPlan(brief, intent, patternData, contracts) {
-  const components = [];
-  const quantities = extractQuantities(brief);
-  const SINGLETON_COMPONENTS = ['navigation-header', 'filter-bar', 'modal-bottom-sheet', 'tab-bar'];
-  let order = 1;
-
-  patternData.requiredComponents.forEach(function(req) {
-    const contract = contracts[req.component];
-    if (!contract) return;
-    let count = 1;
-    if (!SINGLETON_COMPONENTS.includes(req.component) && quantities[req.component]) {
-      count = quantities[req.component];
-    }
-    for (let i = 0; i < count; i++) {
-      components.push({
-        slot:      req.component + (count > 1 ? '_' + (i + 1) : ''),
-        component: req.component,
-        order:     order++,
-        required:  true,
-        variant:   resolveVariant(req.component, intent),
-        props:     buildSmartProps(contract, intent, req.component),
-        node_id:   contract.nodeId,
-        resolution_confidence: 0.85,
-        quantity_index: count > 1 ? (i + 1) : null,
-      });
-    }
-  });
-
-  // A3: detectar si hay modal en requeridos para excluir botones del fondo
-  const modalInRequired = components.some(c => c.component === "modal-bottom-sheet");
-
-  patternData.optionalComponents.forEach(function(opt) {
-    const contract = contracts[opt.component];
-    if (!contract) return;
-    let count = 1;
-    if (!SINGLETON_COMPONENTS.includes(opt.component) && quantities[opt.component]) {
-      count = quantities[opt.component];
-    }
-    // A3: si hay modal, excluir button-primary y button-secondary del fondo
-    // La lógica estaba hardcodeada en el renderer — ahora vive en el plan de composición
-    if (modalInRequired && (opt.component === "button-primary" || opt.component === "button-secondary")) {
-      console.log("  → [A3] Excluyendo " + opt.component + " del fondo — modal-bottom-sheet presente");
-      return;
-    }
-    const r = resolveOptional(opt.component, intent, brief);
-    const include = r.include || (quantities[opt.component] && quantities[opt.component] > 0);
-    if (include) {
-      for (let i = 0; i < count; i++) {
-        components.push({
-          slot:      opt.component + (count > 1 ? '_' + (i + 1) : ''),
-          component: opt.component,
-          order:     order++,
-          required:  false,
-          variant:   resolveVariant(opt.component, intent),
-          props:     buildSmartProps(contract, intent, opt.component),
-          node_id:   contract.nodeId,
-          resolution_confidence: r.confidence || 0.85,
-          quantity_index: count > 1 ? (i + 1) : null,
-        });
-      }
-    }
-  });
-
-  return { components, compositionRules: patternData.compositionRules || [] };
-}
-
-// ─── BUILD MULTISCREEN FLOW ───────────────────────────────────────────────────
-// Para intents como transferencia-bancaria que generan N pantallas fijas
-function buildMultiscreenFlow(brief, intent, flowDef, contracts) {
-  const screens = flowDef.map(function(screenDef) {
-    const components = [];
-    let order = 1;
-
-    screenDef.required_components.forEach(function(req) {
-      const count = req.quantity || 1;
-      for (let i = 0; i < count; i++) {
-        const contract = contracts[req.component];
-        components.push({
-          slot:      req.component + (count > 1 ? '_' + (i + 1) : ''),
-          component: req.component,
-          order:     order++,
-          required:  true,
-          variant:   req.variant || 'default',
-          props:     req.props || {},
-          node_id:   contract ? contract.nodeId : 'pending',
-          resolution_confidence: 0.90,
-          quantity_index: count > 1 ? (i + 1) : null,
-        });
-      }
-    });
-
-    return {
-      screen_number:    screenDef.screen_number,
-      screen_id:        'gen_' + Date.now() + '_' + screenDef.screen_id_suffix,
-      screen_title:     screenDef.title,
-      pattern:          screenDef.pattern,
-      governance_note:  screenDef.governance_note || null,
-      components:       components,
-    };
-  });
-
-  return screens;
-}
-
-// ─── RESUMEN DE VIOLACIONES ───────────────────────────────────────────────────
-function buildViolationsSummary(briefViolations, components) {
-  const violations = [...(briefViolations || []).map(v => ({ ...v, source: 'brief' }))];
-  const names = components.map(c => c.component);
-  const cardCount  = names.filter(n => n === 'card-item').length;
-  const emptyCount = names.filter(n => n === 'empty-state').length;
-  if (cardCount > 0 && emptyCount > 0) {
-    violations.push({ source: 'composition', rule: 'card-empty-exclusivity', detail: 'card-item y empty-state coexisten en el plan final.', severity: 'error', action: 'Revisar manualmente antes de entregar' });
-  }
-  const primaryCount = names.filter(n => n === 'button-primary').length;
-  if (primaryCount > 1) {
-    violations.push({ source: 'composition', rule: 'max-1-button-primary', detail: 'El plan final contiene ' + primaryCount + ' button-primary. Solo se permite 1.', severity: 'error', action: 'Revisar manualmente antes de entregar' });
-  }
-  const navCount = names.filter(n => n === 'navigation-header').length;
-  if (navCount > 1) {
-    violations.push({ source: 'composition', rule: 'max-1-navigation-header', detail: 'El plan final contiene ' + navCount + ' navigation-header. Solo se permite 1.', severity: 'error', action: 'Revisar manualmente antes de entregar' });
-  }
-  return violations;
-}
-
-// ─── SUSTITUCIÓN FINANCIERA ────────────────────────────────────────────────
-// ─── APPLY KB RULES ──────────────────────────────────────────────────────────
-// Lee las reglas KB recuperadas (ds-pattern y restriccion) y las aplica
-// directamente sobre la lista de componentes:
-//   - Si una regla menciona "añadir X" o "incluir X" → añade el componente
-//   - Si una regla menciona "no usar X" o "eliminar X" → lo elimina
-//   - Si una regla menciona "reemplazar X por Y" → hace el swap
-//
-// Solo actúa sobre reglas de alta o media prioridad para evitar ruido.
-
-const KNOWN_COMPONENTS = [
-  'navigation-header', 'button-primary', 'button-secondary', 'card-item',
-  'input-text', 'filter-bar', 'empty-state', 'modal-bottom-sheet',
-  'tab-bar', 'list-header', 'badge', 'notification-banner',
-  'amount-display', 'chart-sparkline', 'skeleton-loader',
-  'card-summary', 'card-item/account',
-];
-
-function applyKBRules(components, kbRules, intent) {
-  if (!kbRules || kbRules.length === 0) return { components, kb_changes: [] };
-
-  var result = components.slice(); // copia
-  var kb_changes = [];
-
-  var ACTIONABLE_CATS = ['ds-pattern', 'restriccion'];
-  var SKIP_PRIORITIES = ['baja'];
-
-  var actionable = kbRules.filter(function(r) {
-    return ACTIONABLE_CATS.indexOf(r.categoria || r.tipo || '') !== -1
-        && SKIP_PRIORITIES.indexOf(r.prioridad || '') === -1;
-  });
-
-  actionable.forEach(function(rule) {
-    var text = (rule.content || rule.text || '').toLowerCase();
-
-    KNOWN_COMPONENTS.forEach(function(comp) {
-      var compInPlan = result.some(function(c) { return c.component === comp; });
-
-      // ── AÑADIR ──────────────────────────────────────────────────────────────
-      var addPatterns = [
-        'siempre incluir ' + comp,
-        'incluir ' + comp,
-        'añadir ' + comp,
-        'usar ' + comp,
-        'debe tener ' + comp,
-        'requiere ' + comp,
-        comp + ' es obligatorio',
-        comp + ' siempre',
-      ];
-      var shouldAdd = addPatterns.some(function(p) { return text.includes(p); });
-
-      if (shouldAdd && !compInPlan) {
-        var newComp = {
-          component: comp,
-          order: result.length + 1,
-          required: true,
-          variant: 'default',
-          props: {},
-          node_id: null,
-          kb_injected: true,
-          kb_rule_id: rule.id || null,
-        };
-        result.push(newComp);
-        kb_changes.push({ type: 'añadido', component: comp, reason: text.slice(0, 80) });
-        console.log('  → [KB] añadido ' + comp + ' por regla: ' + text.slice(0, 60));
-      }
-
-      // ── ELIMINAR ─────────────────────────────────────────────────────────────
-      var removePatterns = [
-        'no usar ' + comp,
-        'nunca usar ' + comp,
-        'evitar ' + comp,
-        'no incluir ' + comp,
-        'eliminar ' + comp,
-        'prohibido ' + comp,
-        comp + ' no debe',
-        comp + ' nunca',
-      ];
-      var shouldRemove = removePatterns.some(function(p) { return text.includes(p); });
-
-      if (shouldRemove && compInPlan) {
-        result = result.filter(function(c) { return c.component !== comp; });
-        kb_changes.push({ type: 'eliminado', component: comp, reason: text.slice(0, 80) });
-        console.log('  → [KB] eliminado ' + comp + ' por regla: ' + text.slice(0, 60));
-      }
-    });
-
-    // ── REEMPLAZAR ───────────────────────────────────────────────────────────
-    KNOWN_COMPONENTS.forEach(function(compFrom) {
-      KNOWN_COMPONENTS.forEach(function(compTo) {
-        if (compFrom === compTo) return;
-        var replacePatterns = [
-          'reemplazar ' + compFrom + ' por ' + compTo,
-          'usar ' + compTo + ' en lugar de ' + compFrom,
-          compFrom + ' → ' + compTo,
-        ];
-        var shouldReplace = replacePatterns.some(function(p) { return text.includes(p); });
-        var fromInPlan = result.some(function(c) { return c.component === compFrom; });
-
-        if (shouldReplace && fromInPlan) {
-          result = result.map(function(c) {
-            if (c.component !== compFrom) return c;
-            return Object.assign({}, c, { component: compTo, kb_injected: true });
-          });
-          kb_changes.push({ type: 'reemplazado', from: compFrom, to: compTo, reason: text.slice(0, 80) });
-          console.log('  → [KB] reemplazado ' + compFrom + ' → ' + compTo);
-        }
-      });
-    });
-  });
-
-  return { components: result, kb_changes: kb_changes };
-}
-
-// ─── A1: DETECCIÓN DE DOMINIO FINTECH (AMPLIADA) ─────────────────────────────
-const FINTECH_KEYWORDS = [
-  "movimiento", "transaccion", "transacción", "transferencia", "pago", "pagos",
-  "ingreso", "gasto", "extracto", "cargo", "abono",
-  "fondo", "fondos", "inversion", "inversión", "cartera", "portfolio",
-  "saldo", "cuenta", "cuentas", "posicion", "posición",
-  "rentabilidad", "rendimiento", "revalorizacion",
-  "hipoteca", "prestamo", "préstamo", "credito", "crédito",
-  "banca", "bancario", "fintech", "finanzas",
-  "retiro", "deposito", "depósito", "ahorro", "ahorros",
-  "divisa", "divisas", "mercado",
-];
-
-function isFintechDomain(brief, intent) {
-  const b = (brief || "").toLowerCase();
-  const domain = ((intent && intent.domain) || "").toLowerCase();
-  const fintechDomains = ["fondos", "transferencias", "saldo", "transacciones",
-    "banca", "fintech", "inversión", "inversion", "cartera", "hipoteca",
-    "préstamo", "prestamo", "crédito", "credito", "pagos", "movimientos"];
-  if (fintechDomains.some(d => domain.includes(d))) return true;
-  return FINTECH_KEYWORDS.some(kw => b.includes(kw));
-}
-
-function applyFinancialVariant(components, intent, brief) {
-  if (!isFintechDomain(brief, intent)) return components;
-  const contracts = loadContracts();
-  const financialContract = contracts["card-item/financial"];
-  if (!financialContract) return components;
-  const changed = [];
-  const result = components.map(c => {
-    if (c.component !== "card-item") return c;
-    changed.push(c.slot || c.component);
-    return { ...c, component: "card-item/financial", node_id: financialContract.nodeId };
-  });
-  if (changed.length > 0) {
-    console.log("  → [A1] card-item → card-item/financial (" + changed.length + " instancias, dominio fintech)");
-  }
-  return result;
-}
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 router.post('/', async function(req, res, next) {
@@ -805,4 +371,7 @@ router.post('/', async function(req, res, next) {
 });
 
 module.exports = router;
+
+
+
 
