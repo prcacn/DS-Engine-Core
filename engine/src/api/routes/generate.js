@@ -19,7 +19,6 @@ const { apply: applyDelta }                       = require('../../core/deltaEng
 const { getNavLevel }                             = require('../../core/globalRulesParser');
 
 // ── Navigation & Pattern maps ─────────────────────────────────────────────────
-const { INTENT_TO_LEVEL, INTENT_TO_PATTERN, MULTISCREEN_INTENTS } = require('../../core/navigationMaps');
 
 // ── Composition ───────────────────────────────────────────────────────────────
 const {
