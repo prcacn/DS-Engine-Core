@@ -1,7 +1,8 @@
 # transferencia-bancaria
-
 ## Descripción
-Flujo MULTIPANTALLA de 5 pasos para envío de dinero entre cuentas. Este patrón genera siempre 5 pantallas en orden fijo — ninguna es omitible. La pantalla de revisión es obligatoria por normativa.
+Flujo MULTIPANTALLA de 4 pasos para envío de dinero entre cuentas.
+Pantallas 1 y 2 fusionadas en un único formulario de origen + destino + importe.
+La pantalla de revisión (paso 2) es obligatoria por normativa PSD2.
 
 ## Cuándo aplicar este pattern
 - Enviar dinero a otra cuenta
@@ -9,55 +10,80 @@ Flujo MULTIPANTALLA de 5 pasos para envío de dinero entre cuentas. Este patrón
 - Pago a tercero
 - Mover fondos entre cuentas propias
 
-## Pantallas del flujo (en este orden, siempre las 5)
+## Pantallas del flujo (en este orden, siempre las 4)
 
-### Pantalla 1 — Cuenta origen
-- navigation-header (variant: with-back, título: "Nueva transferencia")
-- input-text (selección de cuenta origen)
-- button-primary (label: "Continuar")
-
-### Pantalla 2 — Destino e importe
-- navigation-header (variant: with-back, título: "Destino e importe")
-- input-text × 2 (IBAN/CLABE, Importe)
-- input-text opcional (Concepto)
+### Pantalla 1 — Origen, destino e importe (fusionado)
+- navigation-header (variant: Type=Modal, título: "Nueva transferencia")
+- list-header (título: "Cuenta de origen", variant: default)
+- input-text (variant: select, label: "Cuenta de origen")
+- list-header (título: "Destinatario e importe", variant: default)
+- input-text (variant: default, label: "IBAN / CLABE", required: true)
+- input-text (variant: numeric, label: "Importe", required: true)
+- input-text (variant: default, label: "Concepto", required: false)
 - button-primary (label: "Revisar transferencia")
-- notification-banner opcional (aviso de límite operativo)
+- notification-banner opcional (variant: warning, aviso de límite operativo)
 
-### Pantalla 3 — Revisión (OBLIGATORIA por normativa)
-- navigation-header (variant: with-back, título: "Revisa tu transferencia")
-- card-item × 4 (resumen: origen, destino, importe, concepto — readonly)
+## Spacing entre grupos de campos
+- Entre list-header y su primer input-text: gap-md (8px)
+- Entre input-text consecutivos del mismo grupo: gap-md (8px)
+- Entre grupos distintos (list-header nuevo): gap-xl (16px)
+- button-primary: posición fija en la parte inferior de la pantalla (sticky bottom)
+  según global-rules/navigation.md — nunca entre campos
+
+### Pantalla 2 — Revisión (OBLIGATORIA por normativa PSD2)
+- navigation-header (variant: Type=Modal, título: "Revisa tu transferencia")
+- list-header (título: "Detalle de la operación", variant: default)
+- card-item × 4 (resumen readonly: origen, destino, importe, concepto)
+- notification-banner opcional (variant: info, comisión aplicable o "Sin comisión")
 - button-primary (label: "Confirmar transferencia")
 - button-secondary (label: "Modificar")
 
-### Pantalla 4 — Confirmación (punto de no retorno)
-- navigation-header (variant: with-back)
+## Spacing pantalla 2
+- Entre list-header y card-items: gap-md (8px)
+- Entre card-items: gap-xs (2px) — son filas de datos, no tarjetas independientes
+- notification-banner: gap-xl (16px) sobre el button-primary
+- button-primary: sticky bottom — nunca entre los card-items
+- button-secondary: gap-md (8px) sobre button-primary
+
+### Pantalla 3 — Confirmación (punto de no retorno)
+- navigation-header (variant: Type=Modal, sin título — L3)
 - modal-bottom-sheet (variant: confirmation)
-- card-item × 2 (resumen compacto)
-- button-primary (label: "Enviar [importe]€")
+- button-primary (label: "Enviar [importe] €")
 - button-secondary (label: "Cancelar")
 
-### Pantalla 5 — Resultado
-- navigation-header (variant: close, título: "Transferencia enviada")
-- card-item × 3 (confirmación de la operación)
+### Pantalla 4 — Resultado
+- navigation-header (variant: Type=Modal, título: "Transferencia enviada")
+- card-item × 3 (confirmación de la operación — readonly)
+- notification-banner opcional (variant: info, aviso de plazo)
 - button-primary (label: "Ir al inicio")
-- notification-banner opcional (aviso de plazo)
 - button-secondary opcional (label: "Nueva transferencia")
 
 ## Reglas de composición
-- Las 5 pantallas son obligatorias — nunca omitir ninguna
-- La pantalla de revisión (3) es OBLIGATORIA por normativa bancaria
-- El label del button-primary en pantalla 4 DEBE incluir el importe real cuando esté disponible
+- Las 4 pantallas son obligatorias — nunca omitir ninguna
+- La pantalla de revisión (2) es OBLIGATORIA por normativa PSD2/bancaria
+- El label del button-primary en pantalla 3 DEBE incluir el importe real
 - NUNCA tab-bar en este flujo — es un flujo modal L2/L3
+- button-primary SIEMPRE sticky bottom — nunca flotando entre campos
+- Los list-header actúan como separadores visuales de grupos de campos
+
+## Reglas de spacing (basadas en tokens del DS)
+- gap-xl = 16px (--gap-xl = --space-7) → entre grupos distintos de campos
+- gap-md = 8px  (--gap-md = --space-4) → entre campos del mismo grupo
+- gap-xs = 2px  (--gap-xs = --space-1) → entre card-items de resumen (filas de datos)
+- Padding horizontal de pantalla: 16px (--grid-margin)
+- button-primary: padding-bottom mínimo 24px desde el borde inferior seguro
 
 ## Reglas de contenido
-- Pantalla 3: todos los card-item son readonly (show_chevron: false)
-- Pantalla 4: el modal describe claramente que la acción es irreversible
-- Pantalla 5: confirmar la operación con número de referencia si está disponible
+- Pantalla 1: el campo IBAN/CLABE muestra helper_text con formato según geografía
+- Pantalla 2: todos los card-item son readonly (show_chevron: false)
+- Pantalla 2: notification-banner de comisión OBLIGATORIO — si es 0 indicar "Sin comisión"
+- Pantalla 3: modal describe claramente que la acción es irreversible
+- Pantalla 4: confirmar con número de referencia si está disponible
+
+## Incompatibilidades
+- tab-bar (flujo modal L2/L3)
+- filter-bar
+- empty-state
 
 ## Ejemplos aprobados
 (vacío — se irán añadiendo en /examples)
-
-## Incompatibilidades
-- tab-bar (flujo modal, no L0/L1)
-- filter-bar
-- empty-state
