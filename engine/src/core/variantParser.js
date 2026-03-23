@@ -72,7 +72,40 @@ function parseExampleMd(raw, filename) {
       const line = lines[i].trim();
       if (line.startsWith('## ')) break;
       if (line.startsWith('- ')) {
-        components.push(line.replace(/^- /, '').trim());
+        const raw = line.replace(/^- /, '').trim();
+        // Parsear "navigation-header (variant: Type=Modal, title: "Foo")" → objeto
+        const nameMatch = raw.match(/^([a-z][a-z0-9\/\-]*)(?:\s|$|\s*×|\s*\()/);
+        const compName  = nameMatch ? nameMatch[1] : null;
+        if (!compName) continue;
+
+        // Extraer variant
+        const variantMatch = raw.match(/variant:\s*([^,)]+)/);
+        const variant = variantMatch ? variantMatch[1].trim().replace(/['"]/g, '') : 'default';
+
+        // Extraer props clave-valor simples
+        const props = {};
+        const titleMatch = raw.match(/title:\s*"([^"]+)"/);
+        if (titleMatch) props.title = titleMatch[1];
+        const labelMatch = raw.match(/label:\s*"([^"]+)"/);
+        if (labelMatch) props.label = labelMatch[1];
+        const actionMatch = raw.match(/action_label:\s*"([^"]+)"/);
+        if (actionMatch) props.action_label = actionMatch[1];
+
+        // Extraer quantity (×N)
+        const qtyMatch = raw.match(/×(\d+)/);
+        const quantity = qtyMatch ? parseInt(qtyMatch[1]) : 1;
+
+        // Generar una entrada por cada instancia del componente
+        for (let q = 0; q < quantity; q++) {
+          components.push({
+            component: compName,
+            order:     components.length + 1,
+            variant:   variant,
+            props:     { ...props },
+            required:  true,
+            delta_action: 'base',
+          });
+        }
       }
     }
   }
