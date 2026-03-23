@@ -450,6 +450,37 @@ function applyTextProps(node, props) {
 
 // ─── GET SELECTION — para Studio/Validar ──────────────────────────────────────
 
+function normalizeCompName(str) {
+  // Normaliza nombres de componentes para matching robusto
+  // "Card Item / Financial" → "card-item/financial"
+  // "navigation header" → "navigation-header"
+  return (str || '')
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-\/]/g, '')
+    .replace(/-+/g, '-');
+}
+
+function matchComponentName(rawName, knownNames) {
+  var norm = normalizeCompName(rawName);
+  // 1. Match exacto
+  var exact = knownNames.find(function(k) { return k === norm; });
+  if (exact) return exact;
+  // 2. El nombre del componente contiene la clave canónica
+  var contains = knownNames.find(function(k) { return norm.includes(k); });
+  if (contains) return contains;
+  // 3. La clave canónica contiene el nombre
+  var reverse = knownNames.find(function(k) { return k.includes(norm); });
+  if (reverse) return reverse;
+  // 4. Match parcial — primer segmento antes de '/' o ' '
+  var base = norm.split('/')[0].split(' ')[0];
+  if (base.length > 3) {
+    var partial = knownNames.find(function(k) { return k.startsWith(base); });
+    if (partial) return partial;
+  }
+  return null;
+}
+
 function handleGetSelection() {
   var selection = figma.currentPage.selection;
 
@@ -475,35 +506,35 @@ function handleGetSelection() {
 
   frame.children.forEach(function(child, index) {
     var isInstance = child.type === 'INSTANCE';
-    var isDetached = child.type === 'FRAME' || child.type === 'GROUP';
-    var detached = false;
-    var matched = null;
+    var detached   = false;
+    var matched    = null;
 
     if (isInstance) {
-      // Caso ideal: es una instancia — leer el mainComponent para saber qué es
       var mainComp = child.mainComponent;
       if (mainComp) {
-        var mainId = mainComp.id;
-        // Buscar por node ID exacto del componente padre
-        matched = NODE_ID_TO_NAME[mainId] || null;
-        // Si no hay match por ID, intentar por nombre del mainComponent
+        // 1. Match por nodeId exacto del mainComponent
+        matched = NODE_ID_TO_NAME[mainComp.id] || null;
+
+        // 2. Match por nodeId del componentSet (variantes)
+        if (!matched && mainComp.parent && mainComp.parent.type === 'COMPONENT_SET') {
+          matched = NODE_ID_TO_NAME[mainComp.parent.id] || null;
+        }
+
+        // 3. Match por nombre normalizado del mainComponent
         if (!matched) {
-          var mainName = mainComp.name.toLowerCase().replace(/\s+/g, '-');
-          matched = knownNames.find(function(k) {
-            return mainName.includes(k) || k.includes(mainName);
-          }) || null;
+          matched = matchComponentName(mainComp.name, knownNames);
+        }
+
+        // 4. Match por nombre del componentSet si existe
+        if (!matched && mainComp.parent && mainComp.parent.type === 'COMPONENT_SET') {
+          matched = matchComponentName(mainComp.parent.name, knownNames);
         }
       }
     }
 
+    // 5. Fallback: nombre del layer del frame hijo
     if (!matched) {
-      // Fallback: buscar por nombre del layer (cubre detaches que conservan el nombre)
-      var layerName = child.name.toLowerCase().replace(/\s+/g, '-');
-      matched = knownNames.find(function(k) {
-        return layerName.includes(k) || k.includes(layerName);
-      }) || null;
-
-      // Si el nodo no es instancia pero tiene nombre canónico → está detacheado
+      matched = matchComponentName(child.name, knownNames);
       if (matched && !isInstance) {
         detached = true;
       }
@@ -512,11 +543,14 @@ function handleGetSelection() {
     if (matched) {
       components.push({
         component: matched,
-        order: index + 1,
-        node_id: COMPONENT_NODE_IDS[matched],
+        order:      index + 1,
+        node_id:    COMPONENT_NODE_IDS[matched],
         is_instance: isInstance,
-        detached: detached,
+        detached:    detached,
       });
+    } else {
+      // Registrar no reconocidos para debug
+      console.warn('[Studio] Componente no reconocido:', child.name, child.type);
     }
   });
 
