@@ -1,20 +1,21 @@
 # Lista de fondos de inversión
 **pattern:** lista-con-filtros
 **status:** APPROVED
-**score:** 0.91
+**score:** 0.89
 **domain:** fondos
-**fecha:** 2026-03-20
+**fecha:** 2026-03-23
+**nav_level:** L1
 
 ## Descripción
-Pantalla de listado de fondos de inversión con filtros por categoría (Todos, Renta fija, Variable, Mixtos).
-Aprobada como pantalla base para el módulo de inversión.
+Listado de fondos de inversión disponibles con filtros por categoría.
+Pantalla de sección L1 — accesible desde tab-bar.
 
 ## Componentes
-- navigation-header (variant: default, title: "Fondos")
-- filter-bar (variant: chips)
-- card-item/financial ×5 (title: nombre fondo, subtitle: categoría, value: rentabilidad)
-- empty-state (CONDICIONAL — si no hay resultados)
+- navigation-header (variant: Type=Predeterminada, title: "Fondos")
+- filter-bar (variant: chips, filters: ["Todos","Renta fija","Acciones","Mixtos","ESG"])
+- card-item ×5 (fondos con rentabilidad y badge de riesgo)
+- empty-state (variant: no-results, action_label: "Limpiar filtros")
+- tab-bar (variant: default)
 
 ## Notas de aprobación
-Aprobada el 2026-03-20. Cumple restricciones de card-item/financial en dominio fintech.
-La señal PRECEDENT debe mejorar con este ejemplo.
+Aprobada como pantalla base de listado de fondos. Base para variante fondos/colombia y fondos/esg.
