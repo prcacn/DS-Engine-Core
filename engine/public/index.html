@@ -1098,15 +1098,40 @@
       lastResult.pattern    = renderResult.meta?.pattern || '';
       lastResult.intent     = renderResult.meta?.intent  || {};
 
-      // Inyectar HTML del servidor directamente en el phone
+      // Normalizar respuesta de /render al mismo shape que /generate
       if (renderResult.html) {
         hideVariantReview();
+
+        // Construir objeto normalizado compatible con renderAnalysis
+        var meta = renderResult.meta || {};
+        var score = meta.score || {};
+        var normalizedData = {
+          // Campos de display
+          pattern:    meta.pattern    || '',
+          intent:     meta.intent     || {},
+          brief:      meta.brief      || '',
+          // Campos que usa renderAnalysis
+          status:     score.status    || 'AUTO_APPROVE',
+          confidence: score,
+          components: renderResult.components || [],
+          kb_rules:   renderResult.kb_rules   || meta.kb_rules || [],
+          violations:          [],
+          missing_components:  [],
+          kb_changes:          [],
+          screen_id:  'render_' + Date.now(),
+          flow_type:  'single',
+          html:       renderResult.html,
+        };
+        lastResult = normalizedData;
+
+        // Inyectar HTML en el teléfono
         var screen = document.getElementById('phoneScreen');
         screen.innerHTML = renderResult.html;
         document.getElementById('patternBadgeText').textContent =
-          (renderResult.meta?.pattern || '') + ' · ' + (renderResult.components?.length || 0) + ' componentes';
+          normalizedData.pattern + ' · ' + normalizedData.components.length + ' componentes';
         document.getElementById('patternBadge').style.display = 'block';
-        renderAnalysis({ ...renderResult.meta, components: renderResult.components, kb_rules: renderResult.meta?.kb_rules });
+
+        renderAnalysis(normalizedData);
       }
     } catch (err) {
       renderError({ error: 'NetworkError', message: 'No se pudo conectar con el engine en ' + url });
