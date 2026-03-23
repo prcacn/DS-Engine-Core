@@ -39,6 +39,44 @@ const { loadPatterns }   = require('../../loaders/patternLoader');
 const { findTemplate }   = require('../../loaders/templateLoader');
 
 // ── Multiscreen flows ─────────────────────────────────────────────────────────
+// ─── MAPAS DE NAVEGACIÓN (antes en navigationMaps.js) ────────────────────────
+const INTENT_TO_PATTERN = {
+  'dashboard':             'dashboard',
+  'lista-con-filtros':     'lista-con-filtros',
+  'login':                 'login',
+  'registro':              'registro',
+  'edicion-perfil':        'edicion-perfil',
+  'formulario-producto':   'formulario-producto',
+  'formulario-default':    'formulario-default',
+  'formulario-simple':     'formulario-default',
+  'confirmacion':          'confirmacion',
+  'detalle':               'detalle',
+  'onboarding':            'onboarding',
+  'perfil-usuario':        'perfil-usuario',
+  'error-estado':          'error-estado',
+  'notificaciones':        'notificaciones',
+  'transferencia-bancaria':'transferencia-bancaria',
+};
+
+// DEPRECADO — usar getNavLevel() del globalRulesParser. Mantenido como fallback.
+const INTENT_TO_LEVEL = {
+  'dashboard':             'L0',
+  'onboarding':            'L0',
+  'lista-con-filtros':     'L1',
+  'notificaciones':        'L1',
+  'perfil-usuario':        'L1',
+  'detalle':               'L2',
+  'login':                 'L2',
+  'registro':              'L2',
+  'edicion-perfil':        'L2',
+  'formulario-producto':   'L2',
+  'formulario-default':    'L2',
+  'formulario-simple':     'L2',
+  'transferencia-bancaria':'L2',
+  'confirmacion':          'L3',
+  'error-estado':          'L3',
+};
+
 // Intents que generan múltiples pantallas en lugar de una sola
 const MULTISCREEN_INTENTS = ['transferencia-bancaria'];
 
