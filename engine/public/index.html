@@ -1543,18 +1543,72 @@
 
   // ── VARIANT REVIEW ──────────────────────────────────────────────────────────
 
+  // ── TAB SWITCHING ────────────────────────────────────────────────────────
+  function switchTab(name) {
+    ['analysis','revision'].forEach(function(t) {
+      var btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+      var content = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (btn)     btn.classList.toggle('active', t === name);
+      if (content) content.classList.toggle('active', t === name);
+    });
+    // Si abrimos revisión, quitar el dot de alerta
+    if (name === 'revision') {
+      var tabBtn = document.getElementById('tabRevision');
+      if (tabBtn) tabBtn.classList.remove('has-alert');
+    }
+  }
+
+  function goToReviewTab() {
+    switchTab('revision');
+    closePopup();
+  }
+
+  function closePopup() {
+    var popup = document.getElementById('reviewPopup');
+    if (popup) {
+      popup.style.animation = 'none';
+      popup.style.opacity = '0';
+      popup.style.transition = 'opacity 0.2s';
+      setTimeout(function() { popup.classList.remove('visible'); popup.style.opacity = ''; popup.style.transition = ''; }, 200);
+    }
+  }
+
+  function showReviewPopup() {
+    var popup = document.getElementById('reviewPopup');
+    if (popup) {
+      popup.classList.add('visible');
+      popup.style.animation = 'popupIn 0.3s cubic-bezier(.17,.67,.35,1.2)';
+      // Auto-cerrar tras 6 segundos
+      setTimeout(function() { closePopup(); }, 6000);
+    }
+    // Marcar el tab con dot de alerta
+    var tabBtn = document.getElementById('tabRevision');
+    if (tabBtn) tabBtn.classList.add('has-alert');
+  }
+
   function renderVariantReview(data) {
-    var panel = document.getElementById('variantReview');
-    if (!panel) return;
-    document.getElementById('variantBaseLabel').textContent = 'base: ' + (data.base_id || '—');
-    var reasonEl = document.getElementById('variantReasoning');
-    reasonEl.textContent = data.variant_reasoning || 'Variante generada a partir de pantalla aprobada.';
-    var diffEl = document.getElementById('diffList');
-    var diff   = data.diff || {};
+    // Rellenar contenido del tab de revisión
+    var baseLabel = document.getElementById('variantBaseLabel');
+    var reasoning = document.getElementById('variantReasoning');
+    var diffEl    = document.getElementById('diffList');
+    var header    = document.getElementById('variantReviewHeader');
+    var reasonSec = document.getElementById('variantReasoning');
+    var diffSec   = document.getElementById('variantDiffSection');
+    var actions   = document.getElementById('approvalActions');
+    var noMsg     = document.getElementById('noRevisionMsg');
+    var status    = document.getElementById('approvalStatus');
+
+    if (!diffEl) return;
+
+    if (baseLabel) baseLabel.textContent = 'base: ' + (data.base_id || '—');
+    if (reasoning) reasoning.textContent = data.variant_reasoning || 'Variante generada a partir de pantalla aprobada.';
+
+    var diff     = data.diff || {};
     var added    = diff.added    || [];
     var removed  = diff.removed  || [];
     var modified = diff.modified || [];
     var html = '';
+
     if (added.length === 0 && removed.length === 0 && modified.length === 0) {
       html = '<div class="diff-empty">Sin cambios estructurales — solo ajustes de contenido</div>';
     } else {
@@ -1568,16 +1622,34 @@
         html += '<div class="diff-item removed"><span class="diff-icon">−</span><span>' + (d.component || JSON.stringify(d)) + '</span></div>';
       });
     }
+
     diffEl.innerHTML = html;
-    document.getElementById('approvalStatus').className = 'approval-status';
-    document.getElementById('approvalStatus').textContent = '';
-    document.querySelectorAll('.approval-actions button').forEach(function(b) { b.disabled = false; });
-    panel.classList.add('visible');
+    if (status) { status.className = 'approval-status'; status.textContent = ''; }
+    if (header)  header.style.display  = 'flex';
+    if (reasonSec) reasonSec.style.display = 'block';
+    if (diffSec)   diffSec.style.display   = 'block';
+    if (actions)   actions.style.display   = 'flex';
+    if (noMsg)     noMsg.style.display     = 'none';
+    document.querySelectorAll('#approvalActions button').forEach(function(b) { b.disabled = false; });
+
+    // Mostrar popup de alerta
+    showReviewPopup();
   }
 
   function hideVariantReview() {
-    var panel = document.getElementById('variantReview');
-    if (panel) panel.classList.remove('visible');
+    var header  = document.getElementById('variantReviewHeader');
+    var reason  = document.getElementById('variantReasoning');
+    var diffSec = document.getElementById('variantDiffSection');
+    var actions = document.getElementById('approvalActions');
+    var noMsg   = document.getElementById('noRevisionMsg');
+    if (header)  header.style.display  = 'none';
+    if (reason)  reason.style.display  = 'none';
+    if (diffSec) diffSec.style.display = 'none';
+    if (actions) actions.style.display = 'none';
+    if (noMsg)   noMsg.style.display   = 'block';
+    var tabBtn = document.getElementById('tabRevision');
+    if (tabBtn) tabBtn.classList.remove('has-alert');
+    closePopup();
   }
 
   async function approveVariant() {
