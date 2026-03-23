@@ -1063,24 +1063,50 @@
     try {
       var body = { brief: brief };
       if (pattern) body.pattern = pattern;
-      var res = await fetch(url + '/generate', {
+      // Llamar a /render — devuelve HTML listo con CSS variables del DS
+      var res = await fetch(url + '/render', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
         body: JSON.stringify(body)
       });
-      if (!res.ok) { var e = await res.json(); renderError(e); return; }
-      var data = await res.json();
-      lastResult = data;
-      if (data.flow_type === 'variant' && data.is_proposal) {
-        renderVariantReview(data);
-        renderScreen(data);
-        renderAnalysis(data);
-      } else if (data.flow_type === 'multiscreen' && data.screens && data.screens.length > 0) {
-        initFlow(data);
-      } else {
+      if (!res.ok) {
+        // Fallback a /generate si /render falla
+        var res2 = await fetch(url + '/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+          body: JSON.stringify(body)
+        });
+        if (!res2.ok) { var e = await res2.json(); renderError(e); return; }
+        var data = await res2.json();
+        lastResult = data;
+        if (data.flow_type === 'variant' && data.is_proposal) {
+          renderVariantReview(data);
+          renderScreen(data);
+          renderAnalysis(data);
+        } else if (data.flow_type === 'multiscreen' && data.screens && data.screens.length > 0) {
+          initFlow(data);
+        } else {
+          hideVariantReview();
+          renderScreen(data);
+          renderAnalysis(data);
+        }
+        return;
+      }
+      var renderResult = await res.json();
+      lastResult = renderResult.meta ? { ...renderResult.meta, components: renderResult.components, html: renderResult.html } : renderResult;
+      lastResult.components = renderResult.components || [];
+      lastResult.pattern    = renderResult.meta?.pattern || '';
+      lastResult.intent     = renderResult.meta?.intent  || {};
+
+      // Inyectar HTML del servidor directamente en el phone
+      if (renderResult.html) {
         hideVariantReview();
-        renderScreen(data);
-        renderAnalysis(data);
+        var screen = document.getElementById('phoneScreen');
+        screen.innerHTML = renderResult.html;
+        document.getElementById('patternBadgeText').textContent =
+          (renderResult.meta?.pattern || '') + ' · ' + (renderResult.components?.length || 0) + ' componentes';
+        document.getElementById('patternBadge').style.display = 'block';
+        renderAnalysis({ ...renderResult.meta, components: renderResult.components, kb_rules: renderResult.meta?.kb_rules });
       }
     } catch (err) {
       renderError({ error: 'NetworkError', message: 'No se pudo conectar con el engine en ' + url });
