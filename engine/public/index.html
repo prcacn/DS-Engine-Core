@@ -1040,8 +1040,10 @@
     switch(comp.component) {
 
       case 'navigation-header':
-        var showBack = (v === 'back' || v === 'close');
-        var backIcon = v === 'close'
+        // Normalizar variantes Figma a valores simples
+        var vn = v.toLowerCase().replace('type=','').replace('type =','').trim();
+        var showBack = (vn === 'back' || vn === 'modal' || vn === 'close' || vn === 'with-back' || vn === 'with-close');
+        var backIcon = (vn === 'close' || vn === 'with-close')
           ? '<svg viewBox="0 0 20 20" fill="none" stroke="#0f172a" stroke-width="2"><path d="M4 4l12 12M16 4L4 16"/></svg>'
           : '<svg viewBox="0 0 20 20" fill="none" stroke="#0f172a" stroke-width="2"><path d="M12 4L6 10L12 16"/></svg>';
         return '<div class="sc-header"><div class="sc-header-back">' + (showBack ? backIcon : '<div style="width:20px"></div>') + '</div>'
@@ -1056,6 +1058,7 @@
         return fHtml + '</div>';
 
       case 'card-item':
+        if (!data || !data.pattern) return '<div style="height:8px"></div>';
         if (data.pattern === 'dashboard') {
           var idx = comp.quantity_index || 1;
           var dd = [{label:'Total balance',val:'€12.480',change:'↑ +3.2%',up:true},{label:'Rendimiento',val:'8.4%',change:'↑ +0.6%',up:true},{label:'Posiciones',val:'7',change:'↓ -1',up:false},{label:'Disponible',val:'€2.150',change:'—',up:null}];
