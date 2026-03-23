@@ -9,6 +9,7 @@ const registryRoute   = require('./api/routes/registry');
 const paintRoute      = require('./api/routes/paint');
 const knowledgeRoute  = require('./api/routes/knowledge');
 const generateDocRoute = require('./api/routes/generate-doc');
+const approveRoute     = require('./api/routes/approve');
 const errorHandler    = require('./api/middleware/errorHandler');
 const auth            = require('./api/middleware/auth');
 
@@ -42,6 +43,7 @@ app.use('/registry',   auth, registryRoute);
 app.use('/paint',      auth, paintRoute);
 app.use('/knowledge',  auth, knowledgeRoute);
 app.use('/generate-doc', auth, generateDocRoute);
+app.use('/approve',      auth, approveRoute);
 
 // ── Error handler global ───────────────────────────────────────────────────
 app.use(errorHandler);
@@ -50,7 +52,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log('');
   console.log('  ╔═══════════════════════════════════════════════════╗');
-  console.log('  ║   DS IA-Ready — Engine Core v1.0 · Fase 4        ║');
+  console.log('  ║   DS IA-Ready — Engine Core v1.0 · Level 5.0     ║');
   console.log('  ╚═══════════════════════════════════════════════════╝');
   console.log('');
   console.log(`  ▸ Server     http://localhost:${PORT}`);
