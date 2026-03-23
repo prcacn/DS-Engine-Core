@@ -1463,6 +1463,121 @@
       inp.focus();
     }
   }
+
+
+  // ── VARIANT REVIEW ──────────────────────────────────────────────────────────
+
+  function renderVariantReview(data) {
+    var panel = document.getElementById('variantReview');
+    if (!panel) return;
+    document.getElementById('variantBaseLabel').textContent = 'base: ' + (data.base_id || '—');
+    var reasonEl = document.getElementById('variantReasoning');
+    reasonEl.textContent = data.variant_reasoning || 'Variante generada a partir de pantalla aprobada.';
+    var diffEl = document.getElementById('diffList');
+    var diff   = data.diff || {};
+    var added    = diff.added    || [];
+    var removed  = diff.removed  || [];
+    var modified = diff.modified || [];
+    var html = '';
+    if (added.length === 0 && removed.length === 0 && modified.length === 0) {
+      html = '<div class="diff-empty">Sin cambios estructurales — solo ajustes de contenido</div>';
+    } else {
+      added.forEach(function(d) {
+        html += '<div class="diff-item added"><span class="diff-icon">+</span><span>' + (d.component || JSON.stringify(d)) + '</span></div>';
+      });
+      modified.forEach(function(d) {
+        html += '<div class="diff-item modified"><span class="diff-icon">~</span><span>' + (d.component || JSON.stringify(d)) + '</span></div>';
+      });
+      removed.forEach(function(d) {
+        html += '<div class="diff-item removed"><span class="diff-icon">−</span><span>' + (d.component || JSON.stringify(d)) + '</span></div>';
+      });
+    }
+    diffEl.innerHTML = html;
+    document.getElementById('approvalStatus').className = 'approval-status';
+    document.getElementById('approvalStatus').textContent = '';
+    document.querySelectorAll('.approval-actions button').forEach(function(b) { b.disabled = false; });
+    panel.classList.add('visible');
+  }
+
+  function hideVariantReview() {
+    var panel = document.getElementById('variantReview');
+    if (panel) panel.classList.remove('visible');
+  }
+
+  async function approveVariant() {
+    if (!lastResult || !lastResult.is_proposal) return;
+    var statusEl = document.getElementById('approvalStatus');
+    statusEl.style.display = 'block';
+    statusEl.className = 'approval-status';
+    statusEl.textContent = 'Guardando...';
+    try {
+      var url = document.getElementById('engineUrl').value;
+      var apiKey = document.getElementById('apiKey').value;
+      var res = await fetch(url + '/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+        body: JSON.stringify({ action: 'approve', screen_id: lastResult.screen_id, brief: lastResult.brief, base_id: lastResult.base_id, components: lastResult.components, diff: lastResult.diff })
+      });
+      var data = await res.json();
+      if (data.ok) {
+        statusEl.className = 'approval-status approved';
+        statusEl.textContent = '✓ Variante aprobada — guardada como nueva base · ' + (data.new_example_id || '');
+        document.querySelectorAll('.approval-actions button').forEach(function(b) { b.disabled = true; });
+      } else {
+        statusEl.className = 'approval-status rejected';
+        statusEl.textContent = '✗ Error: ' + (data.error || 'desconocido');
+      }
+    } catch(e) {
+      statusEl.className = 'approval-status rejected';
+      statusEl.textContent = '✗ Error de red: ' + e.message;
+    }
+  }
+
+  async function modifyVariant() {
+    if (!lastResult) return;
+    var motivo = prompt('¿Qué modificarías de esta propuesta?');
+    if (!motivo) return;
+    var statusEl = document.getElementById('approvalStatus');
+    statusEl.style.display = 'block';
+    try {
+      var url = document.getElementById('engineUrl').value;
+      var apiKey = document.getElementById('apiKey').value;
+      await fetch(url + '/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+        body: JSON.stringify({ action: 'modify', screen_id: lastResult.screen_id, brief: lastResult.brief, base_id: lastResult.base_id, components: lastResult.components, diff: lastResult.diff, modification: motivo })
+      });
+      statusEl.className = 'approval-status approved';
+      statusEl.textContent = '✏️ Modificación registrada en KB';
+      document.querySelectorAll('.approval-actions button').forEach(function(b) { b.disabled = true; });
+    } catch(e) {
+      statusEl.className = 'approval-status rejected';
+      statusEl.textContent = '✗ Error: ' + e.message;
+    }
+  }
+
+  async function rejectVariant() {
+    if (!lastResult) return;
+    var motivo = prompt('¿Por qué rechazas esta propuesta? (opcional)');
+    var statusEl = document.getElementById('approvalStatus');
+    statusEl.style.display = 'block';
+    try {
+      var url = document.getElementById('engineUrl').value;
+      var apiKey = document.getElementById('apiKey').value;
+      await fetch(url + '/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+        body: JSON.stringify({ action: 'reject', screen_id: lastResult.screen_id, brief: lastResult.brief, base_id: lastResult.base_id, reason: motivo || '' })
+      });
+      statusEl.className = 'approval-status rejected';
+      statusEl.textContent = '✗ Propuesta rechazada — motivo registrado en KB';
+      document.querySelectorAll('.approval-actions button').forEach(function(b) { b.disabled = true; });
+    } catch(e) {
+      statusEl.className = 'approval-status rejected';
+      statusEl.textContent = '✗ Error: ' + e.message;
+    }
+  }
+
 </script>
 </body>
 </html>
