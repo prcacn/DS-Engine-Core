@@ -371,6 +371,30 @@ select:focus { outline: none; border-color: var(--accent); }
   display: none; padding: 3px 0;
 }
 .html-copy-msg.visible { display: block; }
+.studio-preview-wrap {
+  border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden; background: #fff;
+  display: none; flex-direction: column;
+}
+.studio-preview-wrap.visible { display: flex; }
+.studio-preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.studio-preview-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-dim);
+}
+.studio-preview-copy {
+  font-size: 10px; color: var(--accent); cursor: pointer;
+  background: none; border: none; font-family: var(--font);
+  padding: 0;
+}
+.studio-preview-frame {
+  width: 100%; height: 240px; border: none;
+  background: #f8fafc;
+}
 .export-badge {
   position: absolute; top: 10px; right: 10px;
   font-size: 9px; font-weight: 700;
@@ -1229,10 +1253,56 @@ async function runValidation(components, frameId) {
     state.studioValidation = { ...data, components, frameId, brief };
     renderStudioResult(data);
     setStatus('studioStatus', '');
+
+    // ── Llamar a /render para generar preview HTML ─────────────────
+    loadStudioPreview(brief, state.studioValidation?.components || []);
+
   } catch (e) {
     setStatus('studioStatus', 'error', '✗ ' + e.message);
   } finally {
     document.getElementById('btnValidate').disabled = false;
+  }
+}
+
+// ── Cargar preview HTML en el iframe del Studio ─────────────────────
+async function loadStudioPreview(brief, components) {
+  const wrap  = document.getElementById('studioPreviewWrap');
+  const frame = document.getElementById('studioPreviewFrame');
+  const copy  = document.getElementById('studioPreviewCopy');
+  if (!wrap || !frame) return;
+
+  wrap.classList.remove('visible');
+  let generatedHtml = '';
+
+  try {
+    const r = await fetch(ENGINE_URL + '/render', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
+      body: JSON.stringify({ brief }),
+    });
+    const data = await r.json();
+    if (data.error || !data.html) return;
+
+    generatedHtml = data.html;
+
+    // Inyectar HTML en el iframe de forma segura (sin src, via srcdoc)
+    frame.srcdoc = `<!DOCTYPE html><html><head>
+      <meta charset="utf-8">
+      <style>body{margin:0;overflow:hidden;}</style>
+    </head><body>${generatedHtml}</body></html>`;
+
+    wrap.classList.add('visible');
+
+    // Handler copiar HTML
+    if (copy) {
+      copy.onclick = async () => {
+        await navigator.clipboard.writeText(generatedHtml);
+        copy.textContent = '✓ Copiado';
+        setTimeout(() => { copy.textContent = 'Copiar HTML'; }, 2000);
+      };
+    }
+  } catch (e) {
+    console.warn('[Studio] preview error:', e.message);
   }
 }
 
