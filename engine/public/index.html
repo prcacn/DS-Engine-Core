@@ -109,7 +109,8 @@
     .sc-card-right { display: flex; align-items: center; gap: 8px; }
     .sc-card-value { font-size: 14px; font-weight: 700; color: #0f172a; font-family: var(--sans); }
     .sc-card-chevron { color: #94a3b8; font-size: 14px; }
-    .sc-form { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; background: white; }
+    .sc-form { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; background: white; }
+    .sc-form-group { display: flex; flex-direction: column; gap: 8px; }
     .sc-input-wrap { display: flex; flex-direction: column; gap: 4px; }
     .sc-input-label { font-size: 11px; font-weight: 500; color: #64748b; font-family: var(--sans); }
     .sc-input-field { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #94a3b8; font-family: var(--sans); }
@@ -845,8 +846,9 @@
         return '<div class="sc-card-item"><div class="sc-card-left"><div class="sc-card-title">'+t('title',domain+' · '+(ci+1))+'</div><div class="sc-card-subtitle">'+t('subtitle','Actualizado hoy')+'</div></div><div class="sc-card-right">'+(p.badge_label?'<span style="background:#f0fdf4;color:#16a34a;font-size:10px;font-family:var(--sans);font-weight:500;padding:2px 8px;border-radius:8px">'+p.badge_label+'</span>':'')+'<div class="sc-card-value" style="color:'+cc+'">'+cv+'</div><div class="sc-card-chevron">›</div></div></div>';
 
       case 'input-text':
-        var isErr = v==='error', isPass = v==='password';
-        return '<div class="sc-form"><div class="sc-input-wrap">'
+        var isErr = v==='error', isPass = v==='password', isNum = v==='numeric';
+        // Sin wrapper sc-form propio — el spacing lo gestiona el contenedor de grupo
+        return '<div class="sc-input-wrap" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">'
           +'<div class="sc-input-label" style="'+(isErr?'color:#dc2626':'')+'">'+t('label','Campo')+'</div>'
           +'<div class="sc-input-field" style="'+(isErr?'border-color:#dc2626;background:#fff5f5':'')+'">'+( isPass?'••••••••':t('placeholder','Introduce el valor...'))+'</div>'
           +(p.helper_text?'<div style="font-size:10px;font-family:var(--sans);color:'+(isErr?'#dc2626':'#94a3b8')+';margin-top:3px">'+p.helper_text+'</div>':'')
