@@ -1,79 +1,87 @@
-# DS IA-Ready — Engine Core v1.0
+# DS IA-Ready Engine — v2.0 · Level 5.0
 
-API REST que genera planes de composición de pantallas a partir de un brief en lenguaje natural. Lee los contratos, patterns y registry del Simple DS y devuelve un JSON estructurado con los componentes necesarios.
+> Motor que convierte descripciones en lenguaje natural en pantallas de producto gobernadas por el Design System.
+> La IA propone. El diseñador valida. El sistema aprende.
 
-## Requisitos
-
-- Node.js 18+
-- El repo `simple` con los contratos del DS
-
-## Instalación
-
-```bash
-cd engine
-npm install
-cp .env.example .env
-# Edita .env y ajusta DS_REPO_PATH a tu ruta local
-```
-
-## Arrancar el servidor
-
-```bash
-npm run dev
-```
-
-El servidor arranca en `http://localhost:3000`
-
-## Endpoints
-
-### Health check
-```
-GET /health
-```
-Sin autenticación. Verifica que el servidor está vivo.
-
-### Generar pantalla
-```
-POST /generate
-Header: X-API-Key: dev-key-local-2025
-Body: { "brief": "pantalla de listado de fondos con filtros" }
-```
-
-### Validar componentes
-```
-POST /validate
-Header: X-API-Key: dev-key-local-2025
-Body: { "components": [...], "pattern": "lista-con-filtros" }
-```
-
-### Buscar en registry
-```
-GET /registry/search?q=item de lista con precio
-Header: X-API-Key: dev-key-local-2025
-```
-
-### Listar componentes
-```
-GET /registry/components
-Header: X-API-Key: dev-key-local-2025
-```
-
-## Estructura
+## Arquitectura
 
 ```
 engine/
-├── src/
-│   ├── api/
-│   │   ├── routes/        → generate.js, validate.js, registry.js
-│   │   └── middleware/    → auth.js, errorHandler.js
-│   ├── loaders/           → contractLoader.js, patternLoader.js, registryLoader.js
-│   └── server.js
-├── .env.example
-└── package.json
+├── global-rules/          → Reglas que aplican a TODAS las pantallas
+│   ├── navigation.md      → Jerarquía L0/L1/L2/L3 — fuente de verdad ejecutable
+│   └── singleton-rules.md → Singletons, incompatibilidades, orden de composición
+│
+├── composition-patterns/  → Bloques reutilizables entre patrones
+│   └── form-block.md      → Agrupación de campos con spacing DS
+│
+├── patterns/              → Tipos de pantalla (14 patrones)
+│   ├── dashboard.md       · login.md       · registro.md
+│   ├── detalle.md         · confirmacion.md · lista-con-filtros.md
+│   ├── edicion-perfil.md  · formulario-producto.md · formulario-default.md
+│   ├── onboarding.md      · perfil-usuario.md · error-estado.md
+│   ├── notificaciones.md  · transferencia-bancaria.md (4 pasos)
+│
+├── contracts/             → Especificación de cada componente (18 componentes)
+├── examples/              → Pantallas aprobadas como ground truth (5 bases)
+├── templates/             → Templates de generación rápida
+│
+└── src/
+    ├── core/
+    │   ├── navigationMaps.js      → INTENT_TO_LEVEL · INTENT_TO_PATTERN (fuente única)
+    │   ├── globalRulesParser.js   → Lee global-rules/*.md como código ejecutable
+    │   ├── briefEnricher.js       → Level 4.0 — KB antes de parseIntent
+    │   ├── intentParser.js        → Clasifica briefs con Claude API
+    │   ├── compositionBuilder.js  → buildCompositionPlan + helpers
+    │   ├── kbGovernance.js        → applyKBRules + applyFinancialVariant
+    │   ├── confidenceScore.js     → Score 4 señales (CONTRACT/INTENT/PRECEDENT/RULES)
+    │   ├── variantParser.js       → Level 5.1 — detecta variantes de bases aprobadas
+    │   ├── deltaEngine.js         → Level 5.2 — aplica delta sobre base aprobada
+    │   ├── knowledgeBase.js       → Interfaz con Pinecone (save/search/remove)
+    │   └── briefEnricher.js       → Enriquece brief con contexto KB
+    │
+    ├── agents/
+    │   ├── orchestrator.js        → Corre UXWriter + UXSpec en paralelo
+    │   ├── uxWriterAgent.js       → Genera copy real por componente
+    │   └── uxSpecAgent.js         → Ajusta variantes y estados
+    │
+    ├── api/routes/
+    │   ├── generate.js            → POST /generate (pantalla única + multiscreen)
+    │   ├── approve.js             → POST /approve (Level 5.4 — ApprovalLoop)
+    │   ├── validate.js            → POST /validate (Studio — score de pantalla)
+    │   ├── knowledge.js           → GET/POST /knowledge (gestión KB)
+    │   └── generate-doc.js        → POST /generate-doc
+    │
+    └── loaders/
+        ├── contractLoader.js      → Carga contratos desde /contracts/*.md
+        ├── patternLoader.js       → Carga patrones desde /patterns/*.md
+        └── templateLoader.js      → Carga templates desde /templates/*.md
 ```
 
-## Estado actual
+## Flujo de generación
 
-- **Fase 1** ✅ — Servidor funcional con detección de pattern por keywords
-- **Fase 2** 🔜 — Intent Parser con Claude API (LLM)
-- **Fase 3** 🔜 — Confidence Score calibrado + Feedback loop
+```
+Brief → enrichBriefWithKnowledge() → parseIntent() → variantParser.detect()
+  ↓ (si variante)                    ↓ (si nueva)
+  deltaEngine.apply()                buildCompositionPlan()
+  → propuesta con diff               → runAgents() [UXWriter + UXSpec paralelo]
+                                     → applyKBRules()
+                                     → calculateScore()
+                                     → JSON response
+```
+
+## Knowledge Base (Pinecone)
+
+23 reglas fintech genéricas organizadas en 5 bloques:
+- **Normativa regulatoria** — CNMV, KYC, PSD2, MiFID II, formatos geográficos
+- **Errores históricos** — Q1/Q2/Q3 2023, lecciones aprendidas del equipo
+- **Diferencias geográficas** — España, México, Colombia
+- **Patrones de producto financiero** — transferencias, fondos, onboarding
+- **Voz y tono** — copy de botones, empty states, errores
+
+## Deploy
+
+```bash
+cd engine && railway up
+```
+
+Variables requeridas: `ANTHROPIC_API_KEY`, `PINECONE_API_KEY`, `PINECONE_HOST`
