@@ -413,6 +413,9 @@ function paintComponent(parent, comp, x, y, screenW) {
     if (margin > 0 && name !== 'button-primary' && name !== 'button-secondary') {
       if ('cornerRadius' in clone) clone.cornerRadius = 12;
     }
+    // Nombrar el layer con el nombre canónico del componente
+    // Esto permite que handleGetSelection lo identifique siempre correctamente
+    clone.name = name;
     parent.appendChild(clone);
 
     // Aplicar props de texto
