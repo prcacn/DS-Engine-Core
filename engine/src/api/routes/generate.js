@@ -95,7 +95,7 @@ const MULTISCREEN_FLOWS = {
         { component: 'input-text',        variant: 'default',    props: { label: 'IBAN / CLABE', helper_text: 'ES + 22 caracteres · MX 18 dígitos', required: true }, gap_after: DS_GAP.md },
         { component: 'input-text',        variant: 'numeric',    props: { label: 'Importe', placeholder: '0,00', required: true }, gap_after: DS_GAP.md },
         { component: 'input-text',        variant: 'default',    props: { label: 'Concepto', required: false }, gap_after: DS_GAP.xl },
-        { component: 'button-primary',    variant: 'default',    props: { label: 'Revisar transferencia' }, position: 'sticky-bottom' },
+        { component: 'button-primary',    variant: 'default',    props: { label: 'Continuar' }, position: 'sticky-bottom' },
       ],
       optional_components: [
         { component: 'notification-banner', variant: 'warning', props: { message: 'Has alcanzado el 80% de tu límite diario' } },
