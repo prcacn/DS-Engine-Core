@@ -102,16 +102,19 @@ BASES APROBADAS DISPONIBLES:
 BRIEF:
 "{BRIEF}"
 
-CRITERIOS para considerar que es una VARIANTE:
-- El brief menciona explícitamente una base existente ("versión de login para...", "como el dashboard pero...")
-- El brief describe una modificación concreta de algo ya aprobado ("añadir campo X", "cambiar el filtro de Y")
-- El dominio y tipo de pantalla coinciden claramente con una base aprobada
-- El brief pide una adaptación geográfica o de producto de algo ya existente
+CRITERIOS ESTRICTOS para considerar que es una VARIANTE (TODOS deben cumplirse):
+1. El brief menciona EXPLÍCITAMENTE la base: "versión de login", "como el dashboard aprobado", "igual que X pero..."
+2. El brief describe UN CAMBIO CONCRETO respecto a esa base: "con teléfono en lugar de email", "añadir campo X", "sin filtros"
+3. El dominio y tipo de pantalla coinciden claramente con UNA base específica
+4. NO es un brief genérico como "generar un dashboard" o "pantalla de login" sin más contexto
 
-CRITERIOS para considerar que es NUEVA:
-- El brief describe una pantalla que no existe en las bases
+CRITERIOS para considerar que es NUEVA (cualquiera de estos es suficiente):
+- El brief es genérico sin referenciar una base existente ("generar un dashboard", "pantalla de login")
+- El brief no especifica qué cambia respecto a algo existente
 - El tipo de pantalla o dominio es diferente a todas las bases
-- El brief es genérico sin referencia a algo existente
+- El brief podría aplicarse a cualquier implementación, no a una específica
+
+IMPORTANTE: La duda siempre va hacia NUEVA. Solo marca is_variant=true si hay certeza clara.
 
 Responde ÚNICAMENTE con JSON válido:
 {
@@ -160,7 +163,11 @@ async function detect(brief, examples) {
     const clean  = raw.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
 
-    if (result.is_variant && result.base_id) {
+    // Umbral mínimo de confianza — por debajo de 0.80 se trata como pantalla nueva
+    // Evita falsos positivos en briefs genéricos que coinciden superficialmente con una base
+    const MIN_VARIANT_CONFIDENCE = 0.80;
+
+    if (result.is_variant && result.base_id && result.confidence >= MIN_VARIANT_CONFIDENCE) {
       const base = approved.find(e => e.id === result.base_id);
       if (!base) {
         console.log('  ⚠ [VariantParser] base_id no encontrado:', result.base_id);
@@ -185,7 +192,11 @@ async function detect(brief, examples) {
       };
     }
 
-    console.log('  → [VariantParser] NUEVA pantalla | conf:', result.confidence, '|', result.reasoning);
+    if (result.is_variant && result.confidence < MIN_VARIANT_CONFIDENCE) {
+      console.log('  → [VariantParser] Confianza insuficiente (' + result.confidence + ' < 0.80) — flujo normal');
+    } else {
+      console.log('  → [VariantParser] NUEVA pantalla | conf:', result.confidence, '|', result.reasoning);
+    }
     return { isVariant: false, baseId: null, base: null, delta: null, reasoning: result.reasoning };
 
   } catch (err) {
