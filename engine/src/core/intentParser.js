@@ -4,6 +4,7 @@
 // v1.1 — Añade navigation_level al output (L0/L1/L2/L3) según global-rules/navigation.md
 
 const Anthropic = require('@anthropic-ai/sdk');
+const { INTENT_TO_LEVEL: NAV_LEVEL_MAP, INTENT_TO_PATTERN } = require('./navigationMaps');
 
 let client = null;
 
@@ -17,24 +18,7 @@ function getClient() {
   return client;
 }
 
-// Mapa canónico de nivel de navegación por intent_type
-// Fuente de verdad: engine/global-rules/navigation.md
-const NAV_LEVEL_MAP = {
-  'dashboard':             'L0',
-  'onboarding':            'L0',
-  'lista-con-filtros':     'L1',
-  'notificaciones':        'L1',
-  'perfil-usuario':        'L1',
-  'detalle':               'L2',
-  'login':                 'L2',
-  'registro':              'L2',
-  'edicion-perfil':        'L2',
-  'formulario-producto':   'L2',
-  'formulario-default':    'L2',
-  'transferencia-bancaria':'L2',
-  'confirmacion':          'L3',
-  'error-estado':          'L3',
-};
+// NAV_LEVEL_MAP importado desde navigationMaps.js
 
 // Variante obligatoria del navigation-header por nivel
 // Fuente de verdad: engine/contracts/navigation-header.md
@@ -334,4 +318,4 @@ function fallbackParse(brief) {
   return enrichWithNavigation(baseIntent);
 }
 
-module.exports = { parseIntent, NAV_LEVEL_MAP, HEADER_VARIANT_MAP };
+module.exports = { parseIntent };
