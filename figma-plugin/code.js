@@ -450,10 +450,20 @@ function applyTextProps(node, props) {
 
 // ─── GET SELECTION — para Studio/Validar ──────────────────────────────────────
 
+// Mapa inverso: nodeId → nombre canónico
+// También incluye IDs de componentSets padre para variantes
+var COMPONENT_ID_TO_NAME = null;
+
+function buildIdMap() {
+  if (COMPONENT_ID_TO_NAME) return COMPONENT_ID_TO_NAME;
+  COMPONENT_ID_TO_NAME = {};
+  Object.keys(COMPONENT_NODE_IDS).forEach(function(name) {
+    COMPONENT_ID_TO_NAME[COMPONENT_NODE_IDS[name]] = name;
+  });
+  return COMPONENT_ID_TO_NAME;
+}
+
 function normalizeCompName(str) {
-  // Normaliza nombres de componentes para matching robusto
-  // "Card Item / Financial" → "card-item/financial"
-  // "navigation header" → "navigation-header"
   return (str || '')
     .toLowerCase()
     .replace(/\s+/g, '-')
@@ -461,21 +471,20 @@ function normalizeCompName(str) {
     .replace(/-+/g, '-');
 }
 
-function matchComponentName(rawName, knownNames) {
+function matchByName(rawName, knownNames) {
   var norm = normalizeCompName(rawName);
-  // 1. Match exacto
-  var exact = knownNames.find(function(k) { return k === norm; });
+  // Ignorar nombres que son solo variantes: "State=Default", "Type=Dashboard"
+  if (norm.startsWith('state=') || norm.startsWith('type=') || norm === 'default') return null;
+  var exact    = knownNames.find(function(k) { return k === norm; });
   if (exact) return exact;
-  // 2. El nombre del componente contiene la clave canónica
   var contains = knownNames.find(function(k) { return norm.includes(k); });
   if (contains) return contains;
-  // 3. La clave canónica contiene el nombre
-  var reverse = knownNames.find(function(k) { return k.includes(norm); });
+  var reverse  = knownNames.find(function(k) { return k.includes(norm) && norm.length > 4; });
   if (reverse) return reverse;
-  // 4. Match parcial — primer segmento antes de '/' o ' '
-  var base = norm.split('/')[0].split(' ')[0];
-  if (base.length > 3) {
-    var partial = knownNames.find(function(k) { return k.startsWith(base); });
+  // Match por primer segmento antes de '/'
+  var base = norm.split('/')[0];
+  if (base.length > 4) {
+    var partial = knownNames.find(function(k) { return k.startsWith(base) || base.startsWith(k); });
     if (partial) return partial;
   }
   return null;
@@ -495,62 +504,68 @@ function handleGetSelection() {
     return;
   }
 
-  // IDs canónicos invertidos para lookup rápido: nodeId → componentName
-  var NODE_ID_TO_NAME = {};
-  Object.keys(COMPONENT_NODE_IDS).forEach(function(name) {
-    NODE_ID_TO_NAME[COMPONENT_NODE_IDS[name]] = name;
-  });
-
-  var components = [];
+  var idMap      = buildIdMap();
   var knownNames = Object.keys(COMPONENT_NODE_IDS);
+  var components = [];
 
   frame.children.forEach(function(child, index) {
-    var isInstance = child.type === 'INSTANCE';
-    var detached   = false;
-    var matched    = null;
+    var matched  = null;
+    var detached = false;
 
-    if (isInstance) {
-      var mainComp = child.mainComponent;
-      if (mainComp) {
-        // 1. Match por nodeId exacto del mainComponent
-        matched = NODE_ID_TO_NAME[mainComp.id] || null;
+    // ESTRATEGIA 1: match por nodeId del propio nodo
+    // Funciona cuando el engine clona el nodo maestro directamente (type=COMPONENT)
+    matched = idMap[child.id] || null;
 
-        // 2. Match por nodeId del componentSet (variantes)
-        if (!matched && mainComp.parent && mainComp.parent.type === 'COMPONENT_SET') {
-          matched = NODE_ID_TO_NAME[mainComp.parent.id] || null;
+    // ESTRATEGIA 2: es INSTANCE — leer mainComponent
+    if (!matched && child.type === 'INSTANCE') {
+      var mc = child.mainComponent;
+      if (mc) {
+        // Por ID del mainComponent
+        matched = idMap[mc.id] || null;
+        // Por ID del componentSet padre (variantes)
+        if (!matched && mc.parent && mc.parent.type === 'COMPONENT_SET') {
+          matched = idMap[mc.parent.id] || null;
         }
-
-        // 3. Match por nombre normalizado del mainComponent
-        if (!matched) {
-          matched = matchComponentName(mainComp.name, knownNames);
-        }
-
-        // 4. Match por nombre del componentSet si existe
-        if (!matched && mainComp.parent && mainComp.parent.type === 'COMPONENT_SET') {
-          matched = matchComponentName(mainComp.parent.name, knownNames);
+        // Por nombre del mainComponent
+        if (!matched) matched = matchByName(mc.name, knownNames);
+        // Por nombre del componentSet
+        if (!matched && mc.parent && mc.parent.type === 'COMPONENT_SET') {
+          matched = matchByName(mc.parent.name, knownNames);
         }
       }
     }
 
-    // 5. Fallback: nombre del layer del frame hijo
+    // ESTRATEGIA 3: es COMPONENT clonado — buscar por nombre del layer
+    // Los clones directos tienen el nombre de la variante ("Type=Dashboard")
+    // pero el parent del nodo original tiene el nombre del componentSet
+    if (!matched && child.type === 'COMPONENT') {
+      // Intentar por nombre del layer ignorando variantes puras
+      matched = matchByName(child.name, knownNames);
+      // Si el nombre es solo una variante (State=Default), buscar por posición
+      // usando el nodeId del padre si está disponible
+      if (!matched && child.parent) {
+        matched = matchByName(child.parent.name, knownNames);
+      }
+    }
+
+    // ESTRATEGIA 4: fallback por nombre del layer (cubre FRAME, GROUP detacheados)
     if (!matched) {
-      matched = matchComponentName(child.name, knownNames);
-      if (matched && !isInstance) {
+      matched = matchByName(child.name, knownNames);
+      if (matched && child.type !== 'INSTANCE' && child.type !== 'COMPONENT') {
         detached = true;
       }
     }
 
     if (matched) {
       components.push({
-        component: matched,
-        order:      index + 1,
-        node_id:    COMPONENT_NODE_IDS[matched],
-        is_instance: isInstance,
+        component:   matched,
+        order:       index + 1,
+        node_id:     COMPONENT_NODE_IDS[matched],
+        is_instance: child.type === 'INSTANCE' || child.type === 'COMPONENT',
         detached:    detached,
       });
     } else {
-      // Registrar no reconocidos para debug
-      console.warn('[Studio] Componente no reconocido:', child.name, child.type);
+      console.warn('[Studio] Sin match:', child.type, child.name, child.id);
     }
   });
 
