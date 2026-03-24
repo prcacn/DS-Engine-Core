@@ -18,6 +18,7 @@ const _FALLBACK_LEVEL = {
   'edicion-perfil':         'L2',
   'formulario-producto':    'L2',
   'formulario-default':     'L2',
+  'lista-noticias':             'L1',
   'transferencia-bancaria': 'L2',
   'confirmacion':           'L3',
   'error-estado':           'L3',
@@ -38,6 +39,7 @@ const INTENT_TO_PATTERN = {
   'perfil-usuario':         'perfil-usuario',
   'error-estado':           'error-estado',
   'notificaciones':         'notificaciones',
+  'lista-noticias':        'lista-noticias',
   'transferencia-bancaria': 'transferencia-bancaria',
 };
 
