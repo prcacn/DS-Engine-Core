@@ -167,10 +167,19 @@ function resolveExclusivity(components, brief) {
   const b = brief.toLowerCase();
   const hasEmpty = components.some(c => c.component === 'empty-state');
   const hasCard  = components.some(c => c.component === 'card-item');
+
   if (hasEmpty && hasCard) {
-    return b.includes('vacío') || b.includes('sin resultados')
-      ? components.filter(c => c.component !== 'card-item')
-      : components.filter(c => c.component !== 'empty-state');
+    // Si el brief pide vacío/sin resultados → mantener empty-state, eliminar cards
+    if (b.includes('vacío') || b.includes('sin resultados') || b.includes('empty')) {
+      return components.filter(c => c.component !== 'card-item');
+    }
+    // Si el brief especifica una cantidad de cards explícita → eliminar empty-state
+    const quantities = extractQuantities(brief);
+    if (quantities['card-item'] && quantities['card-item'] > 0) {
+      return components.filter(c => c.component !== 'empty-state');
+    }
+    // Default: si hay cards en el patrón, eliminar empty-state
+    return components.filter(c => c.component !== 'empty-state');
   }
   return components;
 }
@@ -189,7 +198,12 @@ function buildCompositionPlan(brief, intent, patternData, contracts) {
     if (!contract) return;
     let count = 1;
     if (!SINGLETON_COMPONENTS.includes(req.component) && quantities[req.component]) {
-      count = quantities[req.component];
+      // Cantidad explícita en el brief — tomar como valor exacto, cap a 20
+      count = Math.min(quantities[req.component], 20);
+    } else if (!SINGLETON_COMPONENTS.includes(req.component) && req.component === 'card-item') {
+      // Sin cantidad explícita: usar estimated_items del intent si existe, sino 5 por defecto
+      const estimated = intent.constraints && intent.constraints.estimated_items;
+      count = estimated ? Math.min(estimated, 20) : 5;
     }
     for (let i = 0; i < count; i++) {
       components.push({
@@ -324,3 +338,4 @@ module.exports = {
   resolveExclusivity,
   extractQuantities,
 };
+
