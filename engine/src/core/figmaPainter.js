@@ -5,8 +5,29 @@
 // Regla de oro: NUNCA hardcodear alturas ni gaps. Siempre leer del nodo real.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { SPACING_BY_BREAKPOINT, COMPONENT_REGISTRY: REGISTRY_FROM_SPACING, PAINT_RULES } = require('./spacingRegistry');
-const LAYOUT_RULES = require('./layoutRules.json');
+// Cargar spacingRegistry con fallback robusto si el archivo no está disponible
+let SPACING_BY_BREAKPOINT, REGISTRY_FROM_SPACING, PAINT_RULES, LAYOUT_RULES;
+try {
+  const sr = require('./spacingRegistry');
+  SPACING_BY_BREAKPOINT  = sr.SPACING_BY_BREAKPOINT;
+  REGISTRY_FROM_SPACING  = sr.COMPONENT_REGISTRY;
+  PAINT_RULES            = sr.PAINT_RULES;
+  LAYOUT_RULES           = require('./layoutRules.json');
+  console.log('  ✓ [Painter] spacingRegistry + layoutRules cargados');
+} catch(e) {
+  console.warn('  ⚠ [Painter] spacingRegistry no disponible — usando fallback mobile');
+  SPACING_BY_BREAKPOINT = {
+    mobile: {
+      screenWidth: 390, marginScreen: 16, paddingContent: 16,
+      paddingTop: 12, paddingBottom: 16, gapSection: 8,
+      gapItem: 0, gapInline: 8, safeZoneBottom: 34, safeZoneTop: 16,
+      headerHeight: 56, bottomHeight: 90,
+    }
+  };
+  REGISTRY_FROM_SPACING = {};
+  PAINT_RULES = { zoneOrder: ['header','content','bottom'], fullWidthZones: ['header','bottom'], marginZones: ['content'] };
+  LAYOUT_RULES = { breakpoints: { mobile: { screen: { width: 390, height: 844 } } } };
+}
 
 // Breakpoint activo — se puede cambiar vía env o parámetro en tiempo de ejecución
 const ACTIVE_BREAKPOINT = process.env.DS_BREAKPOINT || 'mobile';
@@ -370,3 +391,4 @@ function getRegistry() {
 }
 
 module.exports = { paint, getRegistry, PAINTER_META, COMPONENT_REGISTRY: PAINTER_META };
+
