@@ -88,6 +88,37 @@ function buildSmartProps(contract, intent, componentName) {
   if (componentName === 'button-primary' && intent.constraints && intent.constraints.is_destructive) {
     props.label = 'Confirmar';
   }
+
+  // card-item: poblar props con contexto semántico del brief
+  if (componentName === 'card-item') {
+    const domain = (intent.domain || '').toLowerCase();
+    const b      = (intent._brief || '').toLowerCase();
+    const isFinancial = ['fondos', 'transacciones', 'cartera', 'inversión', 'mercado', 'acciones'].some(k => domain.includes(k) || b.includes(k));
+    const isNews      = ['noticias', 'artículos', 'publicaciones', 'novedades', 'contenido'].some(k => b.includes(k));
+    if (isNews) {
+      props.title    = 'Noticia financiera · ' + (intent.domain || 'Mercados');
+      props.subtitle = 'Hoy · Actualidad';
+      props.value    = '';
+    } else if (isFinancial) {
+      props.title    = intent.domain ? intent.domain.charAt(0).toUpperCase() + intent.domain.slice(1) + ' · Elemento' : 'Elemento';
+      props.subtitle = 'Actualizado hoy';
+    }
+  }
+
+  // card-composition: resolver slots según contexto del brief
+  if (componentName === 'card-composition') {
+    const b = (intent._brief || '').toLowerCase();
+    const isNews = ['noticias', 'artículos', 'publicaciones', 'novedades'].some(k => b.includes(k));
+    if (isNews) {
+      props.slot_variant   = 'card-media';
+      props.header_title   = 'Titular de la noticia';
+      props.content_type   = 'image+text';
+      props.content_text   = 'Resumen de la noticia financiera más reciente';
+      props.action_type    = 'link';
+      props.link_label     = 'Leer más →';
+    }
+  }
+
   return props;
 }
 
@@ -148,6 +179,8 @@ function resolveExclusivity(components, brief) {
 function buildCompositionPlan(brief, intent, patternData, contracts) {
   const components = [];
   const quantities = extractQuantities(brief);
+  // Pasar el brief al intent para que buildSmartProps pueda usarlo
+  intent._brief = brief;
   const SINGLETON_COMPONENTS = ['navigation-header', 'filter-bar', 'modal-bottom-sheet', 'tab-bar'];
   let order = 1;
 
