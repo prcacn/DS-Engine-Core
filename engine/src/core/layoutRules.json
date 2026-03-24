@@ -1,0 +1,178 @@
+{
+  "_meta": {
+    "source": "Figma — Simple DS · Spacing page",
+    "figmaFileKey": "aMiE3zUmsF6QtqycDarsqi",
+    "templates": {
+      "mobile":  "218:2437",
+      "tablet":  "218:2464",
+      "desktop": "218:2495"
+    },
+    "variableCollections": {
+      "Spacing": "VariableCollectionId:22:663",
+      "Grid":    "VariableCollectionId:170:2624"
+    },
+    "modes": {
+      "mobile":  { "Spacing": "22:10",  "Grid": "170:0" },
+      "tablet":  { "Spacing": "218:0",  "Grid": "218:2" },
+      "desktop": { "Spacing": "218:1",  "Grid": "218:3" }
+    }
+  },
+
+  "breakpoints": {
+    "mobile": {
+      "screen": { "width": 390, "height": 844 },
+      "grid": {
+        "columns":     4,
+        "margin":      16,
+        "gutter":      8,
+        "columnWidth": 84,
+        "token_margin":  "Spacing/Padding/Horizontal/MD",
+        "token_gutter":  "Spacing/Gap/SM"
+      },
+      "zones": {
+        "header": {
+          "height":    56,
+          "component": "navigation-header",
+          "paddingH":  16,
+          "token_paddingH": "Spacing/Padding/Horizontal/MD"
+        },
+        "content": {
+          "height":       "fill",
+          "paddingH":     16,
+          "paddingTop":   12,
+          "paddingBottom": 16,
+          "gapSection":   8,
+          "token_paddingH":      "Spacing/Padding/Horizontal/MD",
+          "token_paddingTop":    "Spacing/Padding/Vertical/MD",
+          "token_paddingBottom": "Spacing/Padding/Horizontal/MD",
+          "token_gapSection":    "Spacing/Gap/MD"
+        },
+        "bottom": {
+          "height":    90,
+          "tabBar":    56,
+          "safeZone":  34,
+          "component": "tab-bar",
+          "token_safeZone": "Grid/Safe Zone/Bottom"
+        }
+      },
+      "spacing": {
+        "Padding/Horizontal/SM": 8,
+        "Padding/Horizontal/MD": 16,
+        "Padding/Horizontal/LG": 24,
+        "Padding/Vertical/XS":   2,
+        "Padding/Vertical/SM":   8,
+        "Padding/Vertical/MD":   12,
+        "Padding/Vertical/LG":   24,
+        "Gap/XS":  2,
+        "Gap/SM":  4,
+        "Gap/MD":  8,
+        "Gap/LG":  12,
+        "Gap/XL":  16
+      }
+    },
+
+    "tablet": {
+      "screen": { "width": 768, "height": 1024 },
+      "grid": {
+        "columns":     8,
+        "margin":      24,
+        "gutter":      16,
+        "columnWidth": 72,
+        "token_margin":  "Spacing/Padding/Horizontal/LG",
+        "token_gutter":  "Spacing/Gap/MD"
+      },
+      "zones": {
+        "header": {
+          "height":    64,
+          "component": "navigation-header",
+          "paddingH":  24,
+          "token_paddingH": "Spacing/Padding/Horizontal/LG"
+        },
+        "content": {
+          "height":       "fill",
+          "paddingH":     24,
+          "paddingTop":   16,
+          "paddingBottom": 20,
+          "gapSection":   12,
+          "token_paddingH":      "Spacing/Padding/Horizontal/LG",
+          "token_paddingTop":    "Spacing/Padding/Vertical/MD",
+          "token_paddingBottom": "Spacing/Padding/Horizontal/LG",
+          "token_gapSection":    "Spacing/Gap/MD"
+        },
+        "bottom": {
+          "height":    76,
+          "tabBar":    56,
+          "safeZone":  20,
+          "component": "tab-bar",
+          "token_safeZone": "Grid/Safe Zone/Bottom"
+        }
+      },
+      "spacing": {
+        "Padding/Horizontal/SM": 12,
+        "Padding/Horizontal/MD": 20,
+        "Padding/Horizontal/LG": 32,
+        "Padding/Vertical/XS":   2,
+        "Padding/Vertical/SM":   8,
+        "Padding/Vertical/MD":   16,
+        "Padding/Vertical/LG":   28,
+        "Gap/XS":  2,
+        "Gap/SM":  4,
+        "Gap/MD":  12,
+        "Gap/LG":  16,
+        "Gap/XL":  20
+      }
+    },
+
+    "desktop": {
+      "screen": { "width": 1440, "height": 900 },
+      "grid": {
+        "columns":     12,
+        "margin":      40,
+        "gutter":      24,
+        "columnWidth": 88,
+        "token_margin":  "Spacing/Padding/Horizontal/LG",
+        "token_gutter":  "Spacing/Gap/LG"
+      },
+      "zones": {
+        "header": {
+          "height":    64,
+          "component": "navigation-header",
+          "paddingH":  40,
+          "token_paddingH": "Spacing/Padding/Horizontal/LG"
+        },
+        "content": {
+          "height":       "fill",
+          "paddingH":     40,
+          "paddingTop":   20,
+          "paddingBottom": 24,
+          "gapSection":   16,
+          "token_paddingH":      "Spacing/Padding/Horizontal/LG",
+          "token_paddingTop":    "Spacing/Padding/Vertical/MD",
+          "token_paddingBottom": "Spacing/Padding/Horizontal/LG",
+          "token_gapSection":    "Spacing/Gap/LG"
+        },
+        "bottom": {
+          "height":    56,
+          "tabBar":    56,
+          "safeZone":  0,
+          "component": "tab-bar",
+          "token_safeZone": "Grid/Safe Zone/Bottom"
+        }
+      },
+      "spacing": {
+        "Padding/Horizontal/SM": 16,
+        "Padding/Horizontal/MD": 24,
+        "Padding/Horizontal/LG": 40,
+        "Padding/Vertical/XS":   4,
+        "Padding/Vertical/SM":   12,
+        "Padding/Vertical/MD":   20,
+        "Padding/Vertical/LG":   32,
+        "Gap/XS":  4,
+        "Gap/SM":  8,
+        "Gap/MD":  16,
+        "Gap/LG":  20,
+        "Gap/XL":  24
+      }
+    }
+  }
+}
