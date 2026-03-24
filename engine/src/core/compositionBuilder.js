@@ -139,10 +139,11 @@ function resolveOptional(component, intent, brief) {
     // C1: tab-bar obligatorio en L0 (dashboard, onboarding autenticado) y L1 (listas raíz)
     // El engine infiere esto del nivel de navegación — el diseñador no necesita pedirlo
     'tab-bar': function() {
-      const level = INTENT_TO_LEVEL[intent.intent_type] || 'L2';
-      const L0_intents = ['dashboard'];
-      const L1_intents = ['lista-con-filtros', 'notificaciones', 'perfil-usuario'];
-      const include = L0_intents.includes(intent.intent_type) || L1_intents.includes(intent.intent_type);
+      // Usar el nivel real calculado por inferNavLevelFromBrief en generate.js
+      // intent.navigation_level se inyecta justo antes de llamar a buildCompositionPlan
+      const resolvedLevel = intent.navigation_level || 'L2';
+      // Tab-bar SOLO en L0 y L1 — nunca en L2 (sublistas) ni L3 (modales/confirmaciones)
+      const include = resolvedLevel === 'L0' || resolvedLevel === 'L1';
       return { include, confidence: include ? 0.95 : 0 };
     },
     'card-item':          function() { return { include: intent.intent_type === 'confirmacion', confidence: 0.75 }; },
@@ -185,7 +186,12 @@ function resolveExclusivity(components, brief) {
 }
 
 // ─── BUILD COMPOSITION PLAN (pantalla única) ──────────────────────────────────
-function buildCompositionPlan(brief, intent, patternData, contracts) {
+function buildCompositionPlan(brief, intent, patternData, contracts, options) {
+  // options.navLevel viene de generate.js vía inferNavLevelFromBrief
+  // Lo inyectamos en el intent para que resolveOptional lo use
+  if (options && options.navLevel) {
+    intent.navigation_level = options.navLevel;
+  }
   const components = [];
   const quantities = extractQuantities(brief);
   // Pasar el brief al intent para que buildSmartProps pueda usarlo
@@ -338,4 +344,5 @@ module.exports = {
   resolveExclusivity,
   extractQuantities,
 };
+
 
