@@ -1,7 +1,7 @@
 # badge
 
 ## Node ID en Figma
-20:800
+185:3902
 
 ## Component Set ID
 185:3902  ← COMPONENT_SET padre (no instanciar directamente)
