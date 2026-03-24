@@ -324,7 +324,7 @@ router.post('/', async function(req, res, next) {
       return res.status(404).json({ error: 'PatternNotFound', message: "Pattern '" + patternName + "' no encontrado" });
     }
 
-    const rawResult = buildCompositionPlan(brief, intent, patternData, contracts);
+    const rawResult = buildCompositionPlan(brief, intent, patternData, contracts, { navLevel });
     const rawComponents = rawResult.components;
     const compositionRules = rawResult.compositionRules;
     // ── AGENTES (UXWriter + UXSpec en paralelo) ──────────────────────────
@@ -378,6 +378,7 @@ router.post('/', async function(req, res, next) {
 });
 
 module.exports = router;
+
 
 
 
