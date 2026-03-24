@@ -37,7 +37,7 @@ const { applyKBRules, applyFinancialVariant } = require('../../core/kbGovernance
 // ── Loaders ───────────────────────────────────────────────────────────────────
 const { loadContracts }  = require('../../loaders/contractLoader');
 const { loadPatterns }   = require('../../loaders/patternLoader');
-const { findTemplate }   = require('../../loaders/templateLoader');
+const { findTemplate, buildCompositionFromSlots } = require('../../loaders/templateLoader');
 
 // ── Knowledge Base ────────────────────────────────────────────────────────────
 const { search: kbSearch } = require('../../core/knowledgeBase');
@@ -290,13 +290,20 @@ router.post('/', async function(req, res, next) {
     const hasErrorViolations = (intent.brief_violations || []).some(v => v.severity === 'error');
     const approvedTemplate = !hasErrorViolations ? findTemplate(intent.intent_type, brief) : null;
     if (approvedTemplate) {
-      console.log('  ✓ [template] Template aprobado encontrado: ' + approvedTemplate.id);
+      console.log('  ✓ [template] Template aprobado encontrado: ' + approvedTemplate.id + (approvedTemplate.has_slots ? ' (con slots)' : ''));
       const kbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(err => { console.error('  ✗ [KB] kbSearch error:', err.message); return []; });
+
+      // Si el template tiene slots → construir desde slots + aplicar overrides del brief
+      // Si no → usar los componentes directamente (templates legacy)
+      const templateComponents = approvedTemplate.has_slots
+        ? buildCompositionFromSlots(approvedTemplate, brief, quantities)
+        : approvedTemplate.components;
+
       const confidence = calculateScore({
-        pattern:   patternName,
-        components: approvedTemplate.components,
+        pattern:    patternName,
+        components: templateComponents,
         intent,
-        contracts: Object.values(contracts),
+        contracts:  Object.values(contracts),
       });
       return res.json({
         screen_id:        'gen_' + Date.now(),
@@ -306,11 +313,12 @@ router.post('/', async function(req, res, next) {
         flow_type:        'single',
         from_template:    true,
         template_id:      approvedTemplate.id,
+        has_slots:        approvedTemplate.has_slots || false,
         intent,
         status:           confidence.status,
         confidence,
         violations:       [],
-        components:       approvedTemplate.components,
+        components:       templateComponents,
         missing_components: [],
         kb_rules:         kbRules,
         kb_changes:       [],
