@@ -1,7 +1,7 @@
 # navigation-header
 
 ## Node ID en Figma
-1:3
+170:2653
 
 ## Descripción
 Barra de navegación superior. Elemento fijo en la parte alta de cada pantalla. Comunica al usuario dónde está, le permite volver atrás o cerrar, y da acceso a acciones contextuales. Existe en 3 variantes — cada una obligatoria según el nivel de navegación.
