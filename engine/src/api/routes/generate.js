@@ -19,7 +19,7 @@ const { apply: applyDelta }                       = require('../../core/deltaEng
 const { getNavLevel }                             = require('../../core/globalRulesParser');
 
 // ── Navigation & Pattern maps ─────────────────────────────────────────────────
-const { INTENT_TO_LEVEL, INTENT_TO_PATTERN, MULTISCREEN_INTENTS } = require('../../core/navigationMaps');
+const { INTENT_TO_LEVEL, INTENT_TO_PATTERN, MULTISCREEN_INTENTS, inferNavLevelFromBrief } = require('../../core/navigationMaps');
 
 // ── Composition ───────────────────────────────────────────────────────────────
 const {
@@ -281,7 +281,8 @@ router.post('/', async function(req, res, next) {
     }
 
     // ── NIVEL DE NAVEGACIÓN ──────────────────────────────────────────────────
-    const navLevel = INTENT_TO_LEVEL[intent.intent_type] || 'L1';
+    // Nivel de navegación: refinado por contexto del brief
+    const navLevel = inferNavLevelFromBrief(intent.intent_type, brief) || INTENT_TO_LEVEL[intent.intent_type] || 'L1';
     console.log('  → [nav] nivel: ' + navLevel + ' | intent: ' + intent.intent_type);
 
     // ── TEMPLATE APROBADO — si existe, usarlo directamente ────────────────
@@ -377,6 +378,7 @@ router.post('/', async function(req, res, next) {
 });
 
 module.exports = router;
+
 
 
 
