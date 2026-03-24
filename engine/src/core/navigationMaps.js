@@ -90,9 +90,39 @@ function invalidateNavCache() {
   _cachedLevelMap = null;
 }
 
+// ── INFERIR NIVEL DE NAVEGACIÓN DESDE EL BRIEF ──────────────────────────────
+// Refina el nivel de 'lista-con-filtros' y 'detalle' según contexto del brief.
+// L0 = pantalla raíz (dashboard, tab activo)
+// L1 = listado principal navegable desde el tab-bar
+// L2 = sublista o detalle accesible desde L1 (con back button)
+// L3 = confirmación, modal, resultado final
+function inferNavLevelFromBrief(intentType, brief) {
+  const b = (brief || '').toLowerCase();
+  const baseLevel = getIntentToLevel()[intentType] || 'L1';
+
+  // lista-con-filtros: puede ser L1 (listado raíz) o L2 (sublista de categoría)
+  if (intentType === 'lista-con-filtros') {
+    // Señales de L2: el listado es de un subdominio específico, no una raíz
+    const l2signals = [
+      'de contenido', 'de fondos', 'de transacciones recientes',
+      'de una categoría', 'de noticias', 'de artículos',
+      'filtros con', 'filtrado', 'subfondo', 'sublistado',
+    ];
+    if (l2signals.some(s => b.includes(s))) return 'L2';
+    return 'L1'; // default para lista-con-filtros
+  }
+
+  // formulario-simple: siempre L2 (accesible desde acción en L1)
+  if (intentType === 'formulario-simple') return 'L2';
+
+  return baseLevel;
+}
+
 module.exports = {
   INTENT_TO_LEVEL,
   INTENT_TO_PATTERN,
   MULTISCREEN_INTENTS,
   invalidateNavCache,
+  inferNavLevelFromBrief,
 };
+
