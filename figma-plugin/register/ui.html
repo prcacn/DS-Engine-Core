@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0c0f; --surface: #111318; --surface2: #191d24;
+    --border: #232830; --border2: #2e3540;
+    --accent: #4f46e5; --accent-dim: rgba(79,70,229,0.12);
+    --green: #22c55e; --green-dim: rgba(34,197,94,0.12);
+    --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.10);
+    --red: #ef4444; --red-dim: rgba(239,68,68,0.10);
+    --txt: #e2e8f0; --txt2: #64748b; --txt3: #94a3b8;
+    --mono: 'Courier New', monospace;
+    --sans: -apple-system, system-ui, sans-serif;
+    --r: 8px;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--txt); font-family: var(--sans); font-size: 13px; }
+  .app { display: flex; flex-direction: column; height: 100%; }
+
+  /* ── HEADER ── */
+  .header { padding: 12px 16px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .header-icon { width: 24px; height: 24px; background: var(--accent); border-radius: 6px; display: grid; place-items: center; flex-shrink: 0; }
+  .header-icon svg { width: 14px; height: 14px; }
+  .header-title { font-size: 13px; font-weight: 600; }
+  .header-sub { font-size: 11px; color: var(--txt2); }
+
+  /* ── STEPS ── */
+  .steps { display: flex; gap: 4px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  .step-pill { flex: 1; text-align: center; font-size: 10px; font-weight: 600; padding: 4px 0; border-radius: 4px; color: var(--txt2); background: var(--surface); }
+  .step-pill.active { background: var(--accent-dim); color: var(--accent); }
+  .step-pill.done { background: var(--green-dim); color: var(--green); }
+
+  /* ── CONTENT ── */
+  .content { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; }
+  .card-title { font-size: 11px; font-weight: 600; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+
+  /* ── FIELDS ── */
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-label { font-size: 10px; color: var(--txt2); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .field-value { font-size: 12px; color: var(--txt); background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 6px 9px; }
+  .field-value.auto { color: var(--green); border-color: rgba(34,197,94,0.3); }
+  .field-value.warn { color: var(--yellow); border-color: rgba(234,179,8,0.3); }
+  input.field-input, select.field-input {
+    font-size: 12px; color: var(--txt); background: var(--surface2);
+    border: 1px solid var(--border2); border-radius: 5px; padding: 6px 9px;
+    width: 100%; outline: none; font-family: var(--sans);
+  }
+  input.field-input:focus, select.field-input:focus { border-color: var(--accent); }
+  select.field-input option { background: var(--surface2); }
+
+  /* ── VARIANTS GRID ── */
+  .variants-grid { display: flex; flex-direction: column; gap: 4px; }
+  .variant-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; background: var(--surface2); border-radius: 4px; }
+  .variant-name { font-size: 11px; font-family: var(--mono); color: var(--txt3); }
+  .variant-id { font-size: 10px; font-family: var(--mono); color: var(--txt2); }
+
+  /* ── CODE PREVIEW ── */
+  .code-block { font-size: 10px; font-family: var(--mono); color: var(--txt3); background: var(--surface2); border-radius: 5px; padding: 10px; white-space: pre-wrap; word-break: break-all; max-height: 120px; overflow-y: auto; line-height: 1.5; }
+  .code-block .hi { color: var(--green); }
+  .code-block .key { color: #7dd3fc; }
+  .code-block .val { color: #fca5a5; }
+
+  /* ── RESULTS ── */
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .result-row:last-child { border-bottom: none; }
+  .result-path { font-size: 11px; font-family: var(--mono); color: var(--txt3); }
+  .result-ok { font-size: 11px; font-weight: 600; color: var(--green); }
+  .result-err { font-size: 11px; font-weight: 600; color: var(--red); }
+
+  /* ── BUTTONS ── */
+  .btn-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .btn { flex: 1; padding: 9px; border-radius: var(--r); font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-success { background: var(--green); color: #022c22; }
+  .btn-ghost { background: var(--surface2); color: var(--txt2); border: 1px solid var(--border); }
+
+  /* ── STATUS ── */
+  .status { font-size: 11px; padding: 8px 12px; border-radius: 5px; display: flex; align-items: center; gap: 6px; }
+  .status.info { background: var(--accent-dim); color: var(--accent); }
+  .status.success { background: var(--green-dim); color: var(--green); }
+  .status.error { background: var(--red-dim); color: var(--red); }
+  .status.loading { background: var(--surface2); color: var(--txt2); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── DEPLOY BOX ── */
+  .deploy-box { background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; padding: 10px; }
+  .deploy-cmd { font-size: 10px; font-family: var(--mono); color: var(--green); word-break: break-all; }
+  .deploy-label { font-size: 10px; color: var(--txt2); margin-bottom: 4px; }
+  .copy-btn { font-size: 10px; color: var(--accent); cursor: pointer; margin-top: 4px; display: inline-block; }
+
+  .hidden { display: none; }
+  .tags-row { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; background: var(--surface2); color: var(--txt2); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 14 14" fill="none">
+        <rect x="1" y="1" width="5" height="5" rx="1" fill="white"/>
+        <rect x="8" y="1" width="5" height="5" rx="1" fill="rgba(255,255,255,0.5)"/>
+        <rect x="1" y="8" width="5" height="5" rx="1" fill="rgba(255,255,255,0.5)"/>
+        <rect x="8" y="8" width="5" height="5" rx="1" fill="white"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">DS Register</div>
+      <div class="header-sub">Incorpora componentes al Design System</div>
+    </div>
+  </div>
+
+  <!-- STEP PILLS -->
+  <div class="steps">
+    <div class="step-pill active" id="pill1">1 · Detectar</div>
+    <div class="step-pill" id="pill2">2 · Contrato</div>
+    <div class="step-pill" id="pill3">3 · Revisión</div>
+    <div class="step-pill" id="pill4">4 · Publicado</div>
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="content" id="mainContent">
+
+    <!-- ── STEP 1 ── -->
+    <div id="step1">
+      <div class="status info">
+        <div class="dot"></div>
+        Selecciona un COMPONENT_SET en Figma y pulsa Detectar
+      </div>
+      <div class="card" id="detectedCard" style="display:none">
+        <div class="card-title">Componente detectado</div>
+        <div class="field">
+          <div class="field-label">Nombre canónico</div>
+          <div class="field-value auto" id="detName">—</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Node ID (COMPONENT_SET)</div>
+          <div class="field-value auto" id="detNodeId">—</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Dimensiones</div>
+          <div class="field-value" id="detDimensions">—</div>
+        </div>
+        <div class="field" id="variantsField">
+          <div class="field-label">Variantes</div>
+          <div class="variants-grid" id="variantsList"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Tokens vinculados</div>
+          <div class="field-value" id="detTokens">—</div>
+        </div>
+        <div class="field" id="existsWarn" style="display:none">
+          <div class="field-value warn">⚠ Este componente ya puede existir en el sistema</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 2 ── -->
+    <div id="step2" class="hidden">
+      <div class="status info"><div class="dot"></div>Revisa y ajusta los datos antes de generar</div>
+      <div class="card">
+        <div class="card-title">Datos del componente</div>
+        <div class="field">
+          <div class="field-label">Nombre canónico</div>
+          <input class="field-input" id="editName" type="text" placeholder="ej: card-media"/>
+        </div>
+        <div class="field">
+          <div class="field-label">Zona en pantalla</div>
+          <select class="field-input" id="editZone">
+            <option value="content">content — cuerpo de la pantalla</option>
+            <option value="header">header — fijo arriba</option>
+            <option value="bottom">bottom — fijo abajo</option>
+            <option value="overlay">overlay — sobre el contenido</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">¿Ancho completo (sin márgenes)?</div>
+          <select class="field-input" id="editFullWidth">
+            <option value="true">Sí — edge to edge (390px)</option>
+            <option value="false">No — con margen 16px</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">¿Singleton? (max 1 por pantalla)</div>
+          <select class="field-input" id="editSingleton">
+            <option value="false">No — puede repetirse</option>
+            <option value="true">Sí — máximo 1</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Keywords para brief (separadas por coma)</div>
+          <input class="field-input" id="editKeywords" type="text" placeholder="ej: noticias, artículos, media"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 3 ── -->
+    <div id="step3" class="hidden">
+      <div class="status success"><div class="dot"></div>Contrato generado — revisa antes de subir a GitHub</div>
+
+      <div class="card">
+        <div class="card-title">engine/contracts/<span id="previewContractName">—</span>.md</div>
+        <div class="code-block" id="previewContract">—</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">spacingRegistry.js — nueva entrada</div>
+        <div class="code-block" id="previewSpacing">—</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">figma-plugin/code.js — patches</div>
+        <div class="code-block" id="previewPlugin">—</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Keywords detectadas</div>
+        <div class="tags-row" id="previewKeywords"></div>
+      </div>
+    </div>
+
+    <!-- ── STEP 4 ── -->
+    <div id="step4" class="hidden">
+      <div class="status success"><div class="dot"></div>Componente registrado en el DS</div>
+
+      <div class="card" id="resultsCard">
+        <div class="card-title">Archivos subidos a GitHub</div>
+        <div id="resultsList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Siguiente paso — deploy</div>
+        <div class="deploy-box">
+          <div class="deploy-label">Ejecuta en terminal:</div>
+          <div class="deploy-cmd" id="deployCmd">cd '...' && git pull --rebase && railway up</div>
+          <div class="copy-btn" onclick="copyDeploy()">Copiar comando</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS / ERROR -->
+    <div id="statusMsg" class="hidden"></div>
+
+  </div>
+
+  <!-- BOTONES -->
+  <div class="btn-row" id="btnRow">
+    <button class="btn btn-ghost" id="btnCancel" onclick="cancel()">Cancelar</button>
+    <button class="btn btn-primary" id="btnMain" onclick="mainAction()">Detectar componente</button>
+  </div>
+
+</div>
+<script>
+var currentStep = 1;
+var componentData = null;
+var previewData = null;
+
+function setStep(n) {
+  currentStep = n;
+  ['step1','step2','step3','step4'].forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden', i + 1 !== n);
+  });
+  ['pill1','pill2','pill3','pill4'].forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'step-pill';
+    if (i + 1 < n)  el.classList.add('done');
+    if (i + 1 === n) el.classList.add('active');
+  });
+  var btnMain = document.getElementById('btnMain');
+  var labels = ['Detectar componente', 'Generar contrato', 'Aprobar y subir', ''];
+  btnMain.textContent = labels[n - 1] || 'Cerrar';
+  btnMain.className = n === 3
+    ? 'btn btn-success'
+    : 'btn btn-primary';
+  if (n === 4) btnMain.textContent = 'Cerrar';
+}
+
+function mainAction() {
+  if (currentStep === 1) { parent.postMessage({ pluginMessage: { type: 'detect' } }, '*'); }
+  if (currentStep === 2) { goStep3(); }
+  if (currentStep === 3) { goPublish(); }
+  if (currentStep === 4) { parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*'); }
+}
+
+function cancel() {
+  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+}
+
+function goStep3() {
+  showStatus('loading', 'Generando contrato con IA...');
+  document.getElementById('btnMain').disabled = true;
+  var payload = {
+    name:      document.getElementById('editName').value.trim(),
+    zona:      document.getElementById('editZone').value,
+    full_width: document.getElementById('editFullWidth').value === 'true',
+    singleton:  document.getElementById('editSingleton').value === 'true',
+    keywords:  document.getElementById('editKeywords').value.split(',').map(function(k){ return k.trim(); }).filter(Boolean),
+  };
+  parent.postMessage({ pluginMessage: { type: 'preview', payload: payload } }, '*');
+}
+
+function goPublish() {
+  showStatus('loading', 'Subiendo a GitHub...');
+  document.getElementById('btnMain').disabled = true;
+  var payload = {
+    name:      document.getElementById('editName').value.trim(),
+    zona:      document.getElementById('editZone').value,
+    full_width: document.getElementById('editFullWidth').value === 'true',
+    singleton:  document.getElementById('editSingleton').value === 'true',
+    keywords:  document.getElementById('editKeywords').value.split(',').map(function(k){ return k.trim(); }).filter(Boolean),
+  };
+  parent.postMessage({ pluginMessage: { type: 'publish', payload: payload } }, '*');
+}
+
+function showStatus(type, text) {
+  var el = document.getElementById('statusMsg');
+  el.className = 'status ' + type;
+  el.innerHTML = '<div class="dot' + (type === 'loading' ? ' spin' : '') + '"></div>' + text;
+  el.classList.remove('hidden');
+}
+
+function hideStatus() {
+  document.getElementById('statusMsg').classList.add('hidden');
+}
+
+function copyDeploy() {
+  var cmd = document.getElementById('deployCmd').textContent;
+  navigator.clipboard && navigator.clipboard.writeText(cmd);
+  document.querySelector('.copy-btn').textContent = '¡Copiado!';
+  setTimeout(function() {
+    document.querySelector('.copy-btn').textContent = 'Copiar comando';
+  }, 1500);
+}
+
+// ─── MENSAJES DESDE code.js ───────────────────────────────────────────────────
+window.onmessage = function(event) {
+  var msg = event.data.pluginMessage;
+  if (!msg) return;
+
+  if (msg.type === 'detected') {
+    componentData = msg.component;
+    hideStatus();
+
+    // Mostrar card de detección
+    document.getElementById('detectedCard').style.display = 'block';
+    document.getElementById('detName').textContent    = componentData.name;
+    document.getElementById('detNodeId').textContent  = componentData.nodeId;
+    document.getElementById('detDimensions').textContent = componentData.width + '×' + componentData.height + 'px';
+
+    // Tokens
+    var tokensEl = document.getElementById('detTokens');
+    tokensEl.textContent = componentData.tokens.length > 0
+      ? componentData.tokens.length + ' bindings detectados'
+      : 'Sin tokens vinculados';
+
+    // Variantes
+    var varList = document.getElementById('variantsList');
+    varList.innerHTML = '';
+    componentData.variants.forEach(function(v) {
+      var row = document.createElement('div');
+      row.className = 'variant-row';
+      row.innerHTML = '<span class="variant-name">' + v.name + '</span><span class="variant-id">' + v.nodeId + '</span>';
+      varList.appendChild(row);
+    });
+    if (componentData.variants.length === 0) {
+      document.getElementById('variantsField').style.display = 'none';
+    }
+
+    // Pre-rellenar step 2
+    document.getElementById('editName').value = componentData.name;
+    var guessKeywords = componentData.name.replace(/-/g, ', ');
+    document.getElementById('editKeywords').value = guessKeywords;
+
+    setStep(2);
+  }
+
+  if (msg.type === 'preview-ready') {
+    previewData = msg.data;
+    hideStatus();
+    document.getElementById('btnMain').disabled = false;
+
+    // Contrato
+    var contractName = document.getElementById('editName').value;
+    document.getElementById('previewContractName').textContent = contractName;
+
+    var contractEl = document.getElementById('previewContract');
+    contractEl.textContent = previewData.contractMd
+      ? previewData.contractMd.substring(0, 600) + (previewData.contractMd.length > 600 ? '\n...' : '')
+      : '—';
+
+    // spacingRegistry
+    var spacingEl = document.getElementById('previewSpacing');
+    spacingEl.textContent = previewData.spacingPatch
+      ? previewData.spacingPatch.entryCode || JSON.stringify(previewData.spacingPatch, null, 2)
+      : '—';
+
+    // plugin
+    var pluginEl = document.getElementById('previewPlugin');
+    var pp = previewData.pluginPatch;
+    if (pp) {
+      pluginEl.textContent =
+        'COMPONENT_NODE_IDS:\n  ' + pp.componentNodeEntry +
+        '\n\nHEIGHT_MAP:\n  ' + pp.heightMapEntry +
+        (pp.fullWidthEntry ? '\n\nFULL_WIDTH:\n  ' + pp.fullWidthEntry : '');
+    }
+
+    // keywords
+    var kwEl = document.getElementById('previewKeywords');
+    kwEl.innerHTML = '';
+    var kws = (previewData.aiData && previewData.aiData.keywords) || [];
+    kws.forEach(function(kw) {
+      var tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = kw;
+      kwEl.appendChild(tag);
+    });
+
+    setStep(3);
+  }
+
+  if (msg.type === 'published') {
+    hideStatus();
+    document.getElementById('btnMain').disabled = false;
+
+    var data = msg.data;
+    var list = document.getElementById('resultsList');
+    list.innerHTML = '';
+    if (data.results) {
+      Object.keys(data.results).forEach(function(key) {
+        var r = data.results[key];
+        var row = document.createElement('div');
+        row.className = 'result-row';
+        var path = r.path || key;
+        var status = r.ok
+          ? '<span class="result-ok">✓ subido</span>'
+          : '<span class="result-err">✗ ' + (r.error || 'error') + '</span>';
+        row.innerHTML = '<span class="result-path">' + path + '</span>' + status;
+        list.appendChild(row);
+      });
+    }
+
+    if (data.deploy_command) {
+      document.getElementById('deployCmd').textContent = data.deploy_command;
+    }
+
+    setStep(4);
+  }
+
+  if (msg.type === 'error') {
+    hideStatus();
+    document.getElementById('btnMain').disabled = false;
+    showStatus('error', msg.text);
+  }
+
+  if (msg.type === 'loading') {
+    showStatus('loading', msg.text);
+  }
+};
+</script>
+</body>
+</html>
