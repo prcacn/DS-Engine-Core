@@ -110,14 +110,92 @@ function parseExampleMd(raw, filename) {
     }
   }
 
+  // ── Parsear sección ## Slots (nuevos templates con defaults por zona) ──────
+  const slotsStart = lines.findIndex(l => l.trim() === '## Slots');
+  const slots = { header: [], content: [], bottom: [] };
+  let currentSlot = null;
+  let currentComp = null;
+
+  if (slotsStart > -1) {
+    for (let i = slotsStart + 1; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed.startsWith('## ')) break; // siguiente sección
+
+      // Detectar zona: ### header / ### content / ### bottom
+      const zoneMatch = trimmed.match(/^###\s+(header|content|bottom)$/i);
+      if (zoneMatch) { currentSlot = zoneMatch[1].toLowerCase(); currentComp = null; continue; }
+      if (!currentSlot) continue;
+
+      // Componente: línea que empieza con "- "
+      if (trimmed.startsWith('- ') && !trimmed.startsWith('-   ') && !trimmed.startsWith('-  -')) {
+        const raw = trimmed.replace(/^- /, '').trim();
+        const nameMatch = raw.match(/^([a-z][a-z0-9\/\-]*)(?:\s|$|\s*×|\s*\()/);
+        if (!nameMatch) continue;
+        const compName = nameMatch[1];
+        const variantMatch = raw.match(/variant:\s*([^,)]+)/);
+        const variant = variantMatch ? variantMatch[1].trim().replace(/['"]/g, '') : 'default';
+        const qtyMatch = raw.match(/×(\d+)/);
+        const quantity = qtyMatch ? parseInt(qtyMatch[1]) : 1;
+        const titleMatch = raw.match(/title:\s*"([^"]*)"/);
+        const labelMatch = raw.match(/label:\s*"([^"]*)"/);
+        const props = {};
+        if (titleMatch) props.title = titleMatch[1];
+        if (labelMatch) props.label = labelMatch[1];
+        currentComp = { component: compName, variant, quantity, props, ai_overridable: true, default_props: {} };
+        slots[currentSlot].push(currentComp);
+        continue;
+      }
+
+      // Propiedades del componente actual: líneas indentadas con "  - "
+      if (currentComp && (trimmed.startsWith('- ai_overridable:') || trimmed.startsWith('- default_props:') || trimmed.startsWith('- default_quantity:'))) {
+        if (trimmed.startsWith('- ai_overridable:')) {
+          const val = trimmed.replace('- ai_overridable:', '').trim();
+          currentComp.ai_overridable = val !== 'false';
+          // Extraer qué campos son overridable
+          const fields = val.split(',').map(s => s.trim()).filter(s => s && s !== 'true' && s !== 'false' && !s.includes('('));
+          if (fields.length > 0) currentComp.overridable_fields = fields;
+          // Extraer rango de quantity si existe
+          const rangeMatch = val.match(/min:\s*(\d+).*?max:\s*(\d+)/);
+          if (rangeMatch) currentComp.quantity_range = { min: parseInt(rangeMatch[1]), max: parseInt(rangeMatch[2]) };
+        }
+        if (trimmed.startsWith('- default_props:')) {
+          // Parsear props inline: { label: "X", placeholder: "Y" }
+          const propsStr = trimmed.replace('- default_props:', '').trim();
+          const titleM = propsStr.match(/title:\s*"([^"]*)"/);
+          const labelM = propsStr.match(/label:\s*"([^"]*)"/);
+          const placeholderM = propsStr.match(/placeholder:\s*"([^"]*)"/);
+          const descM = propsStr.match(/description:\s*"([^"]*)"/);
+          const confirmM = propsStr.match(/confirm_label:\s*"([^"]*)"/);
+          const cancelM = propsStr.match(/cancel_label:\s*"([^"]*)"/);
+          if (titleM) currentComp.default_props.title = titleM[1];
+          if (labelM) currentComp.default_props.label = labelM[1];
+          if (placeholderM) currentComp.default_props.placeholder = placeholderM[1];
+          if (descM) currentComp.default_props.description = descM[1];
+          if (confirmM) currentComp.default_props.confirm_label = confirmM[1];
+          if (cancelM) currentComp.default_props.cancel_label = cancelM[1];
+        }
+      }
+    }
+  }
+
+  // Si tiene slots, también extraer match_keywords del frontmatter
+  const matchKeywords = meta.match_keywords
+    ? meta.match_keywords.split(',').map(s => s.trim())
+    : [];
+
   return {
-    id:         filename.replace('.md', ''),
+    id:              filename.replace('.md', ''),
     title,
-    pattern:    meta.pattern    || '',
-    status:     meta.status     || '',
-    score:      parseFloat(meta.score) || 0,
-    domain:     meta.domain     || '',
-    fecha:      meta.fecha      || '',
+    pattern:         meta.pattern      || '',
+    status:          meta.status       || '',
+    score:           parseFloat(meta.score) || 0,
+    domain:          meta.domain       || '',
+    fecha:           meta.fecha        || '',
+    nav_level:       meta.nav_level    || 'L1',
+    match_keywords:  matchKeywords,
+    has_slots:       slotsStart > -1,
+    slots:           slotsStart > -1 ? slots : null,
     components,
     raw,
   };
