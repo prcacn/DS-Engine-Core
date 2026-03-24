@@ -511,17 +511,20 @@ function renderCardItem(comp, pattern) {
   const qty = comp.quantity || 1;
   let html  = '<div class="ds-card-list">';
 
+  // Fallbacks según dominio — se usan solo si los props no tienen valor
   const titles    = ['Nómina Empresa', 'Supermercado', 'Fondo Renta Fija', 'Dividendos', 'Cartera Global'];
   const subtitles = ['15 mar · Transferencia', 'Hoy · Pago', '10 mar · Liquidación', '8 mar · Dividendo', '5 mar · Compra'];
   const values    = ['+€2.450,00', '-€87,50', '+€1.200,00', '+€320,00', '+€5.800,00'];
 
   for (let i = 0; i < qty; i++) {
-    const title    = escHtml(prop(p, 'title',    titles[i % titles.length]));
-    const subtitle = escHtml(prop(p, 'subtitle', subtitles[i % subtitles.length]));
-    const value    = escHtml(prop(p, 'value',    values[i % values.length]));
+    // Usar props reales del engine si existen; fallback a datos de ejemplo
+    const title    = escHtml(p.title    || titles[i % titles.length]);
+    const subtitle = escHtml(p.subtitle || subtitles[i % subtitles.length]);
+    const value    = p.value ? escHtml(p.value) : values[i % values.length];
     const isPos    = value.includes('+');
-    const valueColor = isPos ? 'color:var(--ds-color-success)' : 'color:var(--ds-color-error)';
+    const valueColor = isPos ? 'color:var(--ds-color-success)' : value.includes('-') ? 'color:var(--ds-color-error)' : 'color:var(--ds-color-text-primary)';
     const initial  = title.charAt(0).toUpperCase();
+    const showValue = Boolean(p.value || !['lista-noticias'].includes(pattern));
 
     html += `<div class="ds-card-item">
       <div class="ds-card-avatar">${initial}</div>
@@ -529,10 +532,10 @@ function renderCardItem(comp, pattern) {
         <div class="ds-card-title">${title}</div>
         <div class="ds-card-subtitle">${subtitle}</div>
       </div>
-      <div class="ds-card-right">
+      ${showValue ? `<div class="ds-card-right">
         <div class="ds-card-value" style="${valueColor}">${value}</div>
         <div class="ds-card-chevron">›</div>
-      </div>
+      </div>` : '<div class="ds-card-chevron" style="margin-left:auto">›</div>'}
     </div>`;
   }
 
@@ -660,12 +663,102 @@ function renderScreen(data, options = {}) {
     }
   }
 
+  // Pre-agrupar card-composition consecutivos en cards completas
+  // Un card-composition puede tener 2-3 slots consecutivos (header, content, action)
+  // que hay que renderizar como una sola card envuelta en ds-card-composition
+  function groupCardCompositions(comps) {
+    const result = [];
+    let i = 0;
+    while (i < comps.length) {
+      if (comps[i].component === 'card-composition') {
+        const group = [];
+        while (i < comps.length && comps[i].component === 'card-composition') {
+          group.push(comps[i]);
+          i++;
+        }
+        result.push({ type: 'card-composition-group', items: group });
+      } else {
+        result.push({ type: 'single', comp: comps[i] });
+        i++;
+      }
+    }
+    return result;
+  }
+
+  function renderCardCompositionGroup(comps) {
+    // Agrupar slots por card (una card = header + content + action opcionales)
+    // Los slots están ordenados por order — agrupamos en bloques de max 3
+    const cards = [];
+    let current = [];
+    for (const c of comps) {
+      const slot = c.slot || c.props?.slot_variant || 'header';
+      if (slot === 'header' && current.length > 0) {
+        cards.push(current);
+        current = [];
+      }
+      current.push(c);
+    }
+    if (current.length > 0) cards.push(current);
+
+    // Si no hay agrupación clara, tratar cada comp como card individual
+    if (cards.length === 0) cards.push(comps);
+
+    return cards.map(cardSlots => {
+      const p = cardSlots[0]?.props || {};
+      // Determinar variante de la card
+      const variant = p.slot_variant || 'card-media';
+      const title   = escHtml(p.header_title || p.title || 'Artículo financiero');
+      const text    = escHtml(p.content_text || p.text  || 'Resumen del contenido financiero más reciente.');
+      const linkLabel = escHtml(p.link_label || 'Leer más →');
+
+      if (variant === 'card-media' || variant.includes('media')) {
+        return `<div class="ds-card-composition">
+          <div class="ds-slot-header">
+            <div class="ds-slot-header-left">
+              <div class="ds-slot-title">${title}</div>
+            </div>
+            <span class="ds-slot-badge">Nuevo</span>
+          </div>
+          <div class="ds-slot-content">
+            <div class="ds-slot-image-text">
+              <div class="ds-slot-img">🖼️</div>
+              <div class="ds-slot-text" style="flex:1">${text}</div>
+            </div>
+          </div>
+          <div class="ds-slot-action">
+            <span class="ds-slot-link">${linkLabel}</span>
+          </div>
+        </div>`;
+      }
+      // Fallback — card-action
+      return `<div class="ds-card-composition">
+        <div class="ds-slot-header">
+          <div class="ds-slot-header-left">
+            <div class="ds-slot-title">${title}</div>
+          </div>
+        </div>
+        <div class="ds-slot-content">
+          <div class="ds-slot-text">${text}</div>
+        </div>
+        <div class="ds-slot-action">
+          <button class="ds-slot-btn-primary">${linkLabel}</button>
+        </div>
+      </div>`;
+    }).join('\n');
+  }
+
   // Renderizar segmentos
+  const groupedSegments = groupCardCompositions(
+    segments.flatMap(s => s.type === 'single' ? [s.comp] : s.items.map(i => ({...i, _seg_type: s.type})))
+  );
+
   let bodyHtml = '';
-  for (const seg of segments) {
-    if (seg.type === 'form') {
-      const innerHtml = seg.items.map(c => renderComponent(c, pattern)).join('\n');
-      bodyHtml += `<div class="ds-form">${innerHtml}</div>`;
+  for (const seg of groupedSegments) {
+    if (seg.type === 'card-composition-group') {
+      bodyHtml += renderCardCompositionGroup(seg.items);
+    } else if (seg._seg_type === 'form') {
+      // Reconstruir el grupo de form
+      bodyHtml += `<div class="ds-form">${renderComponent(seg.comp, pattern)}</div>`;
     } else {
       bodyHtml += renderComponent(seg.comp, pattern);
     }
