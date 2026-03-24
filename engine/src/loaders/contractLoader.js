@@ -62,7 +62,19 @@ function parseContract(filename, content) {
     });
   }
 
-  return { name, description, whenToUse, whenNotToUse, restrictions, properties, nodeId, raw: content };
+  // Alias: archivo "card-item-account" → clave "card-item/account"
+  // El engine usa "/" para sub-variantes pero los archivos del repo usan "-"
+  // Tabla de prefijos conocidos con sub-variantes
+  const SLASH_PREFIXES = ['card-item', 'navigation-header'];
+  let nameAlias = name;
+  for (const prefix of SLASH_PREFIXES) {
+    if (name.startsWith(prefix + '-')) {
+      nameAlias = prefix + '/' + name.slice(prefix.length + 1);
+      break;
+    }
+  }
+
+  return { name, nameAlias, description, whenToUse, whenNotToUse, restrictions, properties, nodeId, raw: content };
 }
 
 function loadContracts() {
@@ -85,7 +97,12 @@ function loadContracts() {
   files.forEach(filename => {
     const content = fs.readFileSync(path.join(contractsPath, filename), 'utf-8');
     const contract = parseContract(filename, content);
+    // Registrar con nombre original (card-item-account)
     contracts[contract.name] = contract;
+    // Registrar también con alias "/" si es distinto (card-item/account)
+    if (contract.nameAlias && contract.nameAlias !== contract.name) {
+      contracts[contract.nameAlias] = contract;
+    }
   });
 
   console.log(`  ✓ Contratos cargados: ${Object.keys(contracts).join(', ')}`);
