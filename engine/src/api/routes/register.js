@@ -91,6 +91,15 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'BadRequest', message: 'name y nodeId son requeridos' });
     }
 
+    // Validación: rechazar nombres que son componentes internos del DS
+    const INTERNAL_NAMES = ['title', 'subtitle', 'label', 'icon', 'divider', 'undefined'];
+    if (INTERNAL_NAMES.includes(payload.name.toLowerCase())) {
+      return res.status(400).json({
+        error: 'InvalidComponent',
+        message: `'${payload.name}' parece ser un nodo interno del DS, no un componente público. Selecciona el COMPONENT_SET padre correcto.`
+      });
+    }
+
     console.log(`  → [/register] Registrando: ${payload.name} (${payload.nodeId})`);
 
     // 1. Generar contrato, patches y descripción IA
@@ -123,7 +132,8 @@ router.post('/', async (req, res, next) => {
     // 3. Parchear spacingRegistry.js
     const spacingResult = await patchJsFile(
       'engine/src/core/spacingRegistry.js',
-      "module.exports = {",
+      "
+};",
       { key: payload.name, code: spacingPatch.entryCode },
       `feat: spacingRegistry — añadir ${payload.name}`
     );
@@ -131,7 +141,7 @@ router.post('/', async (req, res, next) => {
     // 4. Parchear figma-plugin/code.js — COMPONENT_NODE_IDS
     const pluginNodeResult = await patchJsFile(
       'figma-plugin/code.js',
-      "  'chart-sparkline':",
+      "  'chart-sparkline':                '137:1746', // COMPONENT (sin set)",
       { key: payload.name, code: `  '${payload.name}': '${payload.nodeId}', // COMPONENT_SET` },
       `feat: plugin — añadir ${payload.name} a COMPONENT_NODE_IDS`
     );
@@ -139,7 +149,7 @@ router.post('/', async (req, res, next) => {
     // 5. Parchear HEIGHT_MAP
     const pluginHeightResult = await patchJsFile(
       'figma-plugin/code.js',
-      "  'chart-sparkline': 80,",
+      "  'chart-sparkline':                80,",
       { key: payload.name + '_h', code: `  '${payload.name}': ${payload.height || 72},` },
       `feat: plugin — añadir ${payload.name} a HEIGHT_MAP`
     );
