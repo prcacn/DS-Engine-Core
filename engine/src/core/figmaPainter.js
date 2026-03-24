@@ -1,236 +1,190 @@
 // core/figmaPainter.js
 // ─────────────────────────────────────────────────────────────────────────────
-// FigmaPainter — Level 3.2
-// Mejoras de spacing:
-//   - PADDING_H diferenciado por tipo de componente (edge-to-edge vs inset)
-//   - GAP entre componentes basado en relación semántica (mismo grupo = 0, sección = 16, bloque = 24)
-//   - Márgenes laterales reales: 16px para contenido, 0px para componentes de sistema
-//   - Padding top/bottom dentro del área de contenido
-//   - Separadores visuales entre secciones (list-header → cards)
+// FigmaPainter — Level 3.3
+// Spacing gobernado por tokens: spacingRegistry.js + layoutRules.json
+// Regla de oro: NUNCA hardcodear alturas ni gaps. Siempre leer del nodo real.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── TOKENS DE SPACING ─────────────────────────────────────────────────────────
-// Basados en tokens.css del Simple DS
-const SPACING = {
-  // Gaps entre componentes según relación
-  GAP_NONE:        0,   // mismo componente repetido (cards consecutivas)
-  GAP_TIGHT:       1,   // separador visual mínimo dentro de un grupo
-  GAP_SECTION:    16,   // entre sección y su contenido (list-header → cards)
-  GAP_BLOCK:      24,   // entre bloques distintos (filter → cards, banner → cards)
-  GAP_LARGE:      32,   // entre áreas principales (header → primer contenido)
+const { SPACING_BY_BREAKPOINT, COMPONENT_REGISTRY: REGISTRY_FROM_SPACING, PAINT_RULES } = require('./spacingRegistry');
+const LAYOUT_RULES = require('./layoutRules.json');
 
-  // Márgenes horizontales por tipo
-  MARGIN_EDGE:     0,   // componentes full-width del sistema (header, filter, tab-bar, banner)
-  MARGIN_CONTENT: 16,   // contenido con margen lateral (cards, inputs, buttons, empty-state)
-  MARGIN_INSET:   24,   // contenido más aireado (modales sueltos, estados de error)
+// Breakpoint activo — se puede cambiar vía env o parámetro en tiempo de ejecución
+const ACTIVE_BREAKPOINT = process.env.DS_BREAKPOINT || 'mobile';
 
-  // Padding vertical del área de contenido
-  CONTENT_PADDING_TOP:    12,
-  CONTENT_PADDING_BOTTOM: 24,
-};
+// ── Tokens de spacing resueltos para el breakpoint activo ─────────────────────
+function getSpacing(breakpoint) {
+  return SPACING_BY_BREAKPOINT[breakpoint] || SPACING_BY_BREAKPOINT.mobile;
+}
+
+function getLayout(breakpoint) {
+  return LAYOUT_RULES.breakpoints[breakpoint] || LAYOUT_RULES.breakpoints.mobile;
+}
 
 // ── COMPONENT REGISTRY ────────────────────────────────────────────────────────
-// marginH: margen lateral real del componente
-// gapAfter: gap que deja este componente ANTES del siguiente (gap semántico)
-// gapBefore: gap extra ANTES de este componente (cuando viene después de otro tipo)
-// group: agrupa componentes que van juntos sin separación extra
+// Fusiona el registry de spacing (tokens) con el registry de painter (nodeIds, texts)
+// El painter aporta: nodeId, texts, slot, sticky, group
+// El spacingRegistry aporta: gapAfter, gapAfterToken, respectNativeHeight, resizeWidth
 
-const COMPONENT_REGISTRY = {
+const PAINTER_META = {
   'navigation-header': {
-    nodeId: '1:3', height: 56, width: 390,
+    nodeId: '1:3',
     texts: { title: '6' },
-    slot: 'header',
-    sticky: 'top',
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: 0,          // el header no deja gap — el contenido empieza justo
+    slot: 'header', sticky: 'top',
+    fullWidth: true,
   },
   'filter-bar': {
-    nodeId: '1:24', height: 48, width: 390,
+    nodeId: '1:24',
     texts: {},
     slot: 'filter',
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: SPACING.GAP_BLOCK,   // después del filter hay un bloque de contenido
-    group: 'system',
+    fullWidth: true, group: 'system',
   },
   'notification-banner': {
-    nodeId: '20:802', height: 64, width: 390,
+    nodeId: '20:802',
     texts: { title: '805', body: '806' },
-    slot: 'banner',
-    repeatable: true,
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: SPACING.GAP_BLOCK,
-    group: 'system',
+    slot: 'banner', repeatable: true,
+    fullWidth: true, group: 'system',
   },
   'list-header': {
-    nodeId: '20:797', height: 44, width: 390,
+    nodeId: '20:797',
     texts: { label: '798', action: '799' },
     slot: 'section-header',
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: SPACING.GAP_NONE,    // el list-header va pegado a sus cards
-    gapBefore: SPACING.GAP_BLOCK,  // pero sí se separa del bloque anterior
-    group: 'section',
+    fullWidth: true, group: 'section',
   },
   'card-item': {
-    nodeId: '1:13', height: 72, width: 390,
+    nodeId: '1:13',
     texts: { title: '15', subtitle: '16', value: '18' },
-    slot: 'list-item',
-    repeatable: true,
-    marginH: SPACING.MARGIN_EDGE,  // cards van edge-to-edge en listas
-    gapAfter: SPACING.GAP_TIGHT,   // separador mínimo entre cards (1px)
-    group: 'list',
-  },
-  'input-text': {
-    nodeId: '1:21', height: 56, width: 390,
-    texts: { label: '22', placeholder: '23' },
-    slot: 'form-field',
-    repeatable: true,
-    marginH: SPACING.MARGIN_CONTENT,   // inputs con margen lateral
-    gapAfter: SPACING.GAP_SECTION,     // entre campos hay espacio para respirar
-    group: 'form',
-  },
-  'empty-state': {
-    nodeId: '1:31', height: 244, width: 390,
-    texts: { title: '33', description: '34', action: '35' },
-    slot: 'empty',
-    centered: true,
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: SPACING.GAP_BLOCK,
-    gapBefore: SPACING.GAP_BLOCK,
-  },
-  'button-primary': {
-    nodeId: '1:9', height: 52, width: 390,
-    texts: { label: '10' },
-    slot: 'cta',
-    fullWidth: true,
-    marginH: SPACING.MARGIN_CONTENT,   // botones con margen lateral
-    gapAfter: SPACING.GAP_SECTION,
-    gapBefore: SPACING.GAP_BLOCK,
-    sticky: 'bottom',
-  },
-  'button-secondary': {
-    nodeId: '1:11', height: 52, width: 390,
-    texts: { label: '12' },
-    slot: 'cta-secondary',
-    fullWidth: true,
-    marginH: SPACING.MARGIN_CONTENT,
-    gapAfter: SPACING.GAP_SECTION,
-    sticky: 'bottom',
-  },
-  'modal-bottom-sheet': {
-    nodeId: '1:36', height: 280, width: 390,
-    texts: { title: '38', description: '39' },
-    slot: 'modal',
-    sticky: 'bottom',
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: 0,
-  },
-  'tab-bar': {
-    nodeId: '20:784', height: 56, width: 390,
-    texts: {},
-    slot: 'tab-bar',
-    sticky: 'bottom',
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: 0,
-  },
-  'badge': {
-    nodeId: '20:800', height: 26, width: 72,
-    texts: { label: '801' },
-    slot: 'badge',
-    marginH: SPACING.MARGIN_CONTENT,
-    gapAfter: SPACING.GAP_TIGHT,
-  },
-  'card-summary': {
-    nodeId: '185:3909', height: 120, width: 390,
-    texts: { amount: '?', 'account-label': '?', variation: '?', 'updated-at': '?', cta: '?' },
-    slot: 'summary-card',
-    repeatable: false,
-    marginH: SPACING.MARGIN_CONTENT,
-    gapAfter: SPACING.GAP_BLOCK,
-    group: 'summary',
-  },
-  'card-item/account': {
-    nodeId: '185:3919', height: 72, width: 390,
-    texts: { 'account-name': '?', 'account-number': '?', balance: '?', 'account-type': '?' },
-    slot: 'list-item',
-    repeatable: true,
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: SPACING.GAP_TIGHT,
-    group: 'list',
-  },
-  'amount-display': {
-    nodeId: '137:1740', height: 126, width: 390,
-    texts: {},
-    slot: 'amount',
-    marginH: SPACING.MARGIN_CONTENT,
-    gapAfter: SPACING.GAP_BLOCK,
-  },
-  'chart-sparkline': {
-    nodeId: '137:1746', height: 80, width: 390,
-    texts: {},
-    slot: 'chart',
-    marginH: SPACING.MARGIN_CONTENT,
-    gapAfter: SPACING.GAP_BLOCK,
-  },
-  'skeleton-loader': {
-    nodeId: '137:1752', height: 72, width: 390,
-    texts: {},
-    slot: 'list-item',
-    repeatable: true,
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: SPACING.GAP_TIGHT,
+    slot: 'list-item', repeatable: true,
+    fullWidth: true, group: 'list',
   },
   'card-item/financial': {
-    nodeId: '137:1758', height: 72, width: 390,
+    nodeId: '137:1758',
     texts: { title: '?', subtitle: '?', value: '?' },
-    slot: 'list-item',
-    repeatable: true,
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: SPACING.GAP_TIGHT,
-    group: 'list',
+    slot: 'list-item', repeatable: true,
+    fullWidth: true, group: 'list',
   },
   'card-item/financial-expense': {
-    nodeId: '137:1769', height: 72, width: 390,
+    nodeId: '137:1769',
     texts: { title: '?', subtitle: '?', value: '?' },
-    slot: 'list-item',
-    repeatable: true,
-    marginH: SPACING.MARGIN_EDGE,
-    gapAfter: SPACING.GAP_TIGHT,
-    group: 'list',
+    slot: 'list-item', repeatable: true,
+    fullWidth: true, group: 'list',
+  },
+  'card-item/account': {
+    nodeId: '185:3919',
+    texts: { 'account-name': '?', balance: '?' },
+    slot: 'list-item', repeatable: true,
+    fullWidth: true, group: 'list',
+  },
+  'card-media': {
+    nodeId: '217:2086',
+    texts: { title: '?', category: '?', description: '?' },
+    slot: 'media-card', repeatable: true,
+    fullWidth: true, group: 'list',
+  },
+  'input-text': {
+    nodeId: '1:21',
+    texts: { label: '22', placeholder: '23' },
+    slot: 'form-field', repeatable: true,
+    withMargin: true, group: 'form',
+  },
+  'empty-state': {
+    nodeId: '1:31',
+    texts: { title: '33', description: '34', action: '35' },
+    slot: 'empty', fullWidth: true,
+  },
+  'button-primary': {
+    nodeId: '1:9',
+    texts: { label: '10' },
+    slot: 'cta', sticky: 'bottom',
+    withMargin: true,
+  },
+  'button-secondary': {
+    nodeId: '1:11',
+    texts: { label: '12' },
+    slot: 'cta-secondary', sticky: 'bottom',
+    withMargin: true,
+  },
+  'modal-bottom-sheet': {
+    nodeId: '1:36',
+    texts: { title: '38', description: '39' },
+    slot: 'modal', sticky: 'bottom',
+    fullWidth: true,
+  },
+  'tab-bar': {
+    nodeId: '20:784',
+    texts: {},
+    slot: 'tab-bar', sticky: 'bottom',
+    fullWidth: true,
+  },
+  'badge': {
+    nodeId: '20:800',
+    texts: { label: '801' },
+    slot: 'badge', withMargin: true,
+  },
+  'card-summary': {
+    nodeId: '185:3909',
+    texts: { amount: '?', 'account-label': '?', cta: '?' },
+    slot: 'summary-card', withMargin: true, group: 'summary',
+  },
+  'amount-display': {
+    nodeId: '137:1740',
+    texts: {},
+    slot: 'amount', withMargin: true,
+  },
+  'chart-sparkline': {
+    nodeId: '137:1746',
+    texts: {},
+    slot: 'chart', withMargin: true,
+  },
+  'skeleton-loader': {
+    nodeId: '137:1752',
+    texts: {},
+    slot: 'list-item', repeatable: true,
+    fullWidth: true, group: 'list',
   },
 };
 
-const SCREEN_W = 390;
-const SCREEN_H = 844;
+// Fusión de los dos registries — painter_meta gana en caso de conflicto de nodeId
+function _getMeta(componentName) {
+  const painter  = PAINTER_META[componentName];
+  const spacing  = REGISTRY_FROM_SPACING[componentName];
+  if (!painter) return null;
+  return { ...spacing, ...painter }; // painter sobreescribe spacing donde hay colisión
+}
 
-// ── LÓGICA DE GAP SEMÁNTICO ───────────────────────────────────────────────────
-// Calcula el gap correcto entre dos componentes consecutivos según su relación
-function _getGapBetween(prevComp, nextComp) {
+// ── GAP SEMÁNTICO ─────────────────────────────────────────────────────────────
+// Calcula el gap entre dos componentes según tokens del DS
+function _getGapBetween(prevComp, nextComp, sp) {
   if (!prevComp) return 0;
 
-  const prevMeta = COMPONENT_REGISTRY[prevComp.component];
-  const nextMeta = COMPONENT_REGISTRY[nextComp.component];
+  const prevMeta = _getMeta(prevComp.component);
+  const nextMeta = _getMeta(nextComp.component);
 
-  // Si el siguiente tiene gapBefore explícito, úsalo
-  if (nextMeta?.gapBefore !== undefined) return nextMeta.gapBefore;
-
-  // Si el anterior tiene gapAfter explícito, úsalo
+  // Prioridad 1: gapAfter del componente anterior (viene de spacingRegistry)
   if (prevMeta?.gapAfter !== undefined) return prevMeta.gapAfter;
 
-  // Mismo grupo → gap mínimo
-  if (prevMeta?.group && prevMeta.group === nextMeta?.group) return SPACING.GAP_TIGHT;
+  // Prioridad 2: mismo grupo → gap mínimo (Gap/XS = 2px)
+  if (prevMeta?.group && prevMeta.group === nextMeta?.group) return 2;
 
-  // Diferente tipo → gap de bloque
-  return SPACING.GAP_BLOCK;
+  // Prioridad 3: bloques distintos → Gap/MD
+  return sp.gapSection;
 }
 
 // ── GENERADOR PRINCIPAL ───────────────────────────────────────────────────────
 function generatePainterCode(composition, options = {}) {
-  const { x = 0, y = 0, label = null } = options;
+  const { x = 0, y = 0, label = null, breakpoint = ACTIVE_BREAKPOINT } = options;
   const { pattern, components = [], confidence } = composition;
 
   if (!components || components.length === 0) {
     throw new Error('Composición sin componentes');
   }
+
+  // Tokens de spacing y layout para el breakpoint activo
+  const sp = getSpacing(breakpoint);
+  const layout = getLayout(breakpoint);
+
+  const SCREEN_W = sp.screenWidth || 390;
+  const SCREEN_H = layout.screen.height || 844;
+  const MARGIN   = sp.marginScreen;
 
   // Separar por zona
   const headerComponents  = components.filter(c => _getMeta(c.component)?.sticky === 'top');
@@ -240,16 +194,15 @@ function generatePainterCode(composition, options = {}) {
     return !meta?.sticky;
   });
 
-  const headerHeight = headerComponents.reduce((sum, c) => sum + _getHeight(c), 0);
-  const bottomHeight = bottomComponents.reduce((sum, c) => sum + _getHeight(c), 0);
-
-  const screenName = `gen_${Date.now()} — ${pattern} — ${Math.round((confidence?.global || 0) * 100)}%`;
-  const confidenceLabel = label || `☁️ Railway → ${pattern} | confidence: ${Math.round((confidence?.global || 0) * 100)}%`;
+  const screenName     = `gen_${Date.now()} — ${pattern} — ${Math.round((confidence?.global || 0) * 100)}%`;
+  const confidenceLabel = label || `${pattern} | ${Math.round((confidence?.global || 0) * 100)}% | ${breakpoint}`;
 
   const lines = [];
-  lines.push(`// FigmaPainter v3.2 — ${pattern} — spacing system`);
+  lines.push(`// FigmaPainter v3.3 — ${pattern} — ${breakpoint} — spacing from tokens`);
+  lines.push(`// Breakpoint: ${breakpoint} | screenW: ${SCREEN_W} | margin: ${MARGIN}px | gapSection: ${sp.gapSection}px`);
   lines.push(`const PAGE_W = ${SCREEN_W};`);
   lines.push(`const PAGE_H = ${SCREEN_H};`);
+  lines.push(`const MARGIN = ${MARGIN};`);
   lines.push(`const page = figma.currentPage;`);
   lines.push(``);
 
@@ -263,69 +216,60 @@ function generatePainterCode(composition, options = {}) {
   lines.push(`screen.fills = [{ type: 'SOLID', color: { r: 0.98, g: 0.98, b: 0.99 } }];`);
   lines.push(`screen.clipsContent = true;`);
   lines.push(`page.appendChild(screen);`);
-  lines.push(`let _y = 0;`);
+  lines.push(`let _y = 0; // acumulador de posición Y — se incrementa con altura REAL del nodo`);
   lines.push(``);
 
-  // ── Header (sticky top) ──────────────────────────────────────────────────
+  // ── HEADER ────────────────────────────────────────────────────────────────
   if (headerComponents.length > 0) {
-    lines.push(`// ── Header ────────────────────────────────────`);
+    lines.push(`// ── Header zone (fullWidth, sin margen) ─────────────────────`);
     for (const comp of headerComponents) {
-      lines.push(..._generateComponentBlock(comp, { yFromVar: true }));
+      lines.push(..._generateBlock(comp, { breakpoint, SCREEN_W, MARGIN, yMode: 'var', sp }));
     }
     lines.push(``);
   }
 
-  // ── Content ──────────────────────────────────────────────────────────────
+  // ── CONTENT ───────────────────────────────────────────────────────────────
   if (contentComponents.length > 0) {
-    lines.push(`// ── Content ───────────────────────────────────`);
-    lines.push(`_y += ${SPACING.CONTENT_PADDING_TOP}; // padding top del área de contenido`);
+    lines.push(`// ── Content zone ────────────────────────────────────────────`);
+    lines.push(`_y += ${sp.paddingTop}; // Padding/Vertical/MD — padding top del área de contenido`);
     lines.push(``);
 
     for (let i = 0; i < contentComponents.length; i++) {
-      const comp = contentComponents[i];
+      const comp     = contentComponents[i];
       const prevComp = i > 0 ? contentComponents[i - 1] : null;
-      const gap = _getGapBetween(prevComp, comp);
+      const gap      = _getGapBetween(prevComp, comp, sp);
 
       if (gap > 0) {
-        lines.push(`_y += ${gap}; // gap semántico antes de ${comp.component}`);
+        const gapToken = _getMeta(prevComp?.component)?.gapAfterToken || 'Gap/MD';
+        lines.push(`_y += ${gap}; // ${gapToken}`);
       }
 
-      lines.push(..._generateComponentBlock(comp, { yFromVar: true }));
+      lines.push(..._generateBlock(comp, { breakpoint, SCREEN_W, MARGIN, yMode: 'var', sp }));
       lines.push(``);
     }
   }
 
-  // ── Bottom (sticky bottom) ───────────────────────────────────────────────
+  // ── BOTTOM ────────────────────────────────────────────────────────────────
   if (bottomComponents.length > 0) {
-    lines.push(`// ── Bottom (sticky) ──────────────────────────`);
-
-    // Ordenar: modal primero (más alto), luego buttons, luego tab-bar
+    lines.push(`// ── Bottom zone (sticky, sin margen) ───────────────────────`);
     const ORDER = ['modal-bottom-sheet', 'button-primary', 'button-secondary', 'tab-bar'];
-    const sorted = [...bottomComponents].sort((a, b) => {
-      return (ORDER.indexOf(a.component) ?? 99) - (ORDER.indexOf(b.component) ?? 99);
-    });
+    const sorted = [...bottomComponents].sort((a, b) =>
+      (ORDER.indexOf(a.component) ?? 99) - (ORDER.indexOf(b.component) ?? 99)
+    );
 
     let bottomOffset = SCREEN_H;
     for (const comp of [...sorted].reverse()) {
-      const h = _getHeight(comp);
       const meta = _getMeta(comp.component);
-      const marginH = meta?.marginH ?? 0;
-      bottomOffset -= h;
-
-      // Padding bottom para botones (no para tab-bar ni modal)
-      const paddingBottom = comp.component === 'tab-bar' ? 0
-        : comp.component === 'modal-bottom-sheet' ? 0
-        : SPACING.CONTENT_PADDING_BOTTOM;
-
-      lines.push(..._generateComponentBlock(comp, {
-        yFixed: bottomOffset - paddingBottom,
-        marginH,
-      }));
+      // Altura de referencia para cálculo de posición — se usa SOLO para calcular yFixed
+      // El resize real respeta el nodo nativo
+      const refH = REGISTRY_FROM_SPACING[comp.component]?.height || 56;
+      bottomOffset -= refH;
+      lines.push(..._generateBlock(comp, { breakpoint, SCREEN_W, MARGIN, yMode: 'fixed', yFixed: bottomOffset, sp }));
     }
     lines.push(``);
   }
 
-  // Label encima del frame
+  // Label
   lines.push(`// Label`);
   lines.push(`const _label = figma.createText();`);
   lines.push(`await figma.loadFontAsync({ family: 'Inter', style: 'Medium' });`);
@@ -337,60 +281,62 @@ function generatePainterCode(composition, options = {}) {
   lines.push(`_label.y = ${y} - 28;`);
   lines.push(`page.appendChild(_label);`);
   lines.push(``);
-
   lines.push(`figma.viewport.scrollAndZoomIntoView([screen]);`);
   lines.push(`return { screenId: screen.id, pattern: ${JSON.stringify(pattern)}, children: screen.children.length };`);
 
   return lines.join('\n');
 }
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-
-function _getMeta(componentName) {
-  return COMPONENT_REGISTRY[componentName] || null;
-}
-
-function _getHeight(comp) {
+// ── GENERADOR DE BLOQUE POR COMPONENTE ───────────────────────────────────────
+// LA REGLA MÁS IMPORTANTE:
+//   _y += nativeHeight  ← altura REAL del nodo clonado, nunca del HEIGHT_MAP
+//   resize solo en X    ← nunca forzar Y si respectNativeHeight = true
+function _generateBlock(comp, { SCREEN_W, MARGIN, yMode, yFixed, sp }) {
   const meta = _getMeta(comp.component);
-  return meta?.height || 56;
-}
+  if (!meta) return [`// WARN: componente no encontrado en registry: ${comp.component}`];
 
-function _generateComponentBlock(comp, opts = {}) {
-  const { yFromVar = false, yFixed = null, marginH: overrideMarginH } = opts;
-  const meta = _getMeta(comp.component);
-  if (!meta) return [`// WARN: componente no encontrado: ${comp.component}`];
+  const nodeId   = (comp.node_id && comp.node_id !== 'pending') ? comp.node_id : meta.nodeId;
+  const isFullW  = meta.fullWidth;
+  const hasMargin = meta.withMargin;
 
-  const nodeId = comp.node_id && comp.node_id !== 'pending' ? comp.node_id : meta.nodeId;
-  const h = meta.height;
+  // Ancho: fullWidth = screenWidth, withMargin = screenWidth - margin*2
+  const marginH  = isFullW ? 0 : (hasMargin ? MARGIN : 0);
+  const w        = SCREEN_W - (marginH * 2);
+  const xPos     = marginH;
 
-  // Margen lateral: usa override si se pasa, sino el del registry
-  const marginH = overrideMarginH !== undefined ? overrideMarginH : (meta.marginH ?? 0);
-  const w = SCREEN_W - (marginH * 2);
-  const xPos = marginH;
-
-  const suffix = comp._index !== undefined ? `_${comp._index}` : '';
-  const varName = `_${comp.component.replace(/-/g, '_')}${suffix}`;
+  const suffix  = comp._index !== undefined ? `_${comp._index}` : '';
+  const varName = `_${comp.component.replace(/[^a-zA-Z0-9]/g, '_')}${suffix}`;
 
   const lines = [];
-  lines.push(`{`);
+  lines.push(`{ // ${comp.component}`);
   lines.push(`  const _src = await figma.getNodeByIdAsync('${nodeId}');`);
-  lines.push(`  if (!_src) { console.warn('Node not found: ${nodeId} (${comp.component})'); }`);
+  lines.push(`  if (!_src) { console.warn('[Painter] Node not found: ${nodeId} (${comp.component})'); }`);
   lines.push(`  else {`);
   lines.push(`    const ${varName} = _src.clone();`);
   lines.push(`    ${varName}.x = ${xPos};`);
 
-  if (yFixed !== null) {
+  if (yMode === 'fixed') {
     lines.push(`    ${varName}.y = ${yFixed};`);
-  } else if (yFromVar) {
+  } else {
+    // yMode === 'var' — acumular con altura REAL del nodo
     lines.push(`    ${varName}.y = _y;`);
-    lines.push(`    _y += ${h};`);
+    // ── CAMBIO CLAVE: _y += nativeHeight, no HEIGHT_MAP ──
+    lines.push(`    const _nativeH_${varName} = ${varName}.height; // altura real del componente Figma`);
+    lines.push(`    _y += _nativeH_${varName}; // acumulamos con altura nativa — nunca hardcodeada`);
   }
 
-  lines.push(`    ${varName}.resize(${w}, ${h});`);
-
-  // Corner radius para componentes de contenido con margen
-  if (marginH > 0 && comp.component !== 'button-primary' && comp.component !== 'button-secondary') {
-    lines.push(`    if ('cornerRadius' in ${varName}) ${varName}.cornerRadius = 12;`);
+  // Resize SOLO en X — nunca forzar la altura
+  // Si el componente tiene respectNativeHeight: true (todos los que tienen auto-layout)
+  // solo ajustamos el ancho
+  if (meta.respectNativeHeight !== false) {
+    lines.push(`    // Resize solo ancho — altura nativa respetada (respectNativeHeight: true)`);
+    lines.push(`    if (${varName}.type === 'INSTANCE' || ${varName}.type === 'FRAME') {`);
+    lines.push(`      ${varName}.resize(${w}, ${varName}.height);`);
+    lines.push(`    }`);
+  } else {
+    // Los pocos componentes con altura fija conocida
+    const refH = REGISTRY_FROM_SPACING[comp.component]?.height || 56;
+    lines.push(`    ${varName}.resize(${w}, ${refH});`);
   }
 
   lines.push(`    screen.appendChild(${varName});`);
@@ -420,7 +366,7 @@ function paint(composition, options = {}) {
 }
 
 function getRegistry() {
-  return COMPONENT_REGISTRY;
+  return PAINTER_META;
 }
 
-module.exports = { paint, getRegistry, COMPONENT_REGISTRY };
+module.exports = { paint, getRegistry, PAINTER_META, COMPONENT_REGISTRY: PAINTER_META };
