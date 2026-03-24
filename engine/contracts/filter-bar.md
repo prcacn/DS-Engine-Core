@@ -1,7 +1,7 @@
 # filter-bar
 
 ## Node ID en Figma
-1:24
+185:3897
 
 ## Component Set ID
 185:3897  ← COMPONENT_SET padre (no instanciar directamente)
