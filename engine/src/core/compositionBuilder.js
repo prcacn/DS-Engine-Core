@@ -25,6 +25,13 @@ function extractQuantities(brief) {
     'notificación': 'notification-banner', 'notificaciones': 'notification-banner',
     'banner': 'notification-banner', 'badge': 'badge', 'chip': 'badge', 'chips': 'badge',
     'sección': 'list-header', 'secciones': 'list-header',
+    'card-media': 'card-media', 'cards-media': 'card-media',
+    'media card': 'card-media', 'media cards': 'card-media',
+    'tarjeta media': 'card-media', 'tarjetas media': 'card-media',
+    'card de contenido': 'card-media', 'cards de contenido': 'card-media',
+    'noticia': 'card-media', 'noticias': 'card-media',
+    'artículo': 'card-media', 'artículos': 'card-media',
+    'card editorial': 'card-media', 'cards editoriales': 'card-media',
   };
 
   const numPattern = Object.keys(WORD_TO_NUM).join('|');
