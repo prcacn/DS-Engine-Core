@@ -663,23 +663,27 @@ function renderScreen(data, options = {}) {
     }
   }
 
-  // Pre-agrupar card-composition consecutivos en cards completas
-  // Un card-composition puede tener 2-3 slots consecutivos (header, content, action)
-  // que hay que renderizar como una sola card envuelta en ds-card-composition
-  function groupCardCompositions(comps) {
+  // Reagrupar segmentos para manejar card-composition
+  // Preserva los grupos de form ya calculados y agrupa card-composition
+  function regroupSegments(segs) {
     const result = [];
-    let i = 0;
-    while (i < comps.length) {
-      if (comps[i].component === 'card-composition') {
-        const group = [];
-        while (i < comps.length && comps[i].component === 'card-composition') {
-          group.push(comps[i]);
-          i++;
+    for (const seg of segs) {
+      if (seg.type === 'form') {
+        // Separar card-composition de otros componentes del form
+        const formComps = seg.items.filter(c => c.component !== 'card-composition');
+        const cardComps = seg.items.filter(c => c.component === 'card-composition');
+        if (formComps.length > 0) result.push({ type: 'form', items: formComps });
+        if (cardComps.length > 0) result.push({ type: 'card-composition-group', items: cardComps });
+      } else if (seg.type === 'single' && seg.comp.component === 'card-composition') {
+        // Buscar si el último segmento también es card-composition-group
+        const last = result[result.length - 1];
+        if (last && last.type === 'card-composition-group') {
+          last.items.push(seg.comp);
+        } else {
+          result.push({ type: 'card-composition-group', items: [seg.comp] });
         }
-        result.push({ type: 'card-composition-group', items: group });
       } else {
-        result.push({ type: 'single', comp: comps[i] });
-        i++;
+        result.push(seg);
       }
     }
     return result;
@@ -747,18 +751,16 @@ function renderScreen(data, options = {}) {
     }).join('\n');
   }
 
-  // Renderizar segmentos
-  const groupedSegments = groupCardCompositions(
-    segments.flatMap(s => s.type === 'single' ? [s.comp] : s.items.map(i => ({...i, _seg_type: s.type})))
-  );
+  // Reagrupar y renderizar segmentos
+  const finalSegments = regroupSegments(segments);
 
   let bodyHtml = '';
-  for (const seg of groupedSegments) {
-    if (seg.type === 'card-composition-group') {
+  for (const seg of finalSegments) {
+    if (seg.type === 'form') {
+      const innerHtml = seg.items.map(c => renderComponent(c, pattern)).join('\n');
+      bodyHtml += `<div class="ds-form">${innerHtml}</div>`;
+    } else if (seg.type === 'card-composition-group') {
       bodyHtml += renderCardCompositionGroup(seg.items);
-    } else if (seg._seg_type === 'form') {
-      // Reconstruir el grupo de form
-      bodyHtml += `<div class="ds-form">${renderComponent(seg.comp, pattern)}</div>`;
     } else {
       bodyHtml += renderComponent(seg.comp, pattern);
     }
