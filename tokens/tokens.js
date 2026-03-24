@@ -189,6 +189,20 @@ export const componentTokens = {
     paddingV:     'padding/vertical/lg',
     gap:          'gap/xl',
   },
+  'card-media': {
+    background:       'color/surface/primary',
+    border:           'color/border/default',
+    mediaBg:          'color/surface/tertiary',
+    titleColor:       'color/text/primary',
+    secondaryColor:   'color/text/secondary',
+    actionColor:      'color/text/brand',
+    paddingH:         'padding/component/md',
+    paddingV:         'padding/vertical/md',
+    paddingBottom:    'padding/component/md',
+    gap:              'gap/sm',
+    gapFooter:        'gap/md',
+    borderRadius:     'radius/component/md',
+  },
   'input-text': {
     background:   'color/surface/primary',
     border:       'color/border/default',
@@ -301,3 +315,4 @@ const tokens = {
 };
 
 export default tokens;
+
