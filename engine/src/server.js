@@ -12,6 +12,7 @@ const generateDocRoute = require('./api/routes/generate-doc');
 const approveRoute     = require('./api/routes/approve');
 const registerRoute    = require('./api/routes/register');
 const renderRoute      = require('./api/routes/render');
+const webhookRoute     = require('./api/routes/webhook');  // F-01 flujo inverso
 const errorHandler    = require('./api/middleware/errorHandler');
 const auth            = require('./api/middleware/auth');
 
@@ -34,9 +35,14 @@ app.get('/health', (req, res) => {
     engine:    'DS IA-Ready Engine Core',
     ds_repo:   process.env.DS_REPO_PATH || 'not configured',
     pinecone:  process.env.PINECONE_API_KEY ? 'configured' : 'not configured',
+    webhook:   process.env.FIGMA_WEBHOOK_PASSCODE ? 'configured' : 'not configured',
     timestamp: new Date().toISOString()
   });
 });
+
+// ── Webhook de Figma (sin auth — Figma no envía API key) ──────────────────
+// Seguridad: verificación por passcode en el handler
+app.use('/webhook', webhookRoute);
 
 // ── Rutas protegidas con API Key ───────────────────────────────────────────
 app.use('/generate',   auth, generateRoute);
@@ -64,6 +70,7 @@ app.listen(PORT, () => {
   console.log(`  ▸ Health     http://localhost:${PORT}/health`);
   console.log(`  ▸ Knowledge  /knowledge/ingest · /knowledge/list · /knowledge/delete/:id`);
   console.log(`  ▸ Render     /render  → HTML con CSS variables del DS listo para producción`);
+  console.log(`  ▸ Webhook    /webhook/figma  → Flujo inverso F-01`);
   console.log(`  ▸ DS Repo    ${process.env.DS_REPO_PATH || '⚠️  DS_REPO_PATH not set'}`);
   console.log('');
 });
