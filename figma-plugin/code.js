@@ -408,12 +408,33 @@ async function paintFlow(engineResponse) {
   });
 }
 
+// ─── SPACING TOKENS (inline desde spacingRegistry / layoutRules) ─────────────
+// Valores mobile — fuente de verdad: Figma Spacing page + tokens DS
+var DS_SPACING = {
+  screenWidth:    390,
+  marginScreen:   16,   // Padding/Horizontal/MD
+  paddingTop:     12,   // Padding/Vertical/MD
+  paddingBottom:  16,   // Padding/Horizontal/MD
+  gapSection:      8,   // Gap/MD — entre bloques distintos
+  gapItem:         0,   // Gap/XS — entre cards consecutivas (flush)
+  gapForm:        12,   // Gap/LG — entre inputs
+};
+
+// Componentes que van a ancho completo (sin margen lateral)
+var FULL_WIDTH = [
+  'navigation-header', 'filter-bar', 'notification-banner',
+  'list-header', 'card-item', 'card-item/financial',
+  'card-item/financial-expense', 'card-item/account',
+  'tab-bar', 'empty-state', 'modal-bottom-sheet',
+  'skeleton-loader',
+];
+
 // ─── PAINT COMPONENT ─────────────────────────────────────────────────────────
 
 function paintComponent(parent, comp, x, y, screenW) {
-  var name   = comp.component;
+  var name = comp.component;
 
-  // Resolver variante del navigation-header según lo que indica el engine/template
+  // Resolver variante del navigation-header
   var resolvedName = name;
   if (name === 'navigation-header') {
     var variant = (comp.variant || '').toLowerCase();
@@ -422,52 +443,75 @@ function paintComponent(parent, comp, x, y, screenW) {
     } else if (variant.includes('modal') || variant === 'type=modal') {
       resolvedName = 'navigation-header/modal';
     }
-    // Type=Predeterminada usa el default 'navigation-header'
   }
 
   var nodeId = comp.node_id && comp.node_id !== 'pending'
     ? comp.node_id
     : COMPONENT_NODE_IDS[resolvedName] || COMPONENT_NODE_IDS[name];
-  var h      = HEIGHT_MAP[name] || 56;
-  var margin = getMarginH(name);
-  var w      = screenW - (margin * 2);
+
+  // Margen horizontal — 0 para fullwidth, DS_SPACING.marginScreen para el resto
+  var margin = FULL_WIDTH.indexOf(name) !== -1 ? 0 : DS_SPACING.marginScreen;
+  var w = screenW - (margin * 2);
 
   if (!nodeId) {
     // Placeholder si no hay node ID
     var rect = figma.createRectangle();
-    rect.name = name;
+    rect.name = name + ' (placeholder)';
     rect.x = x + margin;
     rect.y = y;
-    rect.resize(w, h);
-    rect.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.95 } }];
+    rect.resize(w, HEIGHT_MAP[name] || 56);
+    rect.fills = [{ type: 'SOLID', color: { r: 0.93, g: 0.95, b: 0.97 } }];
     rect.cornerRadius = 8;
     parent.appendChild(rect);
-    return y + h;
+    return Promise.resolve(y + (HEIGHT_MAP[name] || 56));
   }
 
-  // Clonar desde el DS
   return figma.getNodeByIdAsync(nodeId).then(function(srcNode) {
     if (!srcNode) {
-      console.warn('Node not found: ' + nodeId + ' (' + name + ')');
-      return y + h;
+      console.warn('[Plugin] Node not found: ' + nodeId + ' (' + name + ')');
+      return y + (HEIGHT_MAP[name] || 56);
     }
-    var clone = srcNode.clone();
-    clone.x = x + margin;
-    clone.y = y;
-    clone.resize(w, h);
-    if (margin > 0 && name !== 'button-primary' && name !== 'button-secondary') {
-      if ('cornerRadius' in clone) clone.cornerRadius = 12;
+
+    // ── CREAR INSTANCIA — no clonar ──────────────────────────────────────────
+    // createInstance() mantiene el vínculo al componente maestro.
+    // clone() produce una copia muerta desvinculada — NUNCA usar para componentes DS.
+    var instance;
+    if (srcNode.type === 'COMPONENT') {
+      instance = srcNode.createInstance();
+    } else if (srcNode.type === 'COMPONENT_SET') {
+      // ComponentSet — usar la variante por defecto
+      var defaultVariant = srcNode.defaultVariant || srcNode.children[0];
+      instance = defaultVariant.createInstance();
+    } else {
+      // Fallback para nodos que no son COMPONENT (no debería ocurrir)
+      console.warn('[Plugin] Node ' + nodeId + ' is ' + srcNode.type + ', not COMPONENT — cloning as fallback');
+      instance = srcNode.clone();
     }
-    // Nombrar el layer con el nombre canónico del componente
-    // Esto permite que handleGetSelection lo identifique siempre correctamente
-    clone.name = name;
-    parent.appendChild(clone);
+
+    instance.name = name;
+    instance.x = x + margin;
+    instance.y = y;
+
+    // ── RESIZE SOLO EN X — nunca forzar altura ───────────────────────────────
+    // La altura la dicta el componente según sus tokens de spacing internos.
+    // Forzar Y destruye los auto-layout y los boundVariables del componente.
+    var nativeH = instance.height;
+    if (instance.width !== w) {
+      instance.resize(w, nativeH);
+    }
+
+    parent.appendChild(instance);
 
     // Aplicar props de texto
-    applyTextProps(clone, comp.props || {});
+    applyTextProps(instance, comp.props || {});
 
-    return y + h;
-  }).catch(function() { return y + h; });
+    // Acumular _y con la altura REAL de la instancia
+    return y + instance.height;
+
+  }).catch(function(e) {
+    console.error('[Plugin] paintComponent error:', name, e.message);
+    return y + (HEIGHT_MAP[name] || 56);
+  });
 }
 
 // ─── APPLY TEXT PROPS ─────────────────────────────────────────────────────────
@@ -654,21 +698,25 @@ function isSticky(name, zone) {
 }
 
 function getMarginH(name) {
-  var EDGE_TO_EDGE = ['navigation-header', 'filter-bar', 'notification-banner', 'list-header', 'card-item', 'tab-bar', 'empty-state', 'modal-bottom-sheet'];
-  return EDGE_TO_EDGE.indexOf(name) !== -1 ? 0 : 16;
+  // Mantenida por compatibilidad — usar FULL_WIDTH array en paintComponent
+  return FULL_WIDTH.indexOf(name) !== -1 ? 0 : DS_SPACING.marginScreen;
 }
 
 function getGap(prevName, nextName) {
-  var SECTION_GROUPS = {
-    'list-header': 'section',
-    'card-item':   'list',
-    'input-text':  'form',
-  };
-  if (nextName === 'list-header') return 24;
+  // Gaps desde tokens del DS (spacingRegistry)
+  // card-item consecutivas: Gap/XS = 0 (flush)
+  var LIST_ITEMS = ['card-item','card-item/financial','card-item/financial-expense','card-item/account','skeleton-loader'];
+  if (LIST_ITEMS.indexOf(prevName) !== -1 && LIST_ITEMS.indexOf(nextName) !== -1) return 0;
+  // list-header precede a su grupo sin gap
   if (prevName === 'list-header') return 0;
-  if (SECTION_GROUPS[prevName] && SECTION_GROUPS[prevName] === SECTION_GROUPS[nextName]) return 1;
-  if (prevName === 'filter-bar' || prevName === 'notification-banner') return 16;
-  return 24;
+  // Antes de list-header: Gap/MD = 8px
+  if (nextName === 'list-header') return DS_SPACING.gapSection;
+  // inputs en formulario: Gap/LG = 12px
+  if (prevName === 'input-text' && nextName === 'input-text') return DS_SPACING.gapForm;
+  // filter-bar → contenido: Gap/MD = 8px
+  if (prevName === 'filter-bar') return DS_SPACING.gapSection;
+  // bloques distintos: Gap/MD = 8px
+  return DS_SPACING.gapSection;
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
@@ -678,3 +726,4 @@ figma.showUI(__html__, {
   height: 680,
   title: 'DS IA-Ready Engine',
 });
+
