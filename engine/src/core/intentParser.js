@@ -46,6 +46,7 @@ Los tipos de pantalla disponibles son:
 - perfil-usuario: datos personales, cuenta y configuración del usuario
 - error-estado: pantalla de error, sin conexión o estado vacío
 - notificaciones: lista de alertas, avisos y mensajes del sistema
+- lista-noticias: listado de noticias, artículos o contenido editorial con imagen. Usar cuando el brief mencione noticias, artículos, contenido, publicaciones, posts, novedades. Cada ítem tiene imagen + titular + enlace.
 - transferencia-bancaria: flujo MULTIPANTALLA (5 pasos) para envío de dinero entre cuentas. Usar cuando el brief mencione transferir dinero, enviar dinero, pago a tercero, Bizum, SEPA, CLABE, IBAN o mover fondos entre cuentas. NO usar formulario-simple para este caso.
 
 Los componentes disponibles y sus restricciones son:
@@ -90,7 +91,7 @@ Analiza el brief e identifica si pide algo que viola estas restricciones.
 Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin markdown, sin explicaciones.
 El JSON debe tener exactamente esta estructura:
 {
-  "intent_type": "dashboard | lista-con-filtros | login | registro | edicion-perfil | formulario-producto | formulario-default | confirmacion | detalle | onboarding | perfil-usuario | error-estado | notificaciones | transferencia-bancaria",
+  "intent_type": "dashboard | lista-con-filtros | lista-noticias | login | registro | edicion-perfil | formulario-producto | formulario-default | confirmacion | detalle | onboarding | perfil-usuario | error-estado | notificaciones | transferencia-bancaria",
   "domain": "string corto describiendo el dominio (ej: fondos, login, transacciones)",
   "required_capabilities": ["array de capacidades necesarias"],
   "constraints": {
