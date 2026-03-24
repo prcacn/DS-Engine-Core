@@ -33,20 +33,32 @@ async function handleDetect() {
 
   var node = sel[0];
 
-  // Verificar que es COMPONENT o COMPONENT_SET
-  if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') {
+  // Escalar hacia arriba hasta encontrar un COMPONENT_SET o COMPONENT
+  // El diseñador puede haber seleccionado un texto, frame interno, o variante suelta
+  var setNode = null;
+  var current = node;
+  var maxDepth = 6;
+  while (current && maxDepth-- > 0) {
+    if (current.type === 'COMPONENT_SET') { setNode = current; break; }
+    if (current.type === 'COMPONENT' && current.parent && current.parent.type === 'COMPONENT_SET') {
+      setNode = current.parent; break;
+    }
+    if (current.type === 'COMPONENT' && (!current.parent || current.parent.type !== 'COMPONENT_SET')) {
+      setNode = current; break;
+    }
+    current = current.parent;
+  }
+
+  if (!setNode) {
     figma.ui.postMessage({
       type: 'error',
-      text: 'Selecciona un COMPONENT_SET. Tipo detectado: ' + node.type
+      text: 'No se encontró un COMPONENT_SET en la selección ni en sus padres. Tipo detectado: ' + node.type + '. Asegúrate de seleccionar el componente completo.'
     });
     return;
   }
 
-  // Normalizar — si es COMPONENT buscar su SET padre
-  var setNode = node;
-  if (node.type === 'COMPONENT' && node.parent && node.parent.type === 'COMPONENT_SET') {
-    setNode = node.parent;
-    figma.notify('Usando COMPONENT_SET padre: ' + setNode.name);
+  if (setNode.id !== node.id) {
+    figma.notify('Usando: ' + setNode.name + ' (' + setNode.type + ')');
   }
 
   // Extraer variantes
@@ -98,6 +110,16 @@ async function handleDetect() {
 
   // Comprobar si ya existe en el sistema
   var canonicalName = setNode.name.toLowerCase().replace(/\s+/g, '-');
+
+  // Avisar si el nombre parece un componente interno del DS
+  var INTERNAL_NAMES = ['title', 'subtitle', 'label', 'icon', 'divider', 'undefined'];
+  if (INTERNAL_NAMES.indexOf(canonicalName) !== -1) {
+    figma.ui.postMessage({
+      type: 'error',
+      text: '⚠ "' + canonicalName + '" parece un nodo interno del DS. Selecciona el COMPONENT_SET del componente completo, no un elemento interno.'
+    });
+    return;
+  }
 
   state.component = {
     name:       canonicalName,
