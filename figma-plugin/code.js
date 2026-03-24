@@ -5,49 +5,59 @@ var ENGINE_URL = 'https://ds-ia-ready-engine-production.up.railway.app';
 var ENGINE_API_KEY = 'dev-key-local-2025';
 
 // Node IDs canónicos del Simple DS
+// REGLA: usar siempre el COMPONENT_SET padre, no la variante suelta.
+// paintComponent llama a defaultVariant.createInstance() sobre el COMPONENT_SET.
 var COMPONENT_NODE_IDS = {
-  // navigation-header — 3 variantes reales según nivel de navegación
-  'navigation-header':              '112:1853', // Type=Predeterminada (L1) — por defecto
-  'navigation-header/dashboard':    '170:2660', // Type=Dashboard (L0)
-  'navigation-header/modal':        '170:2843', // Type=Modal (L2/L3)
-  'button-primary':           '1:9',
-  'button-secondary':         '1:11',
-  'card-item':                '1:13',
-  'input-text':               '1:21',
-  'filter-bar':               '1:24',
-  'empty-state':              '1:31',
-  'modal-bottom-sheet':       '1:36',
-  'tab-bar':                  '20:784',
-  'list-header':              '20:797',
-  'badge':                    '20:800',
-  'notification-banner':      '20:802',
-  'amount-display':           '137:1740',
-  'chart-sparkline':          '137:1746',
-  'skeleton-loader':          '137:1752',
-  'card-item/financial':      '137:1758',
-  'card-item/financial-expense': '137:1769',
+  // navigation-header — COMPONENT_SET con 3 variantes (Type=Predeterminada/Modal/Dashboard)
+  'navigation-header':              '170:2653', // COMPONENT_SET — defaultVariant = Type=Predeterminada
+  'navigation-header/dashboard':    '170:2660', // variante específica Type=Dashboard (L0)
+  'navigation-header/modal':        '170:2843', // variante específica Type=Modal (L2/L3)
+  'button-primary':                 '185:3893', // COMPONENT_SET
+  'button-secondary':               '185:3894', // COMPONENT_SET
+  'card-item':                      '185:3895', // COMPONENT_SET
+  'input-text':                     '185:3896', // COMPONENT_SET
+  'filter-bar':                     '185:3897', // COMPONENT_SET
+  'empty-state':                    '185:3898', // COMPONENT_SET
+  'modal-bottom-sheet':             '185:3899', // COMPONENT_SET
+  'tab-bar':                        '185:3900', // COMPONENT_SET
+  'list-header':                    '185:3901', // COMPONENT_SET
+  'badge':                          '185:3902', // COMPONENT_SET
+  'notification-banner':            '185:3903', // COMPONENT_SET
+  'card-item/financial':            '185:3904', // COMPONENT_SET
+  'card-item/financial-expense':    '185:3905', // COMPONENT_SET
+  'amount-display':                 '185:3906', // COMPONENT_SET
+  'skeleton-loader':                '185:3908', // COMPONENT_SET
+  'card-summary':                   '185:3918', // COMPONENT_SET
+  'card-item/account':              '185:3928', // COMPONENT_SET
+  'chart-sparkline':                '137:1746', // COMPONENT (sin set)
+  'card-media':                     '217:2086', // COMPONENT_SET
 };
 
+// Alturas de referencia auditadas directamente desde Figma (solo para fallback/placeholder)
+// En paintComponent se usa instance.height — estos valores NO se usan para resize
 var HEIGHT_MAP = {
   'navigation-header':              56,
   'navigation-header/dashboard':    56,
   'navigation-header/modal':        56,
-  'filter-bar':                  48,
-  'card-item':                   72,
-  'button-primary':              52,
-  'button-secondary':            52,
-  'input-text':                  56,
-  'empty-state':                 244,
-  'modal-bottom-sheet':          280,
-  'tab-bar':                     56,
-  'list-header':                 44,
-  'badge':                       26,
-  'notification-banner':         64,
-  'amount-display':              126,
-  'chart-sparkline':             80,
-  'skeleton-loader':             72,
-  'card-item/financial':         72,
-  'card-item/financial-expense': 72,
+  'button-primary':                 48,  // auditado: State=Predeterminada 48px
+  'button-secondary':               48,
+  'card-item':                      72,
+  'card-item/financial':            72,
+  'card-item/financial-expense':    72,
+  'card-item/account':              72,
+  'card-summary':                   120,
+  'card-media':                     295, // variante vertical
+  'input-text':                     50,  // auditado: State=Default 50px
+  'filter-bar':                     48,
+  'empty-state':                    236, // auditado: 236px
+  'modal-bottom-sheet':             255, // auditado: 255px
+  'tab-bar':                        56,
+  'list-header':                    44,
+  'badge':                          26,
+  'notification-banner':            64,
+  'amount-display':                 126,
+  'chart-sparkline':                80,
+  'skeleton-loader':                72,
 };
 
 // ─── MENSAJES DESDE LA UI ─────────────────────────────────────────────────────
@@ -475,16 +485,21 @@ function paintComponent(parent, comp, x, y, screenW) {
     // ── CREAR INSTANCIA — no clonar ──────────────────────────────────────────
     // createInstance() mantiene el vínculo al componente maestro.
     // clone() produce una copia muerta desvinculada — NUNCA usar para componentes DS.
+    //
+    // COMPONENT_SET → usar defaultVariant (la primera variante definida en el set)
+    // COMPONENT     → createInstance() directamente
     var instance;
-    if (srcNode.type === 'COMPONENT') {
-      instance = srcNode.createInstance();
-    } else if (srcNode.type === 'COMPONENT_SET') {
-      // ComponentSet — usar la variante por defecto
+    if (srcNode.type === 'COMPONENT_SET') {
       var defaultVariant = srcNode.defaultVariant || srcNode.children[0];
+      if (!defaultVariant) {
+        console.warn('[Plugin] COMPONENT_SET sin variantes: ' + nodeId + ' (' + name + ')');
+        return y + (HEIGHT_MAP[name] || 56);
+      }
       instance = defaultVariant.createInstance();
+    } else if (srcNode.type === 'COMPONENT') {
+      instance = srcNode.createInstance();
     } else {
-      // Fallback para nodos que no son COMPONENT (no debería ocurrir)
-      console.warn('[Plugin] Node ' + nodeId + ' is ' + srcNode.type + ', not COMPONENT — cloning as fallback');
+      console.warn('[Plugin] Node ' + nodeId + ' es ' + srcNode.type + ' — usando clone como fallback');
       instance = srcNode.clone();
     }
 
