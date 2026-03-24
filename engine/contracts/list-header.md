@@ -1,7 +1,7 @@
 # list-header
 
 ## Node ID en Figma
-20:797
+185:3901
 
 ## Component Set ID
 185:3901  ← COMPONENT_SET padre (no instanciar directamente)
