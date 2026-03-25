@@ -5,6 +5,7 @@
 const express = require('express');
 const router  = express.Router();
 const { listPendingsFromGH, deletePendingFromGH, propagateApproval } = require('../../core/propagationEngine');
+const { generateImpactReport } = require('../../core/impactReport');
 
 // GET /review/pending - listar cambios pendientes desde GitHub
 router.get('/pending', async (req, res) => {
@@ -60,6 +61,21 @@ router.post('/reject', async (req, res) => {
 
   } catch (err) {
     console.error('[Review] Error rechazando:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /review/impact/:file - generar impact report antes de aprobar
+router.get('/impact/:file', async (req, res) => {
+  const { file } = req.params;
+  try {
+    const reviews = await listPendingsFromGH();
+    const review  = reviews.find(r => r.file === file);
+    if (!review) return res.status(404).json({ error: 'Review no encontrado' });
+    const report = await generateImpactReport(review);
+    res.json(report);
+  } catch (err) {
+    console.error('[Review] Error generando impact report:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
