@@ -9,6 +9,7 @@
 //   propagateApproval()  - cuando se aprueba, actualiza el contrato y regenera metadata IA
 
 const https = require('https');
+const { generateImpactReport } = require('./impactReport');
 
 const GH_TOKEN = process.env.GITHUB_TOKEN;
 const GH_REPO  = process.env.GITHUB_REPO || 'prcacn/DS-Engine-Core';
@@ -218,10 +219,19 @@ async function propagateApproval(review) {
     propagated: true,
   });
 
+  // 6. Generar impact report
+  let impactReport = null;
+  try {
+    impactReport = await generateImpactReport(review);
+  } catch (e) {
+    console.warn('[Propagation] No se pudo generar impact report:', e.message);
+  }
+
   return {
-    contractUpdated: contractPath,
+    contractUpdated:   contractPath,
     aiMetadataUpdated: aiPath,
-    status: contract.status,
+    status:            contract.status,
+    impactReport,
   };
 }
 
