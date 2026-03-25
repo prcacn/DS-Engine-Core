@@ -98,7 +98,7 @@ async function pcDelete(id) {
 }
 
 // ── Embedding OpenAI (opcional) ────────────────────────────────────────────
-// ─── EMBEDDINGS — importado desde pineconeEmbed.js (fuente única) ────────────
+// ─── EMBEDDINGS - importado desde pineconeEmbed.js (fuente única) ────────────
 // ⚠ NO redefinir embed aquí. Usar siempre pineconeEmbed.js
 const { embed: _embed } = require('../../core/pineconeEmbed');
 async function embed(text) {
@@ -111,7 +111,7 @@ async function loadFromPinecone() {
   if (initialLoad) return;
   initialLoad = true;
   if (!cfg()) {
-    console.log('  ℹ [KB] Pinecone no configurado — modo memoria');
+    console.log('  ℹ [KB] Pinecone no configurado - modo memoria');
     return;
   }
   const entries = await pcListAll();
@@ -119,7 +119,7 @@ async function loadFromPinecone() {
     memoryStore = entries;
     console.log(`  ✓ [KB] store cargado: ${memoryStore.length} reglas`);
   } else {
-    console.log('  ℹ [KB] Pinecone vacío o error — store en memoria');
+    console.log('  ℹ [KB] Pinecone vacío o error - store en memoria');
   }
 }
 loadFromPinecone();
@@ -213,17 +213,17 @@ router.post('/feedback', async (req, res) => {
     const entries = [];
 
     // B2: las pantallas aprobadas NO se guardan en Pinecone KB como screen-docs.
-    // Los ejemplos aprobados van a /examples (templateLoader) — no a la KB semántica.
+    // Los ejemplos aprobados van a /examples (templateLoader) - no a la KB semántica.
     // Solo se guardan en KB las decisiones de rechazo con motivo claro (reglas de negocio)
     // y las modificaciones con un aprendizaje explícito. Sin listas de componentes
     // que generen falsos positivos semánticos.
     if (status === 'approved') {
-      // No guardamos en KB — el ejemplo aprobado va a /examples via templateLoader
-      console.log('  [KB/feedback] approved — no se guarda en Pinecone (evitar screen-doc noise)');
+      // No guardamos en KB - el ejemplo aprobado va a /examples via templateLoader
+      console.log('  [KB/feedback] approved - no se guarda en Pinecone (evitar screen-doc noise)');
     } else if (status === 'rejected' && motivo) {
       // Solo guardamos el motivo de rechazo como regla, sin mencionar componentes
       entries.push({
-        text: 'DECISION DE DISEÑO — RECHAZO: Para briefs similares a "' + brief.substring(0, 60) + '": ' + motivo,
+        text: 'DECISION DE DISEÑO - RECHAZO: Para briefs similares a "' + brief.substring(0, 60) + '": ' + motivo,
         categoria: 'restriccion',
         prioridad: 'alta',
         tipo: 'decision',
@@ -272,7 +272,7 @@ router.post('/feedback', async (req, res) => {
   }
 });
 
-// ── GET /knowledge/debug — ver respuesta raw de Pinecone ──────────────────
+// ── GET /knowledge/debug - ver respuesta raw de Pinecone ──────────────────
 router.get('/debug', async (req, res) => {
   const c = cfg();
   if (!c) return res.json({ ok: false, error: 'Pinecone no configurado', env: { PINECONE_HOST: !!process.env.PINECONE_HOST, PINECONE_API_KEY: !!process.env.PINECONE_API_KEY } });
