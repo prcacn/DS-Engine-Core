@@ -1,6 +1,6 @@
 // core/figmaPainter.js
 // ─────────────────────────────────────────────────────────────────────────────
-// FigmaPainter — Level 3.3
+// FigmaPainter - Level 3.3
 // Spacing gobernado por tokens: spacingRegistry.js + layoutRules.json
 // Regla de oro: NUNCA hardcodear alturas ni gaps. Siempre leer del nodo real.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ try {
   LAYOUT_RULES           = require('./layoutRules.json');
   console.log('  ✓ [Painter] spacingRegistry + layoutRules cargados');
 } catch(e) {
-  console.warn('  ⚠ [Painter] spacingRegistry no disponible — usando fallback mobile');
+  console.warn('  ⚠ [Painter] spacingRegistry no disponible - usando fallback mobile');
   SPACING_BY_BREAKPOINT = {
     mobile: {
       screenWidth: 390, marginScreen: 16, paddingContent: 16,
@@ -29,7 +29,7 @@ try {
   LAYOUT_RULES = { breakpoints: { mobile: { screen: { width: 390, height: 844 } } } };
 }
 
-// Breakpoint activo — se puede cambiar vía env o parámetro en tiempo de ejecución
+// Breakpoint activo - se puede cambiar vía env o parámetro en tiempo de ejecución
 const ACTIVE_BREAKPOINT = process.env.DS_BREAKPOINT || 'mobile';
 
 // ── Tokens de spacing resueltos para el breakpoint activo ─────────────────────
@@ -164,7 +164,7 @@ const PAINTER_META = {
   },
 };
 
-// Fusión de los dos registries — painter_meta gana en caso de conflicto de nodeId
+// Fusión de los dos registries - painter_meta gana en caso de conflicto de nodeId
 function _getMeta(componentName) {
   const painter  = PAINTER_META[componentName];
   const spacing  = REGISTRY_FROM_SPACING[componentName];
@@ -215,11 +215,11 @@ function generatePainterCode(composition, options = {}) {
     return !meta?.sticky;
   });
 
-  const screenName     = `gen_${Date.now()} — ${pattern} — ${Math.round((confidence?.global || 0) * 100)}%`;
+  const screenName     = `gen_${Date.now()} - ${pattern} - ${Math.round((confidence?.global || 0) * 100)}%`;
   const confidenceLabel = label || `${pattern} | ${Math.round((confidence?.global || 0) * 100)}% | ${breakpoint}`;
 
   const lines = [];
-  lines.push(`// FigmaPainter v3.3 — ${pattern} — ${breakpoint} — spacing from tokens`);
+  lines.push(`// FigmaPainter v3.3 - ${pattern} - ${breakpoint} - spacing from tokens`);
   lines.push(`// Breakpoint: ${breakpoint} | screenW: ${SCREEN_W} | margin: ${MARGIN}px | gapSection: ${sp.gapSection}px`);
   lines.push(`const PAGE_W = ${SCREEN_W};`);
   lines.push(`const PAGE_H = ${SCREEN_H};`);
@@ -237,7 +237,7 @@ function generatePainterCode(composition, options = {}) {
   lines.push(`screen.fills = [{ type: 'SOLID', color: { r: 0.98, g: 0.98, b: 0.99 } }];`);
   lines.push(`screen.clipsContent = true;`);
   lines.push(`page.appendChild(screen);`);
-  lines.push(`let _y = 0; // acumulador de posición Y — se incrementa con altura REAL del nodo`);
+  lines.push(`let _y = 0; // acumulador de posición Y - se incrementa con altura REAL del nodo`);
   lines.push(``);
 
   // ── HEADER ────────────────────────────────────────────────────────────────
@@ -252,7 +252,7 @@ function generatePainterCode(composition, options = {}) {
   // ── CONTENT ───────────────────────────────────────────────────────────────
   if (contentComponents.length > 0) {
     lines.push(`// ── Content zone ────────────────────────────────────────────`);
-    lines.push(`_y += ${sp.paddingTop}; // Padding/Vertical/MD — padding top del área de contenido`);
+    lines.push(`_y += ${sp.paddingTop}; // Padding/Vertical/MD - padding top del área de contenido`);
     lines.push(``);
 
     for (let i = 0; i < contentComponents.length; i++) {
@@ -281,7 +281,7 @@ function generatePainterCode(composition, options = {}) {
     let bottomOffset = SCREEN_H;
     for (const comp of [...sorted].reverse()) {
       const meta = _getMeta(comp.component);
-      // Altura de referencia para cálculo de posición — se usa SOLO para calcular yFixed
+      // Altura de referencia para cálculo de posición - se usa SOLO para calcular yFixed
       // El resize real respeta el nodo nativo
       const refH = REGISTRY_FROM_SPACING[comp.component]?.height || 56;
       bottomOffset -= refH;
@@ -339,18 +339,18 @@ function _generateBlock(comp, { SCREEN_W, MARGIN, yMode, yFixed, sp }) {
   if (yMode === 'fixed') {
     lines.push(`    ${varName}.y = ${yFixed};`);
   } else {
-    // yMode === 'var' — acumular con altura REAL del nodo
+    // yMode === 'var' - acumular con altura REAL del nodo
     lines.push(`    ${varName}.y = _y;`);
     // ── CAMBIO CLAVE: _y += nativeHeight, no HEIGHT_MAP ──
     lines.push(`    const _nativeH_${varName} = ${varName}.height; // altura real del componente Figma`);
-    lines.push(`    _y += _nativeH_${varName}; // acumulamos con altura nativa — nunca hardcodeada`);
+    lines.push(`    _y += _nativeH_${varName}; // acumulamos con altura nativa - nunca hardcodeada`);
   }
 
-  // Resize SOLO en X — nunca forzar la altura
+  // Resize SOLO en X - nunca forzar la altura
   // Si el componente tiene respectNativeHeight: true (todos los que tienen auto-layout)
   // solo ajustamos el ancho
   if (meta.respectNativeHeight !== false) {
-    lines.push(`    // Resize solo ancho — altura nativa respetada (respectNativeHeight: true)`);
+    lines.push(`    // Resize solo ancho - altura nativa respetada (respectNativeHeight: true)`);
     lines.push(`    if (${varName}.type === 'INSTANCE' || ${varName}.type === 'FRAME') {`);
     lines.push(`      ${varName}.resize(${w}, ${varName}.height);`);
     lines.push(`    }`);
