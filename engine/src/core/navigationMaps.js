@@ -5,7 +5,7 @@
 
 const { getNavLevel: _getNavLevel, getAllRules } = require('./globalRulesParser');
 
-// ── Fallback hardcodeado — solo si globalRulesParser falla ───────────────────
+// ── Fallback hardcodeado - solo si globalRulesParser falla ───────────────────
 const _FALLBACK_LEVEL = {
   'dashboard':              'L0',
   'onboarding':             'L0',
@@ -24,7 +24,7 @@ const _FALLBACK_LEVEL = {
   'error-estado':           'L3',
 };
 
-// Mapa intent → patrón (estático — no cambia con reglas)
+// Mapa intent → patrón (estático - no cambia con reglas)
 const INTENT_TO_PATTERN = {
   'dashboard':              'dashboard',
   'lista-con-filtros':      'lista-con-filtros',
@@ -46,7 +46,7 @@ const INTENT_TO_PATTERN = {
 const MULTISCREEN_INTENTS = ['transferencia-bancaria'];
 
 // ── INTENT_TO_LEVEL: construido desde globalRulesParser ──────────────────────
-// Se construye lazy — primera vez que se necesita
+// Se construye lazy - primera vez que se necesita
 let _cachedLevelMap = null;
 
 function getIntentToLevel() {
@@ -61,7 +61,7 @@ function getIntentToLevel() {
       return _cachedLevelMap;
     }
   } catch (err) {
-    console.warn('  ⚠ [NavMaps] globalRulesParser no disponible — usando fallback');
+    console.warn('  ⚠ [NavMaps] globalRulesParser no disponible - usando fallback');
   }
 
   _cachedLevelMap = _FALLBACK_LEVEL;
