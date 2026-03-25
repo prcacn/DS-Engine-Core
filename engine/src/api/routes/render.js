@@ -1,17 +1,17 @@
 // api/routes/render.js
-// POST /render — genera HTML de producción listo para usar
+// POST /render - genera HTML de producción listo para usar
 // Acepta el mismo body que /generate + opción target
 //
 // Body:
-//   brief    string   — descripción de la pantalla
-//   pattern  string?  — forzar patrón (opcional)
-//   target   string?  — "html" (default) | "preview"
+//   brief    string   - descripción de la pantalla
+//   pattern  string?  - forzar patrón (opcional)
+//   target   string?  - "html" (default) | "preview"
 //
 // Response (target=html):
 //   {
-//     html:       string   — HTML completo con CSS variables del DS
-//     css_vars:   string   — solo el bloque :root con los tokens
-//     components: array    — el array de componentes del engine
+//     html:       string   - HTML completo con CSS variables del DS
+//     css_vars:   string   - solo el bloque :root con los tokens
+//     components: array    - el array de componentes del engine
 //     meta: { pattern, intent, score, ... }
 //   }
 
@@ -73,7 +73,7 @@ router.post('/', async function(req, res, next) {
     const cssVarsMatch = DS_CSS.match(/:root\s*\{[^}]+\}/);
     const cssVars      = cssVarsMatch ? cssVarsMatch[0] : '';
 
-    console.log('  ✓ [Render] HTML generado —', governed.length, 'componentes | score:', score.global);
+    console.log('  ✓ [Render] HTML generado -', governed.length, 'componentes | score:', score.global);
 
     return res.json({
       html,
