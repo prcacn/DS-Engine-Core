@@ -1,11 +1,11 @@
-// core/knowledgeBase.js — Fase 4 (Pinecone Inference API + esquema catalogado)
+// core/knowledgeBase.js - Fase 4 (Pinecone Inference API + esquema catalogado)
 
 const { Pinecone } = require('@pinecone-database/pinecone');
 
 const pinecone  = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
 const INDEX_NAME = process.env.PINECONE_INDEX || 'ds-knowledge-base';
 
-// ─── EMBEDDINGS — importado desde pineconeEmbed.js (fuente única) ────────────
+// ─── EMBEDDINGS - importado desde pineconeEmbed.js (fuente única) ────────────
 // ⚠ NO redefinir embed aquí. Usar siempre pineconeEmbed.js
 const { embed } = require('./pineconeEmbed');
 
@@ -15,7 +15,7 @@ async function save({ content, tipo = 'general', geografia = 'global', tags = []
 
   // Filtrar si ha expirado
   if (expira && new Date(expira) < new Date()) {
-    throw new Error('La fecha de expiración ya pasó — no se guarda');
+    throw new Error('La fecha de expiración ya pasó - no se guarda');
   }
 
   const vector = await embed(content);
