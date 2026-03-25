@@ -68,13 +68,13 @@ Evalúa y decide para cada componente:
 2. ESTADO inicial (activo, deshabilitado, cargando, vacío)  
 3. Si hay reglas KB con restricciones de acceso → el componente afectado debe tener variante "locked" o "disabled" con explicación
 4. Si falta algún componente crítico para el flujo → sugiérelo como "missing_ux_element"
-5. ORDEN de los componentes — si la jerarquía actual no es óptima, propón reordenación
+5. ORDEN de los componentes - si la jerarquía actual no es óptima, propón reordenación
 
 Reglas UX que siempre aplican:
 - Navigation header siempre primero (order 1)
 - Tab bar siempre último si existe  
 - Los CTAs primarios deben estar en la parte baja de la pantalla
-- Si hay restricción de acceso (KB), mostrar el bloqueo con claridad — variante "locked" o "cta" en empty-state
+- Si hay restricción de acceso (KB), mostrar el bloqueo con claridad - variante "locked" o "cta" en empty-state
 - En flujos de confirmación, el botón destructivo tiene variante "destructive"
 - Notificaciones de advertencia van siempre debajo del header
 
@@ -119,7 +119,7 @@ Estructura exacta:
     return {
       components: components.map(c => ({ component: c.component, order: c.order, variant: c.variant || 'default', state: 'active', ux_note: 'fallback' })),
       missing_ux_elements: [],
-      flow_rationale: 'fallback — error en agente',
+      flow_rationale: 'fallback - error en agente',
     };
   }
 }
