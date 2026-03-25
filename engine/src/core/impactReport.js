@@ -13,6 +13,7 @@ const SCAN_DIRS = [
   { path: 'engine/patterns',    type: 'pattern'     },
   { path: 'engine/contracts',   type: 'contract'    },
   { path: 'engine/global-rules', type: 'global-rule' },
+  { path: 'engine/composition-patterns', type: 'composition-pattern' },
 ];
 
 function ghGet(path) {
