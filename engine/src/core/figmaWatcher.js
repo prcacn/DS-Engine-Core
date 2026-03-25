@@ -1,5 +1,5 @@
 // figmaWatcher.js
-// F-01 — Flujo Inverso Automatizado
+// F-01 - Flujo Inverso Automatizado
 // Recibe y procesa webhooks de Figma detectando cambios relevantes para contratos
 // Ruta: engine/src/core/figmaWatcher.js
 
@@ -38,7 +38,7 @@ function assessImpact(changeType, details = {}) {
 }
 
 // ─── Extraer delta estructurado del payload de Figma ─────────────────────
-// Figma no envía qué cambió exactamente — hay que comparar con la versión anterior
+// Figma no envía qué cambió exactamente - hay que comparar con la versión anterior
 // En esta fase extraemos los componentes afectados para procesarlos después
 function extractDelta(payload) {
   const delta = {
@@ -93,14 +93,14 @@ function filterRelevant(delta) {
   return { ...delta, changes: relevant };
 }
 
-// ─── Handler principal — llamado desde la ruta Express ───────────────────
+// ─── Handler principal - llamado desde la ruta Express ───────────────────
 async function handleFigmaWebhook(req, res) {
   try {
     const payload = req.body;
 
     // 1. Verificar passcode
     if (!verifyPasscode(payload.passcode)) {
-      console.warn('[Watcher] Passcode inválido — webhook rechazado');
+      console.warn('[Watcher] Passcode inválido - webhook rechazado');
       return res.status(401).json({ error: 'Invalid passcode' });
     }
 
@@ -123,7 +123,7 @@ async function handleFigmaWebhook(req, res) {
     console.log(`[Watcher] ${relevantDelta.changes.length} cambios relevantes detectados`);
 
     // 5. Emitir al contractUpdater de forma asíncrona
-    // No bloqueamos la respuesta a Figma — procesamos en background
+    // No bloqueamos la respuesta a Figma - procesamos en background
     setImmediate(async () => {
       try {
         const { processContractUpdate } = require('./contractUpdater');
