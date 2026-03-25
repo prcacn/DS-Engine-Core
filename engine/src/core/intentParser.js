@@ -1,7 +1,7 @@
 // core/intentParser.js
-// Fase 2+ — Usa Claude API para interpretar el brief en lenguaje natural
+// Fase 2+ - Usa Claude API para interpretar el brief en lenguaje natural
 // y devolver un IntentObject estructurado + brief_violations[]
-// v1.1 — Añade navigation_level al output (L0/L1/L2/L3) según global-rules/navigation.md
+// v1.1 - Añade navigation_level al output (L0/L1/L2/L3) según global-rules/navigation.md
 
 const Anthropic = require('@anthropic-ai/sdk');
 const { INTENT_TO_LEVEL: NAV_LEVEL_MAP, INTENT_TO_PATTERN } = require('./navigationMaps');
@@ -59,21 +59,21 @@ Los componentes disponibles y sus restricciones son:
 - empty-state: mutuamente excluyente con card-item
 - modal-bottom-sheet: máximo 1 por pantalla
 - tab-bar: máximo 1. Reglas de nivel de navegación:
-  * L0 (dashboard): tab-bar OBLIGATORIO — es la raíz de la app
-  * L1 (lista-con-filtros, notificaciones, perfil-usuario): tab-bar OBLIGATORIO — son tabs del app shell
-  * L2 (detalle, formulario-simple): tab-bar NUNCA — son pantallas secundarias con back
-  * L3 (confirmacion, error-estado): tab-bar NUNCA — son modales o pasos finales
-  * onboarding: tab-bar NUNCA — el usuario no está autenticado
+  * L0 (dashboard): tab-bar OBLIGATORIO - es la raíz de la app
+  * L1 (lista-con-filtros, notificaciones, perfil-usuario): tab-bar OBLIGATORIO - son tabs del app shell
+  * L2 (detalle, formulario-simple): tab-bar NUNCA - son pantallas secundarias con back
+  * L3 (confirmacion, error-estado): tab-bar NUNCA - son modales o pasos finales
+  * onboarding: tab-bar NUNCA - el usuario no está autenticado
 - list-header: máximo 3, siempre precede a grupos de card-items
 - badge: elemento auxiliar, máximo 3 por pantalla
 - notification-banner: máximo 5 en patrón notificaciones, máximo 1 en otros patrones
 
-Jerarquía de navegación — cada intent tiene un nivel fijo:
-- L0 (raíz autenticada): dashboard — lleva tab-bar, navigation-header Type=Dashboard (sin título, sin back)
-- L1 (tabs del app shell): lista-con-filtros, notificaciones, perfil-usuario — llevan tab-bar, navigation-header Type=Predeterminada
-- L2 (pantallas secundarias): detalle, login, registro, edicion-perfil, formulario-producto, formulario-default, transferencia-bancaria — navigation-header Type=Modal con arrow-left, sin tab-bar
-- L3 (modales y pasos finales): confirmacion, error-estado — navigation-header Type=Modal sin icono izquierdo, sin tab-bar
-- L0 especial: onboarding — sin tab-bar aunque sea L0 (usuario no autenticado aún)
+Jerarquía de navegación - cada intent tiene un nivel fijo:
+- L0 (raíz autenticada): dashboard - lleva tab-bar, navigation-header Type=Dashboard (sin título, sin back)
+- L1 (tabs del app shell): lista-con-filtros, notificaciones, perfil-usuario - llevan tab-bar, navigation-header Type=Predeterminada
+- L2 (pantallas secundarias): detalle, login, registro, edicion-perfil, formulario-producto, formulario-default, transferencia-bancaria - navigation-header Type=Modal con arrow-left, sin tab-bar
+- L3 (modales y pasos finales): confirmacion, error-estado - navigation-header Type=Modal sin icono izquierdo, sin tab-bar
+- L0 especial: onboarding - sin tab-bar aunque sea L0 (usuario no autenticado aún)
 
 Detecta como violación si el brief pide explícitamente una configuración que contradice el nivel:
 - tab-bar en un formulario o confirmación → warning
@@ -123,7 +123,7 @@ Ejemplos de violaciones:
 - Pedir saltarse la revisión en transferencia → error: "La pantalla de revisión es obligatoria en flujos de transferencia"`;
 
 // Enriquece el intent con navigation_level y header_variant
-// basándose en el mapa canónico — no depende de lo que devuelva Claude
+// basándose en el mapa canónico - no depende de lo que devuelva Claude
 function enrichWithNavigation(intent) {
   const level = NAV_LEVEL_MAP[intent.intent_type] || 'L1';
   intent.navigation_level = level;
@@ -138,7 +138,7 @@ function enrichWithNavigation(intent) {
 
 async function parseIntent(brief) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    console.log('  ⚠ ANTHROPIC_API_KEY no configurada — usando fallback keyword');
+    console.log('  ⚠ ANTHROPIC_API_KEY no configurada - usando fallback keyword');
     return fallbackParse(brief);
   }
 
@@ -312,7 +312,7 @@ function fallbackParse(brief) {
       is_multiscreen_flow: is_multiscreen_flow,
     },
     confidence,
-    reasoning: 'Fallback keyword matching — sin Claude API',
+    reasoning: 'Fallback keyword matching - sin Claude API',
     brief_violations
   };
 
