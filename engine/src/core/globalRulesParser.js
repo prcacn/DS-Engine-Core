@@ -4,7 +4,7 @@
 //
 // FILOSOFÍA: Los .md son la fuente de verdad. El código los consume.
 // Si un diseñador cambia una regla en el .md, la próxima composición
-// ya la aplica — sin tocar código, sin deploy de lógica.
+// ya la aplica - sin tocar código, sin deploy de lógica.
 //
 // Reglas soportadas actualmente:
 //   - global-rules/navigation.md  → niveles L0-L3, variantes, nodeIds, tab-bar
@@ -26,7 +26,7 @@ let _cacheLoadedAt = null;
 function invalidateCache() {
   _cache = null;
   _cacheLoadedAt = null;
-  console.log('  ↺ [GlobalRules] Caché invalidada — se recargará en la próxima llamada');
+  console.log('  ↺ [GlobalRules] Caché invalidada - se recargará en la próxima llamada');
 }
 
 // ─── UTILIDADES DE PARSEO MARKDOWN ───────────────────────────────────────────
@@ -41,7 +41,7 @@ function extractTables(text) {
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-      // Línea separadora (|---|---|) — ignorar
+      // Línea separadora (|---|---|) - ignorar
       if (/^[\|\s\-:]+$/.test(trimmed)) {
         continue;
       }
@@ -84,7 +84,7 @@ function extractSection(text, sectionTitle) {
         continue;
       }
       if (inside && level <= depth) {
-        break; // siguiente sección del mismo nivel — salir
+        break; // siguiente sección del mismo nivel - salir
       }
     }
     if (inside) result.push(line);
@@ -119,7 +119,7 @@ function parseNavigationRules(mdText) {
         const variant = row[2] ? row[2].split('+')[0].trim() : null; // "Type=Dashboard"
         const tabBar  = row[3] ? row[3].toLowerCase().includes('sí') : false;
 
-        if (level && level !== '—' && level.match(/^L\d/)) {
+        if (level && level !== '-' && level.match(/^L\d/)) {
           rules.levels[level] = {
             headerVariant: variant,
             tabBarAllowed: tabBar,
@@ -231,7 +231,7 @@ function loadGlobalRules() {
     const navText = fs.readFileSync(navPath, 'utf-8');
     result.navigation = parseNavigationRules(navText);
     console.log(
-      '  ✓ [GlobalRules] navigation.md cargado —',
+      '  ✓ [GlobalRules] navigation.md cargado -',
       Object.keys(result.navigation.levels).length, 'niveles,',
       Object.keys(result.navigation.intentToLevel).length, 'patrones mapeados'
     );
@@ -246,7 +246,7 @@ function loadGlobalRules() {
     const singText = fs.readFileSync(singPath, 'utf-8');
     result.singletons = parseSingletonRules(singText);
     console.log(
-      '  ✓ [GlobalRules] singleton-rules.md cargado —',
+      '  ✓ [GlobalRules] singleton-rules.md cargado -',
       Object.keys(result.singletons.singletons).length, 'singletons,',
       result.singletons.incompatibilities.length, 'incompatibilidades'
     );
