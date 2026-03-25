@@ -1,6 +1,6 @@
-// core/deltaEngine.js — Level 5.2
+// core/deltaEngine.js - Level 5.2
 // Aplica el delta sobre una base aprobada y genera la composición propuesta.
-// No pinta en Figma — genera una PROPUESTA que el diseñador valida primero.
+// No pinta en Figma - genera una PROPUESTA que el diseñador valida primero.
 //
 // OUTPUT:
 //   {
