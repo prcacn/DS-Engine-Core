@@ -1,5 +1,5 @@
 // engine/src/api/routes/register.js
-// POST /register — Registra un componente nuevo en el DS
+// POST /register - Registra un componente nuevo en el DS
 // Recibe el payload del plugin de Figma y genera + sube los 3 archivos a GitHub
 
 const express  = require('express');
@@ -106,7 +106,7 @@ router.post('/', async (req, res, next) => {
     const generated = await generateAll(payload);
     const { contractMd, spacingPatch, pluginPatch, aiData } = generated;
 
-    // Solo generar — no subir. El plugin pide preview primero.
+    // Solo generar - no subir. El plugin pide preview primero.
     if (req.body.preview_only) {
       return res.json({
         ok:           true,
@@ -125,7 +125,7 @@ router.post('/', async (req, res, next) => {
     const contractOk   = await ghUpload(
       contractPath,
       contractMd,
-      `feat: contrato ${payload.name} — registrado desde plugin`,
+      `feat: contrato ${payload.name} - registrado desde plugin`,
       contractSha
     );
 
@@ -134,15 +134,15 @@ router.post('/', async (req, res, next) => {
       'engine/src/core/spacingRegistry.js',
       '\n};',
       { key: payload.name, code: spacingPatch.entryCode },
-      `feat: spacingRegistry — añadir ${payload.name}`
+      `feat: spacingRegistry - anadir ${payload.name}`
     );
 
-    // 4. Parchear figma-plugin/code.js — COMPONENT_NODE_IDS
+    // 4. Parchear figma-plugin/code.js - COMPONENT_NODE_IDS
     const pluginNodeResult = await patchJsFile(
       'figma-plugin/code.js',
       "  'chart-sparkline':                '137:1746', // COMPONENT (sin set)",
       { key: payload.name, code: `  '${payload.name}': '${payload.nodeId}', // COMPONENT_SET` },
-      `feat: plugin — añadir ${payload.name} a COMPONENT_NODE_IDS`
+      `feat: plugin - anadir ${payload.name} a COMPONENT_NODE_IDS`
     );
 
     // 5. Parchear HEIGHT_MAP
@@ -150,7 +150,7 @@ router.post('/', async (req, res, next) => {
       'figma-plugin/code.js',
       "  'chart-sparkline':                80,",
       { key: payload.name + '_h', code: `  '${payload.name}': ${payload.height || 72},` },
-      `feat: plugin — añadir ${payload.name} a HEIGHT_MAP`
+      `feat: plugin - anadir ${payload.name} a HEIGHT_MAP`
     );
 
     const results = {
