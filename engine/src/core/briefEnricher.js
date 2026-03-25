@@ -1,4 +1,4 @@
-// core/briefEnricher.js — Level 4.0
+// core/briefEnricher.js - Level 4.0
 // Enriquece el brief con contexto organizacional de la KB ANTES de parseIntent.
 //
 // PROBLEMA QUE RESUELVE:
@@ -18,7 +18,7 @@ const ENRICH_CONFIG = {
   topK:     5,       // reglas a recuperar de Pinecone
   minScore: 0.62,    // umbral de relevancia semántica
   // Categorías que aportan contexto real al intent parser
-  // ds-pattern se excluye — es ruido para el enriquecimiento previo
+  // ds-pattern se excluye - es ruido para el enriquecimiento previo
   relevantCategories: ['restriccion', 'normativa', 'recomendacion'],
 };
 
@@ -29,7 +29,7 @@ const ENRICH_CONFIG = {
  * Devuelve el brief original + contexto inyectado como string,
  * más las reglas encontradas para pasarlas a los agentes sin repetir la búsqueda.
  *
- * @param {string} brief — brief original del diseñador
+ * @param {string} brief - brief original del diseñador
  * @returns {{ enrichedBrief: string, kbRules: array, hasContext: boolean }}
  */
 async function enrichBriefWithKnowledge(brief) {
@@ -45,7 +45,7 @@ async function enrichBriefWithKnowledge(brief) {
       minScore: ENRICH_CONFIG.minScore,
     });
   } catch (err) {
-    console.warn('  ⚠ [Enricher] KB no disponible — usando brief sin enriquecer:', err.message);
+    console.warn('  ⚠ [Enricher] KB no disponible - usando brief sin enriquecer:', err.message);
     return { enrichedBrief: brief, kbRules: [], hasContext: false };
   }
 
@@ -55,7 +55,7 @@ async function enrichBriefWithKnowledge(brief) {
   );
 
   if (relevantRules.length === 0) {
-    console.log('  → [Enricher] Sin contexto KB relevante — brief sin modificar');
+    console.log('  → [Enricher] Sin contexto KB relevante - brief sin modificar');
     return { enrichedBrief: brief, kbRules, hasContext: false };
   }
 
@@ -70,7 +70,7 @@ async function enrichBriefWithKnowledge(brief) {
     `[${r.categoria.toUpperCase()} · ${r.prioridad}] ${r.content}`
   ).join('\n');
 
-  // Brief enriquecido — el contexto va DESPUÉS del brief original
+  // Brief enriquecido - el contexto va DESPUÉS del brief original
   // para no alterar la intención del diseñador, solo añadir restricciones
   const enrichedBrief = [
     brief.trim(),
