@@ -29,7 +29,7 @@ router.get('/search', (req, res, next) => {
   }
 });
 
-// GET /registry/components — lista todos los componentes disponibles
+// GET /registry/components - lista todos los componentes disponibles
 router.get('/components', (req, res, next) => {
   try {
     const registry = loadRegistry();
