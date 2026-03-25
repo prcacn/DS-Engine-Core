@@ -4,7 +4,7 @@
 //
 // ⚠ IMPORTANTE: Este módulo es el ÚNICO lugar donde se define el modelo de
 // embedding. Tanto el ingest (knowledge.js) como la búsqueda (knowledgeBase.js)
-// deben importar embed() desde aquí — NUNCA definir su propia función embed.
+// deben importar embed() desde aquí - NUNCA definir su propia función embed.
 //
 // Modelo: Pinecone Inference multilingual-e5-large
 // Dimensiones: 1024 (configurado en PINECONE_DIMENSION)
