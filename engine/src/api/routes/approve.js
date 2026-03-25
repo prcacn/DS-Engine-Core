@@ -1,4 +1,4 @@
-// api/routes/approve.js — Level 5.4
+// api/routes/approve.js - Level 5.4
 // POST /approve
 // Gestiona el ciclo de aprobación variacional:
 //   action: "approve" → guarda la variante como nuevo ejemplo aprobado + ingesta en KB
@@ -29,7 +29,7 @@ function saveApprovedVariant({ screen_id, brief, base_id, components, diff }) {
   const compLines = (components || []).map(c => {
     var line = '- ' + c.component;
     if (c.variant && c.variant !== 'default') line += ' (variant: ' + c.variant + ')';
-    if (c.props && c.props.title) line += ' — ' + c.props.title;
+    if (c.props && c.props.title) line += ' - ' + c.props.title;
     return line;
   }).join('\n');
 
@@ -46,7 +46,7 @@ function saveApprovedVariant({ screen_id, brief, base_id, components, diff }) {
     '**pattern:** ' + (components?.[0]?.pattern || 'variant'),
     '**status:** APPROVED',
     '**score:** 0.90',
-    '**base_id:** ' + (base_id || '—'),
+    '**base_id:** ' + (base_id || '-'),
     '**brief:** ' + (brief || ''),
     '**fecha:** ' + fecha,
     '',
@@ -58,7 +58,7 @@ function saveApprovedVariant({ screen_id, brief, base_id, components, diff }) {
     diffLines ? '\n## Delta respecto a la base' + diffLines : '',
     '',
     '## Notas de aprobación',
-    'Aprobada el ' + fecha + ' — generada por DS IA-Ready Engine Level 5.0',
+    'Aprobada el ' + fecha + ' - generada por DS IA-Ready Engine Level 5.0',
   ].join('\n');
 
   fs.writeFileSync(filepath, md, 'utf-8');
@@ -91,7 +91,7 @@ router.post('/', async function(req, res, next) {
         if (diff?.removed?.length)  diffSummary.push('Eliminado: ' + diff.removed.map(d => d.component || d).join(', '));
 
         await save({
-          content:   'VARIANTE APROBADA — ' + brief + '. Base: ' + base_id + '. ' + diffSummary.join('. ') + '. Esta variante ha sido validada por el equipo y puede usarse como referencia.',
+          content:   'VARIANTE APROBADA - ' + brief + '. Base: ' + base_id + '. ' + diffSummary.join('. ') + '. Esta variante ha sido validada por el equipo y puede usarse como referencia.',
           categoria: 'ds-pattern',
           prioridad: 'media',
           tags:      ['variante-aprobada', base_id || 'base'],
@@ -109,7 +109,7 @@ router.post('/', async function(req, res, next) {
     if (action === 'modify') {
       try {
         await save({
-          content:   'CORRECCIÓN DE DISEÑADOR — Brief: "' + brief + '". Base: ' + base_id + '. El diseñador modificó la propuesta: "' + modification + '". Tener en cuenta en futuras generaciones similares.',
+          content:   'CORRECCIÓN DE DISEÑADOR - Brief: "' + brief + '". Base: ' + base_id + '. El diseñador modificó la propuesta: "' + modification + '". Tener en cuenta en futuras generaciones similares.',
           categoria: 'recomendacion',
           prioridad: 'media',
           tags:      ['correccion-disenador', base_id || 'base'],
@@ -126,7 +126,7 @@ router.post('/', async function(req, res, next) {
     if (action === 'reject') {
       try {
         await save({
-          content:   'RECHAZO DE VARIANTE — Brief: "' + brief + '". Base: ' + base_id + (reason ? '. Motivo del rechazo: "' + reason + '".' : '.') + ' No usar esta combinación en futuras generaciones.',
+          content:   'RECHAZO DE VARIANTE - Brief: "' + brief + '". Base: ' + base_id + (reason ? '. Motivo del rechazo: "' + reason + '".' : '.') + ' No usar esta combinación en futuras generaciones.',
           categoria: 'restriccion',
           prioridad: 'media',
           tags:      ['rechazo-disenador', base_id || 'base'],
