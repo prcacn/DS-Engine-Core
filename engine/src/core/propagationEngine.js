@@ -13,8 +13,8 @@ const { generateImpactReport } = require('./impactReport');
 
 const GH_TOKEN = process.env.GITHUB_TOKEN;
 const GH_REPO  = process.env.GITHUB_REPO || 'prcacn/DS-Engine-Core';
-const PENDING_BASE = 'Simple/contracts/_pending';
-const CONTRACTS_BASE = 'Simple/contracts';
+const PENDING_BASE = 'engine/contracts/_pending';
+const CONTRACTS_BASE = 'engine/contracts';
 
 // ─── Helpers GitHub API ───────────────────────────────────────────────────
 
