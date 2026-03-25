@@ -109,6 +109,7 @@ async function handleFigmaWebhook(req, res) {
       return res.status(200).json({ status: 'ignored', reason: 'event_not_relevant' });
     }
 
+    console.log('[Watcher] Payload raw:', JSON.stringify(payload, null, 2));
     console.log(`[Watcher] Evento recibido: ${payload.event_type} → file ${payload.file_key}`);
 
     // 3. Extraer delta
