@@ -25,7 +25,7 @@ const COMPONENT_TEXT_PROPS = {
 };
 
 async function runUXWriterAgent({ brief, components, intent, kbRules }) {
-  // Construir contexto KB para el writer — solo reglas de contenido relevantes
+  // Construir contexto KB para el writer - solo reglas de contenido relevantes
   const kbContext = kbRules && kbRules.length > 0
     ? '\n\nCONTEXTO ORGANIZACIONAL (reglas de contenido y tono que DEBES respetar):\n' +
       kbRules.map(r =>
@@ -62,7 +62,7 @@ Reglas de escritura:
 - Mensajes vacíos: empáticos y con CTA de acción
 - Errores/avisos: claros, sin tecnicismos, con siguiente paso
 - Tabs: máximo 12 caracteres por tab
-- Si hay una RESTRICCION de alta prioridad en el contexto organizacional, el copy debe reflejarla — 
+- Si hay una RESTRICCION de alta prioridad en el contexto organizacional, el copy debe reflejarla - 
   por ejemplo si el usuario no puede acceder a algo, el mensaje debe explicar por qué y qué hacer
 
 Responde ÚNICAMENTE con un objeto JSON válido. Sin markdown, sin explicaciones.
@@ -94,7 +94,7 @@ Para props que sean arrays (filters, tabs), usa arrays JSON: ["Todos", "Renta fi
     const clean = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     const parsed = JSON.parse(clean);
 
-    console.log('  [UXWriter] ✓ copy generado para ' + (parsed.components?.length || 0) + ' componentes | tono: ' + (parsed.tone_rationale?.substring(0, 60) || '—'));
+    console.log('  [UXWriter] ✓ copy generado para ' + (parsed.components?.length || 0) + ' componentes | tono: ' + (parsed.tone_rationale?.substring(0, 60) || '-'));
     return parsed;
 
   } catch (err) {
@@ -102,7 +102,7 @@ Para props que sean arrays (filters, tabs), usa arrays JSON: ["Todos", "Renta fi
     // Fallback: devolver componentes sin modificar
     return {
       components: components.map(c => ({ component: c.component, order: c.order, copy: {}, writer_note: 'fallback' })),
-      tone_rationale: 'fallback — error en agente',
+      tone_rationale: 'fallback - error en agente',
     };
   }
 }
