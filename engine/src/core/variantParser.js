@@ -1,4 +1,4 @@
-// core/variantParser.js — Level 5.1
+// core/variantParser.js - Level 5.1
 // Detecta si un brief es variante de una pantalla aprobada existente.
 // Si lo es, extrae el delta (qué cambia respecto a la base).
 //
@@ -250,7 +250,7 @@ async function detect(brief, examples) {
   const approved = examples || loadApprovedExamples();
 
   if (approved.length === 0) {
-    console.log('  → [VariantParser] Sin bases aprobadas — flujo normal');
+    console.log('  → [VariantParser] Sin bases aprobadas - flujo normal');
     return { isVariant: false, baseId: null, base: null, delta: null };
   }
 
@@ -274,7 +274,7 @@ async function detect(brief, examples) {
     const clean  = raw.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
 
-    // Umbral mínimo de confianza — por debajo de 0.80 se trata como pantalla nueva
+    // Umbral mínimo de confianza - por debajo de 0.80 se trata como pantalla nueva
     // Evita falsos positivos en briefs genéricos que coinciden superficialmente con una base
     const MIN_VARIANT_CONFIDENCE = 0.80;
 
@@ -304,14 +304,14 @@ async function detect(brief, examples) {
     }
 
     if (result.is_variant && result.confidence < MIN_VARIANT_CONFIDENCE) {
-      console.log('  → [VariantParser] Confianza insuficiente (' + result.confidence + ' < 0.80) — flujo normal');
+      console.log('  → [VariantParser] Confianza insuficiente (' + result.confidence + ' < 0.80) - flujo normal');
     } else {
       console.log('  → [VariantParser] NUEVA pantalla | conf:', result.confidence, '|', result.reasoning);
     }
     return { isVariant: false, baseId: null, base: null, delta: null, reasoning: result.reasoning };
 
   } catch (err) {
-    console.warn('  ⚠ [VariantParser] Error:', err.message, '— usando flujo normal');
+    console.warn('  ⚠ [VariantParser] Error:', err.message, '- usando flujo normal');
     return { isVariant: false, baseId: null, base: null, delta: null };
   }
 }
