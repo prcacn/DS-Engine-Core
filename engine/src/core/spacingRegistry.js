@@ -1,7 +1,7 @@
 /**
  * spacingRegistry.js
  * Fuente única de verdad para spacing y layout de componentes.
- * El plugin lee este archivo al pintar pantallas — nunca hardcodea valores.
+ * El plugin lee este archivo al pintar pantallas - nunca hardcodea valores.
  *
  * Regla de oro:
  *   - respectNativeHeight: true  → NO hacer .resize en Y, respetar el alto del componente Figma
@@ -23,8 +23,8 @@ const SPACING_BY_BREAKPOINT = {
     paddingTop:     12,   // Padding/Vertical/MD
     paddingBottom:  16,   // Padding/Horizontal/MD
     gapSection:     8,    // Gap/MD
-    gapItem:        4,    // Gap/SM  — entre items de lista consecutivos
-    gapInline:      8,    // Gap/MD  — entre elementos dentro de un componente
+    gapItem:        4,    // Gap/SM  - entre items de lista consecutivos
+    gapInline:      8,    // Gap/MD  - entre elementos dentro de un componente
     safeZoneBottom: 34,
     safeZoneTop:    16,
     headerHeight:   56,
@@ -63,7 +63,7 @@ const SPACING_BY_BREAKPOINT = {
 // ─── REGISTRY DE COMPONENTES ──────────────────────────────────────────────────
 // Por cada componente:
 //   nodeId              → ID del nodo en Figma (Component o ComponentSet)
-//   height              → alto de referencia (px) — solo para cálculo de pantalla
+//   height              → alto de referencia (px) - solo para cálculo de pantalla
 //   respectNativeHeight → true = NO tocar el Y resize, dejar que Figma lo maneje
 //   resizeWidth         → true = ajustar ancho a screenWidth - paddingH*2
 //   gapAfter            → gap tras el componente (en px, modo mobile)
@@ -98,7 +98,7 @@ const COMPONENT_REGISTRY = {
   'card-item': {
     nodeId:              '185:3895',
     height:              72,
-    respectNativeHeight: true,   // tiene auto-layout — nunca forzar altura
+    respectNativeHeight: true,   // tiene auto-layout - nunca forzar altura
     resizeWidth:         true,
     gapAfter:            0,      // Gap/XS = 0 entre cards consecutivas (flush)
     gapAfterToken:       'Gap/XS',
@@ -270,7 +270,7 @@ const COMPONENT_REGISTRY = {
 
 };
 
-// ─── LÓGICA DE PAINT — REGLAS DE POSICIONAMIENTO ─────────────────────────────
+// ─── LÓGICA DE PAINT - REGLAS DE POSICIONAMIENTO ─────────────────────────────
 /**
  * Cómo el plugin debe calcular _y al pintar componentes:
  *
