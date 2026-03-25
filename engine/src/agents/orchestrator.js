@@ -12,7 +12,7 @@ async function runAgents({ brief, components, intent, kbRules, contracts }) {
   console.log('  [Agents]   → lanzando UXWriter + UXSpec en paralelo...');
 
   // ── Correr en paralelo ────────────────────────────────────────────────────
-  // Correr en paralelo con fallback individual — si uno falla no bloquea el otro
+  // Correr en paralelo con fallback individual - si uno falla no bloquea el otro
   const [writerResult, specResult] = await Promise.all([
     runUXWriterAgent({ brief, components, intent, kbRules }).catch(err => {
       console.error('  ✗ [UXWriter] Error:', err.message);
@@ -86,8 +86,8 @@ async function runAgents({ brief, components, intent, kbRules, contracts }) {
   return {
     components: allComponents,
     agent_meta: {
-      writer_tone:    writerResult.tone_rationale  || '—',
-      spec_flow:      specResult.flow_rationale    || '—',
+      writer_tone:    writerResult.tone_rationale  || '-',
+      spec_flow:      specResult.flow_rationale    || '-',
       suggested_added: extraComponents.length,
     },
   };
