@@ -1,6 +1,6 @@
 // core/kbGovernance.js
 // Aplica reglas de la Knowledge Base sobre la composición generada.
-// Es la red de seguridad final — actúa después de los agentes.
+// Es la red de seguridad final - actúa después de los agentes.
 
 // ─── SUSTITUCIÓN FINANCIERA ────────────────────────────────────────────────
 // ─── APPLY KB RULES ──────────────────────────────────────────────────────────
