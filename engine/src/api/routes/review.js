@@ -1,82 +1,65 @@
 // review.js
-// F-02 - Panel de revision de cambios breaking del flujo inverso
+// F-02/F-03 - Panel de revision + propagacion a GitHub
 // Ruta: engine/src/api/routes/review.js
 
 const express = require('express');
 const router  = express.Router();
-const fs      = require('fs').promises;
-const path    = require('path');
+const { listPendingsFromGH, deletePendingFromGH, propagateApproval } = require('../../core/propagationEngine');
 
-const PENDING_DIR = path.join(__dirname, '../../../Simple/contracts/_pending');
-
-// GET /review/pending - listar todos los cambios pendientes de revision
+// GET /review/pending - listar cambios pendientes desde GitHub
 router.get('/pending', async (req, res) => {
   try {
-    await fs.mkdir(PENDING_DIR, { recursive: true });
-    const files = await fs.readdir(PENDING_DIR);
-    const reviews = [];
-
-    for (const file of files.filter(f => f.endsWith('.review.json'))) {
-      try {
-        const raw = await fs.readFile(path.join(PENDING_DIR, file), 'utf-8');
-        const data = JSON.parse(raw);
-        reviews.push({ file, ...data });
-      } catch (e) {
-        console.warn(`[Review] No se pudo leer ${file}:`, e.message);
-      }
-    }
-
+    const reviews = await listPendingsFromGH();
     res.json({ count: reviews.length, reviews });
   } catch (err) {
+    console.error('[Review] Error listando pendings:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
 // POST /review/approve - aprobar un cambio breaking
 router.post('/approve', async (req, res) => {
-  const { file } = req.body;
+  const { file, sha } = req.body;
   if (!file) return res.status(400).json({ error: 'file requerido' });
 
   try {
-    const filePath = path.join(PENDING_DIR, file);
-    const raw = await fs.readFile(filePath, 'utf-8');
-    const review = JSON.parse(raw);
+    // 1. Recuperar el review completo para propagarlo
+    const reviews = await listPendingsFromGH();
+    const review  = reviews.find(r => r.file === file);
 
-    // Marcar como aprobado y mover a contratos
-    const contractsDir = path.join(__dirname, '../../../Simple/contracts');
-    const slug = file.replace('.review.json', '');
+    if (!review) return res.status(404).json({ error: 'Review no encontrado' });
 
-    // Si habia contrato previo, marcarlo como deprecated
-    const contractPath = path.join(contractsDir, `${slug}.json`);
-    try {
-      const existing = JSON.parse(await fs.readFile(contractPath, 'utf-8'));
-      existing.status = 'DEPRECATED';
-      existing.deprecatedAt = new Date().toISOString();
-      existing.deprecatedReason = review.reason;
-      await fs.writeFile(contractPath, JSON.stringify(existing, null, 2));
-    } catch { /* no habia contrato previo */ }
+    // 2. Propagar el cambio aprobado al contrato en GitHub
+    const propagation = await propagateApproval(review);
 
-    // Eliminar el pending
-    await fs.unlink(filePath);
+    // 3. Eliminar el pending de GitHub
+    await deletePendingFromGH(file, review.sha);
 
-    console.log(`[Review] APROBADO: ${file}`);
-    res.json({ status: 'approved', file });
+    console.log(`[Review] APROBADO y propagado: ${file}`);
+    res.json({ status: 'approved', file, propagation });
+
   } catch (err) {
+    console.error('[Review] Error aprobando:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /review/reject - rechazar un cambio breaking (eliminar pending sin aplicar)
+// POST /review/reject - rechazar un cambio breaking
 router.post('/reject', async (req, res) => {
-  const { file } = req.body;
+  const { file, sha } = req.body;
   if (!file) return res.status(400).json({ error: 'file requerido' });
 
   try {
-    const filePath = path.join(PENDING_DIR, file);
-    await fs.unlink(filePath);
+    const reviews = await listPendingsFromGH();
+    const review  = reviews.find(r => r.file === file);
+    if (!review) return res.status(404).json({ error: 'Review no encontrado' });
+
+    await deletePendingFromGH(file, review.sha);
     console.log(`[Review] RECHAZADO: ${file}`);
     res.json({ status: 'rejected', file });
+
   } catch (err) {
+    console.error('[Review] Error rechazando:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
