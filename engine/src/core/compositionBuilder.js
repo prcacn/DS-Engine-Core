@@ -55,7 +55,7 @@ function resolveVariant(component, intent) {
   // navigation-header: usa el header_variant del intent si viene del intentParser
   // Si no, infiere desde navigation_level o INTENT_TO_LEVEL
   // Nombres alineados con Figma: Type=Dashboard | Type=Predeterminada | Type=Modal
-  // Nivel leído de global-rules/navigation.md via parser — no hardcodeado
+  // Nivel leído de global-rules/navigation.md via parser - no hardcodeado
   const navLevel = intent.navigation_level || getNavLevel(intent.intent_type);
   const variants = {
     'navigation-header':  function() {
@@ -82,7 +82,7 @@ function buildSmartProps(contract, intent, componentName) {
     if (intent.domain) {
       props.title = intent.domain.charAt(0).toUpperCase() + intent.domain.slice(1);
     }
-    // node_id leído de global-rules/navigation.md via parser — no hardcodeado
+    // node_id leído de global-rules/navigation.md via parser - no hardcodeado
     const navLevel2        = intent.navigation_level || getNavLevel(intent.intent_type);
     const resolvedVariant  = intent.header_variant || getHeaderVariant(navLevel2);
     props._variant_node_id = getHeaderNodeId(resolvedVariant);
@@ -144,12 +144,12 @@ function resolveOptional(component, intent, brief) {
       return { include: b.includes('cuenta') || b.includes('cuentas') || b.includes('cuenta bancaria'), confidence: 0.85 };
     },
     // C1: tab-bar obligatorio en L0 (dashboard, onboarding autenticado) y L1 (listas raíz)
-    // El engine infiere esto del nivel de navegación — el diseñador no necesita pedirlo
+    // El engine infiere esto del nivel de navegación - el diseñador no necesita pedirlo
     'tab-bar': function() {
       // Usar el nivel real calculado por inferNavLevelFromBrief en generate.js
       // intent.navigation_level se inyecta justo antes de llamar a buildCompositionPlan
       const resolvedLevel = intent.navigation_level || 'L2';
-      // Tab-bar SOLO en L0 y L1 — nunca en L2 (sublistas) ni L3 (modales/confirmaciones)
+      // Tab-bar SOLO en L0 y L1 - nunca en L2 (sublistas) ni L3 (modales/confirmaciones)
       const include = resolvedLevel === 'L0' || resolvedLevel === 'L1';
       return { include, confidence: include ? 0.95 : 0 };
     },
@@ -211,7 +211,7 @@ function buildCompositionPlan(brief, intent, patternData, contracts, options) {
     if (!contract) return;
     let count = 1;
     if (!SINGLETON_COMPONENTS.includes(req.component) && quantities[req.component]) {
-      // Cantidad explícita en el brief — tomar como valor exacto, cap a 20
+      // Cantidad explícita en el brief - tomar como valor exacto, cap a 20
       count = Math.min(quantities[req.component], 20);
     } else if (!SINGLETON_COMPONENTS.includes(req.component) && req.component === 'card-item') {
       // Sin cantidad explícita: usar estimated_items del intent si existe, sino 5 por defecto
@@ -244,9 +244,9 @@ function buildCompositionPlan(brief, intent, patternData, contracts, options) {
       count = quantities[opt.component];
     }
     // A3: si hay modal, excluir button-primary y button-secondary del fondo
-    // La lógica estaba hardcodeada en el renderer — ahora vive en el plan de composición
+    // La lógica estaba hardcodeada en el renderer - ahora vive en el plan de composición
     if (modalInRequired && (opt.component === "button-primary" || opt.component === "button-secondary")) {
-      console.log("  → [A3] Excluyendo " + opt.component + " del fondo — modal-bottom-sheet presente");
+      console.log("  → [A3] Excluyendo " + opt.component + " del fondo - modal-bottom-sheet presente");
       return;
     }
     const r = resolveOptional(opt.component, intent, brief);
