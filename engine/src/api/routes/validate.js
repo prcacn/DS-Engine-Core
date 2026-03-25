@@ -1,4 +1,4 @@
-// api/routes/validate.js — Fase 4 (Studio)
+// api/routes/validate.js - Fase 4 (Studio)
 // POST /validate
 // Valida una pantalla existente: recibe brief + componentes del frame de Figma
 // Devuelve el mismo formato de confidence score que /generate para que el Studio
@@ -41,7 +41,7 @@ try {
 }
 
 // ─── VALIDACIONES ESTRUCTURALES ───────────────────────────────────────────────
-// Reglas que se pueden comprobar sin LLM — multiplicidad, exclusividad, etc.
+// Reglas que se pueden comprobar sin LLM - multiplicidad, exclusividad, etc.
 
 function validateStructure(components) {
   const errors   = [];
@@ -108,7 +108,7 @@ function checkKBViolations(components, kbRules, intent) {
       if (ruleText.includes(marker)) {
         geoRestricted = true;
         if (intentGeo !== geo) break; // regla no aplica
-        // sí aplica — comprobar componentes afectados
+        // sí aplica - comprobar componentes afectados
         for (const [kw, comps] of Object.entries(KB_COMPONENT_KEYWORDS)) {
           if (ruleText.includes(kw)) {
             const violating = components.filter(c => comps.includes(c.component));
@@ -164,7 +164,7 @@ function calculateValidationScore(components, intent, contracts, kbViolations, s
 
   const detachedComponents = components
     .filter(c => c.detached)
-    .map(c => ({ component: c.component, reason: 'Componente detacheado — usa la instancia del DS en su lugar' }));
+    .map(c => ({ component: c.component, reason: 'Componente detacheado - usa la instancia del DS en su lugar' }));
 
   let contractResolved = 0;
   for (const comp of components) {
@@ -179,7 +179,7 @@ function calculateValidationScore(components, intent, contracts, kbViolations, s
   const contract_score = total > 0 ? Math.min(contractResolved / total, 1.0) : 0;
 
   // ── SIGNAL 2: INTENT (25%) ───────────────────────────────────────────────
-  // Confianza del intentParser — igual que scoreIntentClarity
+  // Confianza del intentParser - igual que scoreIntentClarity
   const intent_score = (intent && typeof intent.confidence === 'number')
     ? Math.min(Math.max(intent.confidence, 0), 1)
     : 0.60;
@@ -275,7 +275,7 @@ router.post('/', async function(req, res, next) {
       intent = { intent_type: 'unknown', domain: '', constraints: {}, brief_violations: [] };
     }
 
-    // 2. KB — buscar reglas relevantes
+    // 2. KB - buscar reglas relevantes
     let kbRules = [];
     try {
       kbRules = await kb.search(brief, { topK: 4 });
