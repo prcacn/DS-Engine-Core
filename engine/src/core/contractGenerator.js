@@ -70,16 +70,16 @@ function generateContractMd(payload, aiData) {
   const { name, nodeId, variants, height, width, tokens, properties } = payload;
 
   const variantsTable = variants.length > 0
-    ? variants.map(v => `| \`${v.name}\` | \`${v.nodeId}\` | ${v.width || width}×${v.height || height}px | — |`).join('\n')
-    : `| \`default\` | \`${nodeId}\` | ${width}×${height}px | — |`;
+    ? variants.map(v => `| \`${v.name}\` | \`${v.nodeId}\` | ${v.width || width}×${v.height || height}px | - |`).join('\n')
+    : `| \`default\` | \`${nodeId}\` | ${width}×${height}px | - |`;
 
   const propsTable = properties.length > 0
     ? properties.map(p => `| \`${p.name}\` | ${p.type || 'string'} | \`${p.defaultValue || ''}\` | Sí |`).join('\n')
-    : `| — | — | — | — |`;
+    : `| - | - | - | - |`;
 
   const tokensTable = tokens.length > 0
-    ? tokens.map(t => `| ${t.element || t.name} | \`${t.name}\` | ${t.value || '—'} |`).join('\n')
-    : `| — | — | — |`;
+    ? tokens.map(t => `| ${t.element || t.name} | \`${t.name}\` | ${t.value || '-'} |`).join('\n')
+    : `| - | - | - |`;
 
   const whenToUse = aiData.cuando_usarlo.map(c => `- ${c}`).join('\n');
   const whenNotToUse = aiData.cuando_no_usarlo.map(c => `- ${c}`).join('\n');
@@ -133,7 +133,7 @@ ${restrictions}
 ---
 
 ## Zona en pantalla
-\`${aiData.zona}\` — ${aiData.full_width ? 'ancho completo (sin márgenes laterales)' : 'con margen horizontal (16px)'}
+\`${aiData.zona}\` - ${aiData.full_width ? 'ancho completo (sin márgenes laterales)' : 'con margen horizontal (16px)'}
 ${aiData.singleton ? '**Singleton:** máximo 1 por pantalla.' : '**Repetible:** puede aparecer N veces.'}
 
 ---
