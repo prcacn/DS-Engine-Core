@@ -1,4 +1,4 @@
-// api/routes/generate.js — Level 5.0
+// api/routes/generate.js - Level 5.0
 // Router limpio. Toda la lógica vive en módulos especializados:
 //   core/navigationMaps.js      → INTENT_TO_LEVEL, INTENT_TO_PATTERN
 //   core/compositionBuilder.js  → buildCompositionPlan, resolveVariant, helpers
@@ -102,7 +102,7 @@ const MULTISCREEN_FLOWS = {
       nav_level: 'L2',
       nav_title: 'Revisa tu transferencia',
       spacing_rules: {
-        between_card_items: DS_GAP.xs,  // 2px — filas de datos continuas
+        between_card_items: DS_GAP.xs,  // 2px - filas de datos continuas
         before_button: DS_GAP.xl,       // 16px sobre el button-primary
         button_position: 'sticky-bottom',
       },
@@ -187,7 +187,7 @@ router.post('/', async function(req, res, next) {
       ? { isVariant: false }
       : await detectVariant(brief, approvedExamples);
 
-    // Si es variante — aplicar delta sobre la base y devolver propuesta
+    // Si es variante - aplicar delta sobre la base y devolver propuesta
     if (variantResult.isVariant && variantResult.base) {
       console.log('  → [Level5] Flujo variacional | base:', variantResult.baseId);
       const contracts   = loadContracts();
@@ -215,7 +215,7 @@ router.post('/', async function(req, res, next) {
         violations:   [],
         meta: {
           engine_version: '1.0.0',
-          phase:          'Level 5.1 — Variant Detection',
+          phase:          'Level 5.1 - Variant Detection',
           generated_at:   new Date().toISOString(),
         }
       });
@@ -274,7 +274,7 @@ router.post('/', async function(req, res, next) {
         kb_changes:   [],
         meta: {
           engine_version: '1.0.0',
-          phase: 'Fase 3+ — Multiscreen Flow Support',
+          phase: 'Fase 3+ - Multiscreen Flow Support',
           generated_at: new Date().toISOString()
         }
       });
@@ -285,8 +285,8 @@ router.post('/', async function(req, res, next) {
     const navLevel = inferNavLevelFromBrief(intent.intent_type, brief) || INTENT_TO_LEVEL[intent.intent_type] || 'L1';
     console.log('  → [nav] nivel: ' + navLevel + ' | intent: ' + intent.intent_type);
 
-    // ── TEMPLATE APROBADO — si existe, usarlo directamente ────────────────
-    // NO usar template si hay violaciones de error en el brief — el brief es inválido
+    // ── TEMPLATE APROBADO - si existe, usarlo directamente ────────────────
+    // NO usar template si hay violaciones de error en el brief - el brief es inválido
     const hasErrorViolations = (intent.brief_violations || []).some(v => v.severity === 'error');
     const approvedTemplate = !hasErrorViolations ? findTemplate(intent.intent_type, brief) : null;
     if (approvedTemplate) {
@@ -326,7 +326,7 @@ router.post('/', async function(req, res, next) {
       });
     }
 
-    // ── FLUJO ESTÁNDAR (pantalla única) — solo si no hay template aprobado ─
+    // ── FLUJO ESTÁNDAR (pantalla única) - solo si no hay template aprobado ─
     const patternData = patterns[patternName];
     if (!patternData) {
       return res.status(404).json({ error: 'PatternNotFound', message: "Pattern '" + patternName + "' no encontrado" });
@@ -336,7 +336,7 @@ router.post('/', async function(req, res, next) {
     const rawComponents = rawResult.components;
     const compositionRules = rawResult.compositionRules;
     // ── AGENTES (UXWriter + UXSpec en paralelo) ──────────────────────────
-    // kbRules ya viene de enrichBriefWithKnowledge — no repetir búsqueda
+    // kbRules ya viene de enrichBriefWithKnowledge - no repetir búsqueda
     const kbRules = enrichedKbRules.length > 0
       ? enrichedKbRules
       : await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(err => { console.error('  ✗ [KB] kbSearch error:', err.message); return []; });
@@ -377,7 +377,7 @@ router.post('/', async function(req, res, next) {
   agent_meta:        agentMeta,
   kb_rules:          kbRules,
   kb_changes:        [...(kbChanges || []), ...(agentMeta?.kb_changes || [])],
-  meta: { engine_version: '1.0.0', phase: 'Level 4.0 — Brief Enrichment', kb_enriched: hasContext || false, generated_at: new Date().toISOString() }
+  meta: { engine_version: '1.0.0', phase: 'Level 4.0 - Brief Enrichment', kb_enriched: hasContext || false, generated_at: new Date().toISOString() }
 });
 
   } catch (err) {
