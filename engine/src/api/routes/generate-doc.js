@@ -23,8 +23,8 @@ router.post('/', async function(req, res, next) {
     const contractContext = components.map((c, i) => {
       const contract = contracts[c.component];
       const nodeId   = c.node_id || 'pending';
-      if (!contract) return `| ${i} | ${c.component} | \`${nodeId}\` | — | — |`;
-      return `| ${i} | ${c.component} | \`${nodeId}\` | ${contract.description ? contract.description.slice(0, 60) : '—'} | — |`;
+      if (!contract) return `| ${i} | ${c.component} | \`${nodeId}\` | - | - |`;
+      return `| ${i} | ${c.component} | \`${nodeId}\` | ${contract.description ? contract.description.slice(0, 60) : '-'} | - |`;
     }).join('\n');
 
     // ── Contexto KB ────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ ${kbContext}
 Genera el documento Markdown completo siguiendo EXACTAMENTE esta estructura. Rellena cada sección con los datos reales de la pantalla. No omitas ninguna sección. No añadas secciones extra.
 
 \`\`\`
-# Template: [Nombre descriptivo de la pantalla] — [variante si aplica]
+# Template: [Nombre descriptivo de la pantalla] - [variante si aplica]
 
 ## IDENTIFICACIÓN
 - **Tipo de recurso:** template
@@ -67,7 +67,7 @@ Genera el documento Markdown completo siguiendo EXACTAMENTE esta estructura. Rel
 - **Tipo:** [tipo de pantalla según el patrón]
 - **Categoría:** [dominio detectado, ej: investments / payments / onboarding]
 - **Nodo Figma:** \`${frame_id || 'pending'}\`
-- **Score DS:** ${score}% — ${scoreStatus}
+- **Score DS:** ${score}% - ${scoreStatus}
 - **Patrón:** ${pattern || 'desconocido'}
 
 ## DESCRIPCIÓN
@@ -81,13 +81,13 @@ Genera el documento Markdown completo siguiendo EXACTAMENTE esta estructura. Rel
 │  [Componente 1]                                         │
 │  [Componente 2 × N]                                     │
 │  [...]                                                  │
-│  [Componente último — CTA o tab-bar]                    │
+│  [Componente último - CTA o tab-bar]                    │
 └─────────────────────────────────────────────────────────┘
 ]
 
 ---
 
-## COMPONENTES REQUERIDOS (ORDEN EXACTO — NO CAMBIAR)
+## COMPONENTES REQUERIDOS (ORDEN EXACTO - NO CAMBIAR)
 
 | Orden | Componente | Node ID | Variante / Estado | Notas |
 |-------|------------|---------|-------------------|-------|
