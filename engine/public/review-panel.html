@@ -11,7 +11,7 @@
     :root {
       --bg: #07080a; --bg2: #0d0f13; --surface: #12151a; --surface2: #181c23;
       --border: #1f242d; --border2: #272d38;
-      --breaking: #ff4757; --safe: #00c97a; --additive: #7c6af7;
+      --breaking: #ff4757; --safe: #00c97a; --additive: #7c6af7; --warning: #f0a500;
       --txt: #dde3ed; --txt2: #566070; --txt3: #8a95a3;
       --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
     }
@@ -37,104 +37,75 @@
       display: grid; place-items: center; font-size: 13px; font-weight: 700; color: #fff;
     }
     .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .badge-count {
-      font-family: var(--mono); font-size: 11px; background: var(--breaking);
-      color: #fff; padding: 2px 8px; border-radius: 3px; display: none;
-    }
+    .badge-count { font-family: var(--mono); font-size: 11px; background: var(--breaking); color: #fff; padding: 2px 8px; border-radius: 3px; display: none; }
     .badge-count.visible { display: inline-block; }
-    .btn-refresh {
+    .btn-sm {
       font-family: var(--mono); font-size: 11px; background: var(--surface);
       border: 1px solid var(--border2); color: var(--txt3); padding: 6px 14px;
       border-radius: 4px; cursor: pointer; transition: border-color 0.2s, color 0.2s;
     }
-    .btn-refresh:hover { border-color: var(--txt3); color: var(--txt); }
+    .btn-sm:hover { border-color: var(--txt3); color: var(--txt); }
     .main { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
-    .page-tag {
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
-      text-transform: uppercase; color: var(--breaking);
-      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-    }
+    .page-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--breaking); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
     .page-tag::before { content: ''; width: 16px; height: 1px; background: var(--breaking); }
     .page-title { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
     .page-sub { font-size: 14px; color: var(--txt3); line-height: 1.6; margin-bottom: 36px; }
-    .empty-state {
-      text-align: center; padding: 80px 24px;
-      border: 1px dashed var(--border2); border-radius: 8px; display: none;
-    }
+    .empty-state { text-align: center; padding: 80px 24px; border: 1px dashed var(--border2); border-radius: 8px; display: none; }
     .empty-state.visible { display: block; }
     .empty-icon { font-size: 32px; margin-bottom: 16px; }
     .empty-title { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
     .empty-sub { font-size: 13px; color: var(--txt3); }
     .loading { text-align: center; padding: 60px; font-family: var(--mono); font-size: 12px; color: var(--txt2); }
-    .reviews-list { display: flex; flex-direction: column; gap: 12px; }
-    .review-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-left: 3px solid var(--breaking); border-radius: 8px; overflow: hidden;
-    }
-    .review-card.resolved { border-left-color: var(--txt2); opacity: 0.5; }
+    .reviews-list { display: flex; flex-direction: column; gap: 16px; }
+    .review-card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--breaking); border-radius: 8px; overflow: hidden; transition: opacity 0.3s; }
+    .review-card.resolved { border-left-color: var(--txt2); opacity: 0.45; pointer-events: none; }
     .review-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; }
-    .review-icon {
-      width: 32px; height: 32px; border-radius: 6px;
-      background: rgba(255,71,87,0.12); border: 1px solid rgba(255,71,87,0.25);
-      display: grid; place-items: center; flex-shrink: 0;
-      font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--breaking);
-    }
+    .review-icon { width: 36px; height: 36px; border-radius: 6px; background: rgba(255,71,87,0.12); border: 1px solid rgba(255,71,87,0.25); display: grid; place-items: center; flex-shrink: 0; font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--breaking); }
     .review-info { flex: 1; min-width: 0; }
-    .review-name {
-      font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--txt);
-      margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .review-name { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--txt); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .review-meta { font-family: var(--mono); font-size: 11px; color: var(--txt2); }
-    .review-type {
-      font-family: var(--mono); font-size: 10px; text-transform: uppercase;
-      letter-spacing: 0.1em; padding: 3px 8px; border-radius: 3px;
-      background: rgba(255,71,87,0.1); color: var(--breaking);
-      border: 1px solid rgba(255,71,87,0.2); flex-shrink: 0;
-    }
+    .review-type { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 8px; border-radius: 3px; background: rgba(255,71,87,0.1); color: var(--breaking); border: 1px solid rgba(255,71,87,0.2); flex-shrink: 0; }
     .review-body { padding: 14px 20px 16px; border-top: 1px solid var(--border); }
     .review-key { font-family: var(--mono); font-size: 11px; color: var(--txt2); margin-bottom: 14px; word-break: break-all; }
-    .review-actions { display: flex; gap: 8px; align-items: center; }
-    .btn-approve {
-      font-family: var(--mono); font-size: 11px; font-weight: 500;
-      background: rgba(0,201,122,0.1); border: 1px solid rgba(0,201,122,0.3);
-      color: var(--safe); padding: 7px 16px; border-radius: 4px; cursor: pointer;
-    }
+    .review-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .btn-approve { font-family: var(--mono); font-size: 11px; font-weight: 500; background: rgba(0,201,122,0.1); border: 1px solid rgba(0,201,122,0.3); color: var(--safe); padding: 7px 16px; border-radius: 4px; cursor: pointer; }
     .btn-approve:hover { background: rgba(0,201,122,0.2); }
-    .btn-reject {
-      font-family: var(--mono); font-size: 11px; background: transparent;
-      border: 1px solid var(--border2); color: var(--txt3); padding: 7px 16px;
-      border-radius: 4px; cursor: pointer;
-    }
+    .btn-reject { font-family: var(--mono); font-size: 11px; background: transparent; border: 1px solid var(--border2); color: var(--txt3); padding: 7px 16px; border-radius: 4px; cursor: pointer; }
     .btn-reject:hover { border-color: var(--breaking); color: var(--breaking); }
+    .btn-impact { font-family: var(--mono); font-size: 11px; background: transparent; border: 1px solid var(--border2); color: var(--warning); padding: 7px 16px; border-radius: 4px; cursor: pointer; }
+    .btn-impact:hover { border-color: var(--warning); }
     .review-result { font-family: var(--mono); font-size: 11px; display: none; }
     .review-result.approved { display: inline; color: var(--safe); }
     .review-result.rejected { display: inline; color: var(--txt2); }
-    .login-overlay {
-      position: fixed; inset: 0; background: var(--bg);
-      display: flex; align-items: center; justify-content: center; z-index: 200;
-    }
-    .login-box {
-      background: var(--surface); border: 1px solid var(--border2);
-      border-radius: 10px; padding: 36px 32px; width: 340px;
-    }
-    .login-title {
-      font-family: var(--mono); font-size: 13px; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 24px; color: var(--breaking);
-    }
-    .login-input {
-      width: 100%; background: var(--bg2); border: 1px solid var(--border2);
-      color: var(--txt); font-family: var(--mono); font-size: 13px;
-      padding: 10px 14px; border-radius: 6px; margin-bottom: 12px;
-      outline: none; transition: border-color 0.2s;
-    }
+    /* Impact panel */
+    .impact-panel { display: none; margin-top: 14px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+    .impact-panel.visible { display: block; }
+    .impact-header { padding: 10px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .impact-title { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warning); }
+    .impact-close { font-family: var(--mono); font-size: 11px; color: var(--txt2); cursor: pointer; background: none; border: none; }
+    .impact-body { padding: 14px 16px; }
+    .impact-summary { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+    .impact-stat { font-family: var(--mono); font-size: 11px; }
+    .impact-stat span { color: var(--warning); font-weight: 700; }
+    .impact-recommendation { font-size: 13px; color: var(--txt3); line-height: 1.6; margin-bottom: 14px; padding: 10px 14px; background: rgba(240,165,0,0.06); border: 1px solid rgba(240,165,0,0.15); border-radius: 4px; }
+    .impact-list { display: flex; flex-direction: column; gap: 6px; }
+    .impact-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; }
+    .impact-item-type { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 1px; }
+    .type-example  { background: rgba(124,106,247,0.12); color: var(--additive); border: 1px solid rgba(124,106,247,0.2); }
+    .type-pattern  { background: rgba(0,201,122,0.1);  color: var(--safe);     border: 1px solid rgba(0,201,122,0.2); }
+    .type-contract { background: rgba(255,71,87,0.1);  color: var(--breaking); border: 1px solid rgba(255,71,87,0.2); }
+    .type-global-rule { background: rgba(240,165,0,0.1); color: var(--warning); border: 1px solid rgba(240,165,0,0.2); }
+    .impact-item-info { flex: 1; min-width: 0; }
+    .impact-item-file { font-family: var(--mono); font-size: 12px; color: var(--txt); }
+    .impact-item-refs { font-family: var(--mono); font-size: 11px; color: var(--txt2); margin-top: 2px; }
+    .impact-loading { font-family: var(--mono); font-size: 11px; color: var(--txt2); padding: 16px; text-align: center; }
+    /* Login */
+    .login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 200; }
+    .login-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 36px 32px; width: 340px; }
+    .login-title { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 24px; color: var(--breaking); }
+    .login-input { width: 100%; background: var(--bg2); border: 1px solid var(--border2); color: var(--txt); font-family: var(--mono); font-size: 13px; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; outline: none; }
     .login-input:focus { border-color: var(--breaking); }
-    .login-btn {
-      width: 100%; background: var(--breaking); border: none; color: #fff;
-      font-family: var(--mono); font-size: 12px; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase; padding: 11px;
-      border-radius: 6px; cursor: pointer; transition: opacity 0.2s;
-    }
-    .login-btn:hover { opacity: 0.85; }
+    .login-btn { width: 100%; background: var(--breaking); border: none; color: #fff; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 11px; border-radius: 6px; cursor: pointer; }
     .login-error { font-family: var(--mono); font-size: 11px; color: var(--breaking); margin-top: 8px; display: none; }
     .login-error.visible { display: block; }
   </style>
@@ -157,19 +128,19 @@
   </div>
   <div class="topbar-right">
     <span class="badge-count" id="badgeCount">0</span>
-    <button class="btn-refresh" id="btnRefresh">Actualizar</button>
+    <button class="btn-sm" id="btnRefresh">Actualizar</button>
   </div>
 </div>
 
 <div class="main">
-  <div class="page-tag">Flujo Inverso F-02</div>
+  <div class="page-tag">Flujo Inverso F-02 / F-03</div>
   <h1 class="page-title">Cambios pendientes de revision</h1>
-  <p class="page-sub">Cambios breaking detectados en la libreria Simple. Aprueba para aplicar o rechaza para descartar.</p>
+  <p class="page-sub">Cambios breaking detectados en la libreria Simple. Analiza el impacto antes de aprobar o rechazar.</p>
   <div class="loading" id="loadingState">Cargando revisiones...</div>
   <div class="empty-state" id="emptyState">
     <div class="empty-icon">&#10003;</div>
     <div class="empty-title">Sin cambios pendientes</div>
-    <div class="empty-sub">El Design System esta sincronizado.</div>
+    <div class="empty-sub">El Design System esta sincronizado. No hay cambios breaking que revisar.</div>
   </div>
   <div class="reviews-list" id="reviewsList"></div>
 </div>
@@ -180,9 +151,7 @@ var BASE_URL = window.location.origin;
 
 function init() {
   document.getElementById('loginBtn').addEventListener('click', doLogin);
-  document.getElementById('loginInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') doLogin();
-  });
+  document.getElementById('loginInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
   document.getElementById('btnRefresh').addEventListener('click', loadReviews);
 }
 
@@ -201,32 +170,24 @@ function loadReviews() {
   document.getElementById('loadingState').style.display = 'block';
   document.getElementById('emptyState').classList.remove('visible');
   document.getElementById('reviewsList').innerHTML = '';
-
-  fetch(BASE_URL + '/review/pending', {
-    headers: { 'X-API-Key': API_KEY }
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
-    document.getElementById('loadingState').style.display = 'none';
-
-    if (!data.reviews || data.reviews.length === 0) {
-      document.getElementById('emptyState').classList.add('visible');
-      document.getElementById('badgeCount').classList.remove('visible');
-      return;
-    }
-
-    var badge = document.getElementById('badgeCount');
-    badge.textContent = data.reviews.length;
-    badge.classList.add('visible');
-
-    var list = document.getElementById('reviewsList');
-    data.reviews.forEach(function(review) {
-      list.appendChild(buildCard(review));
+  fetch(BASE_URL + '/review/pending', { headers: { 'X-API-Key': API_KEY } })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('loadingState').style.display = 'none';
+      if (!data.reviews || data.reviews.length === 0) {
+        document.getElementById('emptyState').classList.add('visible');
+        document.getElementById('badgeCount').classList.remove('visible');
+        return;
+      }
+      var badge = document.getElementById('badgeCount');
+      badge.textContent = data.reviews.length;
+      badge.classList.add('visible');
+      var list = document.getElementById('reviewsList');
+      data.reviews.forEach(function(r) { list.appendChild(buildCard(r)); });
+    })
+    .catch(function(err) {
+      document.getElementById('loadingState').textContent = 'Error: ' + err.message;
     });
-  })
-  .catch(function(err) {
-    document.getElementById('loadingState').textContent = 'Error: ' + err.message;
-  });
 }
 
 function buildCard(review) {
@@ -243,10 +204,10 @@ function buildCard(review) {
   header.innerHTML =
     '<div class="review-icon">' + icon + '</div>' +
     '<div class="review-info">' +
-      '<div class="review-name">' + escHtml(review.component || review.file) + '</div>' +
-      '<div class="review-meta">' + escHtml(ts) + '</div>' +
+      '<div class="review-name">' + esc(review.component || review.file) + '</div>' +
+      '<div class="review-meta">' + esc(ts) + '</div>' +
     '</div>' +
-    '<div class="review-type">' + escHtml(review.reason || 'BREAKING') + '</div>';
+    '<div class="review-type">' + esc(review.reason || 'BREAKING') + '</div>';
 
   var body = document.createElement('div');
   body.className = 'review-body';
@@ -258,9 +219,14 @@ function buildCard(review) {
   var actions = document.createElement('div');
   actions.className = 'review-actions';
 
+  var btnImpact = document.createElement('button');
+  btnImpact.className = 'btn-impact';
+  btnImpact.textContent = 'Ver impacto';
+  btnImpact.addEventListener('click', function() { toggleImpact(review.file, card); });
+
   var btnApprove = document.createElement('button');
   btnApprove.className = 'btn-approve';
-  btnApprove.textContent = 'Aprobar cambio';
+  btnApprove.textContent = 'Aprobar';
   btnApprove.addEventListener('click', function() { doAction('approve', review.file, card); });
 
   var btnReject = document.createElement('button');
@@ -272,32 +238,96 @@ function buildCard(review) {
   result.className = 'review-result';
   result.id = 'result-' + review.file;
 
+  actions.appendChild(btnImpact);
   actions.appendChild(btnApprove);
   actions.appendChild(btnReject);
   actions.appendChild(result);
+
+  // Panel de impacto (oculto por defecto)
+  var impactPanel = document.createElement('div');
+  impactPanel.className = 'impact-panel';
+  impactPanel.id = 'impact-' + review.file;
+  impactPanel.innerHTML = '<div class="impact-loading">Analizando impacto...</div>';
+
   body.appendChild(keyDiv);
   body.appendChild(actions);
+  body.appendChild(impactPanel);
   card.appendChild(header);
   card.appendChild(body);
   return card;
 }
 
+function toggleImpact(file, card) {
+  var panel = document.getElementById('impact-' + file);
+  if (panel.classList.contains('visible')) {
+    panel.classList.remove('visible');
+    return;
+  }
+  panel.classList.add('visible');
+  // Solo carga si no ha cargado ya
+  if (panel.dataset.loaded) return;
+  panel.dataset.loaded = '1';
+
+  fetch(BASE_URL + '/review/impact/' + encodeURIComponent(file), {
+    headers: { 'X-API-Key': API_KEY }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(report) { renderImpact(panel, report); })
+  .catch(function(err) {
+    panel.innerHTML = '<div class="impact-loading">Error: ' + esc(err.message) + '</div>';
+  });
+}
+
+function renderImpact(panel, report) {
+  var affectedHtml = '';
+  if (report.affected && report.affected.length > 0) {
+    report.affected.forEach(function(a) {
+      var refs = a.refs.slice(0, 2).map(function(r) { return 'L' + r.line + ': ' + esc(r.text.substring(0, 60)); }).join(' · ');
+      affectedHtml +=
+        '<div class="impact-item">' +
+          '<span class="impact-item-type type-' + a.type + '">' + a.type + '</span>' +
+          '<div class="impact-item-info">' +
+            '<div class="impact-item-file">' + esc(a.file) + '</div>' +
+            '<div class="impact-item-refs">' + esc(refs) + '</div>' +
+          '</div>' +
+        '</div>';
+    });
+  } else {
+    affectedHtml = '<div class="impact-loading">Sin referencias en documentos del sistema.</div>';
+  }
+
+  var s = report.summary || {};
+  panel.innerHTML =
+    '<div class="impact-header">' +
+      '<span class="impact-title">Impacto en el sistema</span>' +
+      '<button class="impact-close" onclick="this.closest(\'.impact-panel\').classList.remove(\'visible\')">cerrar</button>' +
+    '</div>' +
+    '<div class="impact-body">' +
+      '<div class="impact-summary">' +
+        '<div class="impact-stat">Total: <span>' + (s.total || 0) + '</span></div>' +
+        '<div class="impact-stat">Examples: <span>' + (s.examples || 0) + '</span></div>' +
+        '<div class="impact-stat">Patterns: <span>' + (s.patterns || 0) + '</span></div>' +
+        '<div class="impact-stat">Contracts: <span>' + (s.contracts || 0) + '</span></div>' +
+      '</div>' +
+      '<div class="impact-recommendation">' + esc(report.recommendation || '') + '</div>' +
+      '<div class="impact-list">' + affectedHtml + '</div>' +
+    '</div>';
+}
+
 function doAction(type, file, card) {
   var btns = card.querySelectorAll('button');
   btns.forEach(function(b) { b.disabled = true; });
-
   fetch(BASE_URL + '/review/' + type, {
     method: 'POST',
     headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({ file: file })
   })
-  .then(function(res) { return res.json(); })
-  .then(function() {
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
     card.classList.add('resolved');
     var result = document.getElementById('result-' + file);
     result.textContent = type === 'approve' ? 'Aprobado' : 'Rechazado';
     result.className = 'review-result ' + (type === 'approve' ? 'approved' : 'rejected');
-
     var badge = document.getElementById('badgeCount');
     var current = parseInt(badge.textContent) - 1;
     if (current <= 0) {
@@ -305,9 +335,18 @@ function doAction(type, file, card) {
       setTimeout(function() {
         document.getElementById('reviewsList').innerHTML = '';
         document.getElementById('emptyState').classList.add('visible');
-      }, 600);
+      }, 700);
     } else {
       badge.textContent = current;
+    }
+    // Mostrar impact report si viene en la respuesta de approve
+    if (type === 'approve' && data.propagation && data.propagation.impactReport) {
+      var panel = document.getElementById('impact-' + file);
+      if (panel) {
+        panel.dataset.loaded = '';
+        renderImpact(panel, data.propagation.impactReport);
+        panel.classList.add('visible');
+      }
     }
   })
   .catch(function(err) {
@@ -316,8 +355,8 @@ function doAction(type, file, card) {
   });
 }
 
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 window.addEventListener('DOMContentLoaded', init);
