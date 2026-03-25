@@ -1,12 +1,12 @@
 /**
- * confidenceScore.js — Fase 3
+ * confidenceScore.js - Fase 3
  * 4-signal weighted confidence scoring
  *
  * Signals:
- *   contract_coverage  30% — node_id resuelto + whenToUse poblado
- *   precedent          25% — ejemplos aprobados en /examples que coincidan con el patrón
- *   intent_clarity     25% — score de confianza del intentParser (Claude API)
- *   rule_compliance    20% — sin violaciones de exclusividad ni reglas de composición
+ *   contract_coverage  30% - node_id resuelto + whenToUse poblado
+ *   precedent          25% - ejemplos aprobados en /examples que coincidan con el patrón
+ *   intent_clarity     25% - score de confianza del intentParser (Claude API)
+ *   rule_compliance    20% - sin violaciones de exclusividad ni reglas de composición
  *
  * Thresholds:
  *   >= 0.80  → AUTO_APPROVE
@@ -33,10 +33,10 @@ const THRESHOLDS = {
  * Computes the full confidence object for a composition plan.
  *
  * @param {object} params
- * @param {string} params.pattern       — matched pattern name
- * @param {object[]} params.components  — resolved component list
- * @param {object} params.intent        — IntentObject from intentParser
- * @param {object[]} params.contracts   — loaded contract objects
+ * @param {string} params.pattern       - matched pattern name
+ * @param {object[]} params.components  - resolved component list
+ * @param {object} params.intent        - IntentObject from intentParser
+ * @param {object[]} params.contracts   - loaded contract objects
  * @returns {object} confidence
  */
 function computeConfidence({ pattern, components, intent, contracts }) {
@@ -95,7 +95,7 @@ function scoreContractCoverage(components, contracts) {
 // ─── SIGNAL 2: Precedent (25%) ────────────────────────────────────────────────
 // Checks /examples directory for approved screens matching the pattern.
 // Score:
-//   0 examples → 0.30 (baseline — pattern exists but no approved precedent)
+//   0 examples → 0.30 (baseline - pattern exists but no approved precedent)
 //   1 example  → 0.70
 //   2+ examples → 1.00
 function scorePrecedent(pattern) {
@@ -187,7 +187,7 @@ function detectWeakSignals(signals, intent) {
   const weak = [];
 
   if (signals.precedent < 0.70) {
-    weak.push('Sin ejemplos aprobados para este patrón — considera añadir uno a /examples');
+    weak.push('Sin ejemplos aprobados para este patrón - considera añadir uno a /examples');
   }
 
   if (signals.contract_coverage < 0.80) {
@@ -195,15 +195,15 @@ function detectWeakSignals(signals, intent) {
   }
 
   if (signals.intent_clarity < 0.70) {
-    weak.push('Brief ambiguo — considera ser más específico en la descripción');
+    weak.push('Brief ambiguo - considera ser más específico en la descripción');
   }
 
   if (signals.rule_compliance < 1.0) {
-    weak.push('Violación de reglas de composición detectada — revisa exclusividades');
+    weak.push('Violación de reglas de composición detectada - revisa exclusividades');
   }
 
   if (intent && !intent.domain) {
-    weak.push('Dominio no identificado — el engine usó detección por keywords');
+    weak.push('Dominio no identificado - el engine usó detección por keywords');
   }
 
   return weak;
