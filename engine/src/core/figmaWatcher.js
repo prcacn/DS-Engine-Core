@@ -8,99 +8,72 @@ const CONTRACT_RELEVANT_EVENTS = [
   'FILE_VERSION_UPDATE',
 ];
 
-// Propiedades que si cambian afectan al contrato
-const CONTRACT_RELEVANT_PROPS = [
-  'componentPropertyDefinitions',
-  'description',
-  'name',
-];
+// Clasificar impacto del cambio
+// Devuelve: 'safe' | 'additive' | 'breaking'
+function assessImpact(changeType) {
+  if (changeType === 'COMPONENT_DELETED') return 'breaking';
+  if (changeType === 'COMPONENT_CREATED') return 'additive';
+  return 'safe';
+}
 
-// ─── Verificar passcode del webhook ──────────────────────────────────────
+// Verificar passcode del webhook
 function verifyPasscode(received) {
   return received === process.env.FIGMA_WEBHOOK_PASSCODE;
 }
 
-// ─── Clasificar impacto del cambio ───────────────────────────────────────
-// Devuelve: 'safe' | 'additive' | 'breaking'
-function assessImpact(changeType, details = {}) {
-  if (
-    changeType === 'COMPONENT_DELETED' ||
-    changeType === 'COMPONENT_RENAMED' ||
-    details.action === 'REMOVED'
-  ) return 'breaking';
-
-  if (
-    changeType === 'COMPONENT_CREATED' ||
-    details.action === 'ADDED'
-  ) return 'additive';
-
-  return 'safe';
-}
-
-// ─── Extraer delta estructurado del payload de Figma ─────────────────────
-// Figma no envía qué cambió exactamente - hay que comparar con la versión anterior
-// En esta fase extraemos los componentes afectados para procesarlos después
+// Extraer delta estructurado del payload de Figma
+// Figma v2 usa: created_components, modified_components, deleted_components
 function extractDelta(payload) {
   const delta = {
-    fileKey: payload.file_key || payload.fileKey,
-    timestamp: payload.timestamp || new Date().toISOString(),
+    fileKey: payload.file_key,
+    fileName: payload.file_name,
+    timestamp: new Date().toISOString(),
     eventType: payload.event_type,
     changes: [],
   };
 
-  // Figma LIBRARY_PUBLISH incluye created/modified/deleted
-  if (payload.created) {
-    payload.created.forEach(c => delta.changes.push({
-      componentKey: c.key,
-      componentName: c.name,
-      changeType: 'COMPONENT_CREATED',
-      impact: 'additive',
-    }));
-  }
+  const created  = payload.created_components  || [];
+  const modified = payload.modified_components || [];
+  const deleted  = payload.deleted_components  || [];
 
-  if (payload.modified) {
-    payload.modified.forEach(c => delta.changes.push({
-      componentKey: c.key,
-      componentName: c.name,
-      changeType: 'COMPONENT_MODIFIED',
-      impact: assessImpact('COMPONENT_MODIFIED'),
-    }));
-  }
+  created.forEach(c => delta.changes.push({
+    componentKey:  c.key,
+    componentName: c.name,
+    changeType:    'COMPONENT_CREATED',
+    impact:        'additive',
+  }));
 
-  if (payload.deleted) {
-    payload.deleted.forEach(c => delta.changes.push({
-      componentKey: c.key,
-      componentName: c.name,
-      changeType: 'COMPONENT_DELETED',
-      impact: 'breaking',
-    }));
-  }
+  modified.forEach(c => delta.changes.push({
+    componentKey:  c.key,
+    componentName: c.name,
+    changeType:    'COMPONENT_MODIFIED',
+    impact:        'safe',
+  }));
+
+  deleted.forEach(c => delta.changes.push({
+    componentKey:  c.key,
+    componentName: c.name,
+    changeType:    'COMPONENT_DELETED',
+    impact:        'breaking',
+  }));
 
   return delta;
 }
 
-// ─── Filtrar solo cambios relevantes para contratos ──────────────────────
+// Filtrar solo cambios relevantes para contratos
 function filterRelevant(delta) {
-  // Ignorar si no hay cambios de componentes
   if (!delta.changes || delta.changes.length === 0) return null;
-
-  const relevant = delta.changes.filter(c =>
-    ['COMPONENT_CREATED', 'COMPONENT_MODIFIED', 'COMPONENT_DELETED', 'COMPONENT_RENAMED'].includes(c.changeType)
-  );
-
-  if (relevant.length === 0) return null;
-
-  return { ...delta, changes: relevant };
+  return delta;
 }
 
-// ─── Handler principal - llamado desde la ruta Express ───────────────────
+// Handler principal - llamado desde la ruta Express
 async function handleFigmaWebhook(req, res) {
   try {
     const payload = req.body;
 
     // 1. Verificar passcode
     if (!verifyPasscode(payload.passcode)) {
-      console.warn('[Watcher] Passcode inválido - webhook rechazado');
+      console.warn('[Watcher] Passcode invalido - webhook rechazado');
       return res.status(401).json({ error: 'Invalid passcode' });
     }
 
@@ -109,22 +82,20 @@ async function handleFigmaWebhook(req, res) {
       return res.status(200).json({ status: 'ignored', reason: 'event_not_relevant' });
     }
 
-    console.log('[Watcher] Payload raw:', JSON.stringify(payload, null, 2));
-    console.log(`[Watcher] Evento recibido: ${payload.event_type} → file ${payload.file_key}`);
+    console.log(`[Watcher] Evento recibido: ${payload.event_type} -> file ${payload.file_key} (${payload.file_name})`);
 
-    // 3. Extraer delta
+    // 3. Extraer delta con estructura real de Figma v2
     const delta = extractDelta(payload);
 
-    // 4. Filtrar solo cambios relevantes para contratos
+    console.log(`[Watcher] Delta: ${delta.changes.filter(c => c.impact === 'breaking').length} breaking, ${delta.changes.filter(c => c.impact === 'additive').length} additive, ${delta.changes.filter(c => c.impact === 'safe').length} safe`);
+
+    // 4. Filtrar cambios relevantes
     const relevantDelta = filterRelevant(delta);
     if (!relevantDelta) {
       return res.status(200).json({ status: 'ignored', reason: 'no_contract_relevant_changes' });
     }
 
-    console.log(`[Watcher] ${relevantDelta.changes.length} cambios relevantes detectados`);
-
-    // 5. Emitir al contractUpdater de forma asíncrona
-    // No bloqueamos la respuesta a Figma - procesamos en background
+    // 5. Procesar en background - no bloqueamos la respuesta a Figma
     setImmediate(async () => {
       try {
         const { processContractUpdate } = require('./contractUpdater');
@@ -134,10 +105,13 @@ async function handleFigmaWebhook(req, res) {
       }
     });
 
-    // 6. Responder a Figma inmediatamente (Figma espera 200 en <3s)
+    // 6. Responder a Figma inmediatamente (espera 200 en menos de 3s)
     return res.status(200).json({
-      status: 'processing',
-      changes: relevantDelta.changes.length,
+      status:    'processing',
+      changes:   relevantDelta.changes.length,
+      breaking:  relevantDelta.changes.filter(c => c.impact === 'breaking').length,
+      additive:  relevantDelta.changes.filter(c => c.impact === 'additive').length,
+      safe:      relevantDelta.changes.filter(c => c.impact === 'safe').length,
       timestamp: relevantDelta.timestamp,
     });
 
