@@ -93,7 +93,7 @@ async function resolveSlots({ brief, intent, compositionName = 'card-composition
     return result;
 
   } catch (err) {
-    console.warn('  ⚠ [SlotResolver] Error:', err.message, '— usando card-simple');
+    console.warn('  ⚠ [SlotResolver] Error:', err.message, '- usando card-simple');
     return {
       variant_id: 'card-simple',
       slots: {
