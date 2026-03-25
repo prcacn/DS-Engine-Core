@@ -1,15 +1,15 @@
 // api/routes/paint.js
 // POST /paint
 // Recibe una composición del engine (o un brief) y devuelve el código JS
-// listo para ejecutar en figma_execute — FigmaPainter v3.1
+// listo para ejecutar en figma_execute - FigmaPainter v3.1
 
 const express   = require('express');
 const router    = express.Router();
 const { paint } = require('../../core/figmaPainter');
 
 // POST /paint
-// Body: { composition } — resultado directo de /generate
-// O:    { brief, pattern, components, confidence } — composición parcial
+// Body: { composition } - resultado directo de /generate
+// O:    { brief, pattern, components, confidence } - composición parcial
 // Options: { x, y, label }
 router.post('/', (req, res, next) => {
   try {
