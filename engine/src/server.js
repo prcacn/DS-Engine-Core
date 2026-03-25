@@ -13,6 +13,7 @@ const approveRoute     = require('./api/routes/approve');
 const registerRoute    = require('./api/routes/register');
 const renderRoute      = require('./api/routes/render');
 const webhookRoute     = require('./api/routes/webhook');  // F-01 flujo inverso
+const reviewRoute      = require('./api/routes/review');   // F-02 panel de revision
 const errorHandler    = require('./api/middleware/errorHandler');
 const auth            = require('./api/middleware/auth');
 
@@ -43,6 +44,7 @@ app.get('/health', (req, res) => {
 // ── Webhook de Figma (sin auth — Figma no envía API key) ──────────────────
 // Seguridad: verificación por passcode en el handler
 app.use('/webhook', webhookRoute);
+app.use('/review',  auth, reviewRoute);
 
 // ── Rutas protegidas con API Key ───────────────────────────────────────────
 app.use('/generate',   auth, generateRoute);
