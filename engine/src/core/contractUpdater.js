@@ -1,5 +1,5 @@
 // contractUpdater.js
-// F-02 — Actualiza el contrato JSON cuando llega un delta del Watcher
+// F-02 - Actualiza el contrato JSON cuando llega un delta del Watcher
 // Ruta: engine/src/core/contractUpdater.js
 
 const fs = require('fs').promises;
@@ -62,7 +62,7 @@ async function processContractUpdate(delta) {
     if (classification === 'breaking') {
       // Cambio breaking → NO actualizar automáticamente
       // Registrar para revisión manual y notificar
-      console.warn(`[ContractUpdater] BREAKING: ${change.componentName} (${change.changeType}) — requiere revisión manual`);
+      console.warn(`[ContractUpdater] BREAKING: ${change.componentName} (${change.changeType}) - requiere revisión manual`);
       await logChange(delta, 'breaking', 'pending_review');
 
       // Crear archivo de propuesta para revisión
