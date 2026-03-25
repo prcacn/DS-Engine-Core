@@ -1,11 +1,11 @@
-// core/screenRenderer.js — Screen Renderer v1.0
+// core/screenRenderer.js - Screen Renderer v1.0
 // Convierte un array de componentes del engine en HTML semántico
 // con CSS variables del Simple DS. Listo para producción.
 //
 // FILOSOFÍA:
 //   - Todo el HTML se genera aquí, en el servidor
 //   - Los clientes (webapp, plugin, API) solo muestran lo que reciben
-//   - Los tokens vienen del DS — nunca valores hardcodeados en el HTML
+//   - Los tokens vienen del DS - nunca valores hardcodeados en el HTML
 //   - El output es portable: funciona en cualquier proyecto que importe los tokens
 //
 // TOKENS del Simple DS (de Figma):
@@ -32,11 +32,11 @@
 //   --ds-radius-xs:             4px   (Radius/Component/XS)
 //   --ds-radius-sm:             8px   (Radius/Component/SM)
 
-// ─── CSS BASE — se incluye UNA SOLA VEZ en el documento ──────────────────────
+// ─── CSS BASE - se incluye UNA SOLA VEZ en el documento ──────────────────────
 
 const DS_CSS = `
 :root {
-  /* Colors — Simple DS tokens */
+  /* Colors - Simple DS tokens */
   --ds-color-text-primary:   #0f172a;
   --ds-color-text-secondary: #475569;
   --ds-color-text-neutral:   #64748b;
@@ -54,7 +54,7 @@ const DS_CSS = `
   --ds-color-warning-bg:     #fef9c3;
   --ds-color-info:           #3b82f6;
   --ds-color-info-bg:        #dbeafe;
-  /* Typography — Simple DS tokens */
+  /* Typography - Simple DS tokens */
   --ds-font:                 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --ds-size-heading:         16px;
   --ds-weight-heading:       600;
@@ -66,7 +66,7 @@ const DS_CSS = `
   --ds-weight-caption:       400;
   --ds-size-label:           12px;
   --ds-weight-label:         400;
-  /* Spacing — Simple DS tokens */
+  /* Spacing - Simple DS tokens */
   --ds-gap-xs:    2px;
   --ds-gap-sm:    4px;
   --ds-gap-md:    8px;
@@ -75,7 +75,7 @@ const DS_CSS = `
   --ds-pad-h:     16px;
   --ds-pad-v-sm:  8px;
   --ds-pad-v-md:  12px;
-  /* Radii — Simple DS tokens */
+  /* Radii - Simple DS tokens */
   --ds-radius-xs:   4px;
   --ds-radius-sm:   8px;
   --ds-radius-full: 9999px;
@@ -511,7 +511,7 @@ function renderCardItem(comp, pattern) {
   const qty = comp.quantity || 1;
   let html  = '<div class="ds-card-list">';
 
-  // Fallbacks según dominio — se usan solo si los props no tienen valor
+  // Fallbacks según dominio - se usan solo si los props no tienen valor
   const titles    = ['Nómina Empresa', 'Supermercado', 'Fondo Renta Fija', 'Dividendos', 'Cartera Global'];
   const subtitles = ['15 mar · Transferencia', 'Hoy · Pago', '10 mar · Liquidación', '8 mar · Dividendo', '5 mar · Compra'];
   const values    = ['+€2.450,00', '-€87,50', '+€1.200,00', '+€320,00', '+€5.800,00'];
@@ -628,7 +628,7 @@ function renderModalBottomSheet(comp) {
   </div>`;
 }
 
-// ─── RENDER SCREEN — punto de entrada ────────────────────────────────────────
+// ─── RENDER SCREEN - punto de entrada ────────────────────────────────────────
 
 function renderScreen(data, options = {}) {
   const {
@@ -691,7 +691,7 @@ function renderScreen(data, options = {}) {
 
   function renderCardCompositionGroup(comps) {
     // Agrupar slots por card (una card = header + content + action opcionales)
-    // Los slots están ordenados por order — agrupamos en bloques de max 3
+    // Los slots están ordenados por order - agrupamos en bloques de max 3
     const cards = [];
     let current = [];
     for (const c of comps) {
@@ -734,7 +734,7 @@ function renderScreen(data, options = {}) {
           </div>
         </div>`;
       }
-      // Fallback — card-action
+      // Fallback - card-action
       return `<div class="ds-card-composition">
         <div class="ds-slot-header">
           <div class="ds-slot-header-left">
