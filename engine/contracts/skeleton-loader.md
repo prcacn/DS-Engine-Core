@@ -1,5 +1,8 @@
 # skeleton-loader
 
+## Node ID en Figma
+137:1752
+
 ## Descripción
 Estado de carga. Reemplaza a los componentes de contenido mientras se cargan los datos. Respeta la estructura visual del contenido que va a aparecer para minimizar el salto visual al cargar.
 
