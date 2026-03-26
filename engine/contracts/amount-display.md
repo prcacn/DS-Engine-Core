@@ -1,5 +1,8 @@
 # amount-display
 
+## Node ID en Figma
+137:1740
+
 ## Descripción
 Componente de visualización de importe o saldo principal. Muestra el valor económico más relevante de la pantalla con su variación. Es el elemento visual central de dashboards y detalles financieros.
 
