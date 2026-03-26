@@ -1,7 +1,7 @@
 # notification-banner
 
 ## Node ID en Figma
-185:3903
+20:802
 
 ## Component Set ID
 185:3903  ← COMPONENT_SET padre (no instanciar directamente)
