@@ -1,7 +1,7 @@
 # tab-bar
 
 ## Node ID en Figma
-185:3900
+20:784
 
 ## Component Set ID
 185:3900  ← COMPONENT_SET padre (no instanciar directamente)
