@@ -295,9 +295,14 @@ router.post('/', async function(req, res, next) {
 
       // Si el template tiene slots → construir desde slots + aplicar overrides del brief
       // Si no → usar los componentes directamente (templates legacy)
-      const templateComponents = approvedTemplate.has_slots
+      const rawTemplateComponents = approvedTemplate.has_slots
         ? buildCompositionFromSlots(approvedTemplate, brief, quantities)
         : approvedTemplate.components;
+      // Enriquecer con node_id desde contratos (buildCompositionFromSlots no tiene acceso a contracts)
+      const templateComponents = rawTemplateComponents.map(c => {
+        const contract = contracts[c.component];
+        return contract ? { ...c, node_id: contract.nodeId, resolution_confidence: c.resolution_confidence || 0.90 } : c;
+      });
 
       const confidence = calculateScore({
         pattern:    patternName,
@@ -386,6 +391,7 @@ router.post('/', async function(req, res, next) {
 });
 
 module.exports = router;
+
 
 
 
