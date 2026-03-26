@@ -9,6 +9,15 @@ Pantalla o modal de confirmación de una acción importante. Se usa cuando la ac
 - Cancelar una suscripción o servicio
 - Confirmar datos antes de una acción definitiva
 
+## Componentes requeridos
+1. navigation-header — variant: Type=Modal (L3 — solo cierre)
+2. card-item — resumen de lo que se va a confirmar (solo lectura)
+3. modal-bottom-sheet — variant: confirmation
+
+## Componentes opcionales
+- button-primary — confirmar acción (si no está dentro del modal)
+- button-secondary — cancelar o modificar
+
 ## Variantes del pattern
 
 ### Variante A — Modal (acción desde un listado)
