@@ -1,7 +1,7 @@
 # input-text
 
 ## Node ID en Figma
-185:3896
+1:21
 
 ## Component Set ID
 185:3896  ← COMPONENT_SET padre (no instanciar directamente)
