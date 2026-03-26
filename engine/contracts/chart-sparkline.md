@@ -1,5 +1,8 @@
 # chart-sparkline
 
+## Node ID en Figma
+137:1746
+
 ## Descripción
 Gráfica de evolución compacta. Muestra la tendencia de un valor a lo largo del tiempo de forma visual y resumida. Complementa al `amount-display` en pantallas de detalle financiero.
 
