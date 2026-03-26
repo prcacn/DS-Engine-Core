@@ -410,11 +410,69 @@
       font-size: 11px; line-height: 1.4; padding: 5px 8px;
       border-radius: 5px;
     }
-    .diff-item.added   { background: rgba(74,222,128,0.08); color: #4ade80; border-left: 2px solid #4ade80; }
-    .diff-item.removed { background: rgba(248,113,113,0.08); color: #f87171; border-left: 2px solid #f87171; }
-    .diff-item.modified{ background: rgba(251,191,36,0.08);  color: #fbbf24; border-left: 2px solid #fbbf24; }
+    .diff-item.added   { background: rgba(74,222,128,0.10); color: #4ade80; border-left: 3px solid #4ade80; }
+    .diff-item.removed { background: rgba(248,113,113,0.10); color: #f87171; border-left: 3px solid #f87171; }
+    .diff-item.modified{ background: rgba(251,191,36,0.10);  color: #fbbf24; border-left: 3px solid #fbbf24; }
     .diff-item.kept    { background: rgba(148,163,184,0.05); color: var(--txt2); border-left: 2px solid var(--border); }
-    .diff-icon { font-size: 10px; flex-shrink: 0; margin-top: 1px; }
+    .diff-icon { font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; min-width: 14px; }
+    .diff-tag  { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+                 padding: 1px 5px; border-radius: 3px; margin-left: auto; opacity: 0.8; }
+    .diff-item.added   .diff-tag { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .diff-item.removed .diff-tag { background: rgba(248,113,113,0.15); color: #f87171; }
+    .diff-item.modified .diff-tag { background: rgba(251,191,36,0.15); color: #fbbf24; }
+
+    /* Modal de motivo (reemplaza prompt nativo) */
+    .reason-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 9999; align-items: center; justify-content: center;
+    }
+    .reason-modal-overlay.active { display: flex; }
+    .reason-modal {
+      background: var(--surface, #1a1a2e); border: 1px solid var(--border, rgba(255,255,255,0.1));
+      border-radius: 12px; padding: 24px; width: 420px; max-width: 90vw;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .reason-modal h4 { margin: 0; font-size: 14px; font-weight: 600; color: var(--txt1, #f1f5f9); }
+    .reason-modal p  { margin: 0; font-size: 12px; color: var(--txt2, #94a3b8); line-height: 1.5; }
+    .reason-modal textarea {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border, rgba(255,255,255,0.1));
+      border-radius: 8px; color: var(--txt1, #f1f5f9); font-size: 12px;
+      padding: 10px 12px; resize: vertical; min-height: 80px; width: 100%;
+      box-sizing: border-box; font-family: inherit;
+    }
+    .reason-modal textarea:focus { outline: none; border-color: rgba(148,163,184,0.4); }
+    .reason-modal textarea::placeholder { color: var(--txt2, #94a3b8); opacity: 0.6; }
+    .reason-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .reason-modal-actions .btn-cancel {
+      background: transparent; border: 1px solid var(--border, rgba(255,255,255,0.1));
+      color: var(--txt2, #94a3b8); border-radius: 6px; padding: 7px 14px;
+      font-size: 12px; cursor: pointer;
+    }
+    .reason-modal-actions .btn-confirm {
+      border-radius: 6px; padding: 7px 14px; font-size: 12px;
+      font-weight: 600; cursor: pointer; border: none;
+    }
+    .reason-modal-actions .btn-confirm.reject-confirm {
+      background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171;
+    }
+    .reason-modal-actions .btn-confirm.modify-confirm {
+      background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.4); color: #eab308;
+    }
+
+    /* Toast de KB confirmación */
+    .kb-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: rgba(15,23,42,0.97); border: 1px solid rgba(74,222,128,0.3);
+      border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 10px;
+      font-size: 12px; color: #f1f5f9; z-index: 9998; transition: transform 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .kb-toast.show { transform: translateX(-50%) translateY(0); }
+    .kb-toast.error { border-color: rgba(248,113,113,0.3); }
+    .kb-toast-icon { font-size: 16px; }
+    .kb-toast-text { display: flex; flex-direction: column; gap: 2px; }
+    .kb-toast-title { font-weight: 600; font-size: 12px; }
+    .kb-toast-sub   { font-size: 10px; color: var(--txt2, #94a3b8); }
     .diff-empty {
       font-size: 11px; color: var(--txt2); opacity: 0.5;
       text-align: center; padding: 8px;
@@ -1929,13 +1987,13 @@
       html = '<div class="diff-empty">Sin cambios estructurales — solo ajustes de contenido</div>';
     } else {
       added.forEach(function(d) {
-        html += '<div class="diff-item added"><span class="diff-icon">+</span><span>' + (d.component || JSON.stringify(d)) + '</span></div>';
+        html += '<div class="diff-item added"><span class="diff-icon">+</span><span style="flex:1">' + (typeof d === 'string' ? d : (d.component || JSON.stringify(d))) + '</span><span class="diff-tag">añadido</span></div>';
       });
       modified.forEach(function(d) {
-        html += '<div class="diff-item modified"><span class="diff-icon">~</span><span>' + (d.component || JSON.stringify(d)) + '</span></div>';
+        html += '<div class="diff-item modified"><span class="diff-icon">~</span><span style="flex:1">' + (typeof d === 'string' ? d : (d.component || JSON.stringify(d))) + '</span><span class="diff-tag">modificado</span></div>';
       });
       removed.forEach(function(d) {
-        html += '<div class="diff-item removed"><span class="diff-icon">−</span><span>' + (d.component || JSON.stringify(d)) + '</span></div>';
+        html += '<div class="diff-item removed"><span class="diff-icon">−</span><span style="flex:1">' + (typeof d === 'string' ? d : (d.component || JSON.stringify(d))) + '</span><span class="diff-tag">eliminado</span></div>';
       });
     }
 
@@ -1968,6 +2026,67 @@
     closePopup();
   }
 
+  // ── Toast KB ─────────────────────────────────────────────────────────────
+  function showKbToast(title, sub, isError) {
+    var toast = document.getElementById('kbToast');
+    var icon  = document.getElementById('kbToastIcon');
+    var t     = document.getElementById('kbToastTitle');
+    var s     = document.getElementById('kbToastSub');
+    if (!toast) return;
+    icon.textContent = isError ? '✗' : '✓';
+    t.textContent = title;
+    s.textContent = sub || '';
+    toast.className = 'kb-toast' + (isError ? ' error' : '');
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 4000);
+  }
+
+  // ── Modal de motivo ───────────────────────────────────────────────────────
+  var _reasonCallback = null;
+  var _reasonAction   = null;
+
+  function openReasonModal(action) {
+    var overlay = document.getElementById('reasonModalOverlay');
+    var title   = document.getElementById('reasonModalTitle');
+    var desc    = document.getElementById('reasonModalDesc');
+    var confirm = document.getElementById('reasonModalConfirm');
+    var textarea= document.getElementById('reasonModalText');
+    if (!overlay) return Promise.resolve(null);
+
+    if (action === 'reject') {
+      title.textContent   = '¿Por qué rechazas esta propuesta?';
+      desc.textContent    = 'El motivo se guardará en la KB para que el engine no repita este error.';
+      confirm.className   = 'btn-confirm reject-confirm';
+      confirm.textContent = 'Rechazar';
+    } else {
+      title.textContent   = '¿Qué modificarías de esta propuesta?';
+      desc.textContent    = 'La corrección se guardará en la KB como regla implícita para futuras generaciones.';
+      confirm.className   = 'btn-confirm modify-confirm';
+      confirm.textContent = 'Aprobar con cambios';
+    }
+    textarea.value = '';
+    overlay.classList.add('active');
+    textarea.focus();
+    _reasonAction = action;
+
+    return new Promise(function(resolve) { _reasonCallback = resolve; });
+  }
+
+  function closeReasonModal() {
+    var overlay = document.getElementById('reasonModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+    if (_reasonCallback) { _reasonCallback(null); _reasonCallback = null; }
+  }
+
+  function confirmReasonModal() {
+    var textarea = document.getElementById('reasonModalText');
+    var value    = textarea ? textarea.value.trim() : '';
+    var overlay  = document.getElementById('reasonModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+    if (_reasonCallback) { _reasonCallback(value || ''); _reasonCallback = null; }
+  }
+
+  // ── Aprobar ───────────────────────────────────────────────────────────────
   async function approveVariant() {
     if (!lastResult || !lastResult.is_proposal) return;
     var statusEl = document.getElementById('approvalStatus');
@@ -1975,9 +2094,9 @@
     statusEl.className = 'approval-status';
     statusEl.textContent = 'Guardando...';
     try {
-      var url = document.getElementById('engineUrl').value;
+      var url    = document.getElementById('engineUrl').value;
       var apiKey = document.getElementById('apiKey').value;
-      var res = await fetch(url + '/approve', {
+      var res    = await fetch(url + '/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
         body: JSON.stringify({ action: 'approve', screen_id: lastResult.screen_id, brief: lastResult.brief, base_id: lastResult.base_id, components: lastResult.components, diff: lastResult.diff })
@@ -1985,26 +2104,32 @@
       var data = await res.json();
       if (data.ok) {
         statusEl.className = 'approval-status approved';
-        statusEl.textContent = '✓ Variante aprobada — guardada como nueva base · ' + (data.new_example_id || '');
-        document.querySelectorAll('.approval-actions button').forEach(function(b) { b.disabled = true; });
+        statusEl.textContent = '✓ Variante aprobada · ' + (data.new_example_id || '');
+        document.querySelectorAll('#approvalActions button').forEach(function(b) { b.disabled = true; });
+        showKbToast('Aprendizaje guardado en KB', 'La variante es ahora una nueva base aprobada', false);
       } else {
         statusEl.className = 'approval-status rejected';
         statusEl.textContent = '✗ Error: ' + (data.error || 'desconocido');
+        showKbToast('Error al guardar', data.error || 'Inténtalo de nuevo', true);
       }
     } catch(e) {
       statusEl.className = 'approval-status rejected';
       statusEl.textContent = '✗ Error de red: ' + e.message;
+      showKbToast('Error de red', e.message, true);
     }
   }
 
+  // ── Modificar y aprobar ───────────────────────────────────────────────────
   async function modifyVariant() {
     if (!lastResult) return;
-    var motivo = prompt('¿Qué modificarías de esta propuesta?');
-    if (!motivo) return;
+    var motivo = await openReasonModal('modify');
+    if (motivo === null) return; // cancelado
     var statusEl = document.getElementById('approvalStatus');
     statusEl.style.display = 'block';
+    statusEl.className = 'approval-status';
+    statusEl.textContent = 'Guardando...';
     try {
-      var url = document.getElementById('engineUrl').value;
+      var url    = document.getElementById('engineUrl').value;
       var apiKey = document.getElementById('apiKey').value;
       await fetch(url + '/approve', {
         method: 'POST',
@@ -2012,36 +2137,66 @@
         body: JSON.stringify({ action: 'modify', screen_id: lastResult.screen_id, brief: lastResult.brief, base_id: lastResult.base_id, components: lastResult.components, diff: lastResult.diff, modification: motivo })
       });
       statusEl.className = 'approval-status approved';
-      statusEl.textContent = '✏️ Modificación registrada en KB';
-      document.querySelectorAll('.approval-actions button').forEach(function(b) { b.disabled = true; });
+      statusEl.textContent = '✏️ Modificación registrada';
+      document.querySelectorAll('#approvalActions button').forEach(function(b) { b.disabled = true; });
+      showKbToast('Corrección guardada en KB', motivo ? '"' + motivo.slice(0, 60) + (motivo.length > 60 ? '…' : '') + '"' : 'Regla implícita registrada', false);
     } catch(e) {
       statusEl.className = 'approval-status rejected';
       statusEl.textContent = '✗ Error: ' + e.message;
+      showKbToast('Error al guardar', e.message, true);
     }
   }
 
+  // ── Rechazar ──────────────────────────────────────────────────────────────
   async function rejectVariant() {
     if (!lastResult) return;
-    var motivo = prompt('¿Por qué rechazas esta propuesta? (opcional)');
+    var motivo = await openReasonModal('reject');
+    if (motivo === null) return; // cancelado
     var statusEl = document.getElementById('approvalStatus');
     statusEl.style.display = 'block';
+    statusEl.className = 'approval-status';
+    statusEl.textContent = 'Guardando...';
     try {
-      var url = document.getElementById('engineUrl').value;
+      var url    = document.getElementById('engineUrl').value;
       var apiKey = document.getElementById('apiKey').value;
       await fetch(url + '/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
-        body: JSON.stringify({ action: 'reject', screen_id: lastResult.screen_id, brief: lastResult.brief, base_id: lastResult.base_id, reason: motivo || '' })
+        body: JSON.stringify({ action: 'reject', screen_id: lastResult.screen_id, brief: lastResult.brief, base_id: lastResult.base_id, reason: motivo })
       });
       statusEl.className = 'approval-status rejected';
-      statusEl.textContent = '✗ Propuesta rechazada — motivo registrado en KB';
-      document.querySelectorAll('.approval-actions button').forEach(function(b) { b.disabled = true; });
+      statusEl.textContent = '✗ Propuesta rechazada';
+      document.querySelectorAll('#approvalActions button').forEach(function(b) { b.disabled = true; });
+      showKbToast('Rechazo registrado en KB', motivo ? '"' + motivo.slice(0, 60) + (motivo.length > 60 ? '…' : '') + '"' : 'El engine aprenderá de este rechazo', false);
     } catch(e) {
       statusEl.className = 'approval-status rejected';
       statusEl.textContent = '✗ Error: ' + e.message;
+      showKbToast('Error al guardar', e.message, true);
     }
   }
 
 </script>
+
+  <!-- Modal motivo rechazo/modificación -->
+  <div class="reason-modal-overlay" id="reasonModalOverlay">
+    <div class="reason-modal">
+      <h4 id="reasonModalTitle">¿Por qué rechazas esta propuesta?</h4>
+      <p id="reasonModalDesc">El motivo se guardará en la Knowledge Base para que el engine no repita este error.</p>
+      <textarea id="reasonModalText" placeholder="Describe qué está mal o qué cambiarías..." rows="4"></textarea>
+      <div class="reason-modal-actions">
+        <button class="btn-cancel" onclick="closeReasonModal()">Cancelar</button>
+        <button class="btn-confirm" id="reasonModalConfirm" onclick="confirmReasonModal()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast KB confirmación -->
+  <div class="kb-toast" id="kbToast">
+    <span class="kb-toast-icon" id="kbToastIcon">✓</span>
+    <div class="kb-toast-text">
+      <span class="kb-toast-title" id="kbToastTitle">Aprendizaje guardado en KB</span>
+      <span class="kb-toast-sub" id="kbToastSub">La decisión enriquece futuras generaciones</span>
+    </div>
+  </div>
 </body>
 </html>
