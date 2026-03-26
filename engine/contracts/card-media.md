@@ -1,7 +1,7 @@
 # card-media
 
 ## Node ID en Figma
-217:2086
+217:2084
 
 ## Component Set ID
 217:2086  ← COMPONENT_SET padre (no instanciar directamente)
