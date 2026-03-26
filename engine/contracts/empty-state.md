@@ -1,7 +1,7 @@
 # empty-state
 
 ## Node ID en Figma
-185:3898
+1:31
 
 ## Component Set ID
 185:3898  ← COMPONENT_SET padre (no instanciar directamente)
