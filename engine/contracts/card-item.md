@@ -1,7 +1,7 @@
 # card-item
 
 ## Node ID en Figma
-185:3895
+1:13
 
 ## Component Set ID
 185:3895  ← COMPONENT_SET padre (no instanciar directamente)
