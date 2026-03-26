@@ -1,7 +1,7 @@
 # card-summary
 
 ## Node ID en Figma
-185:3918
+185:3909
 
 ## Component Set ID
 185:3918
