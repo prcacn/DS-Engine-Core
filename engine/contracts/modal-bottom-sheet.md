@@ -1,7 +1,7 @@
 # modal-bottom-sheet
 
 ## Node ID en Figma
-185:3899
+1:36
 
 ## Component Set ID
 185:3899  ← COMPONENT_SET padre (no instanciar directamente)
