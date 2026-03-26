@@ -1,7 +1,7 @@
 # button-primary
 
 ## Node ID en Figma
-185:3893
+1:9
 
 ## Descripción
 Botón de acción principal. Representa la acción más importante de la pantalla. Siempre en color brand y con máximo contraste. Solo puede haber uno por pantalla.
