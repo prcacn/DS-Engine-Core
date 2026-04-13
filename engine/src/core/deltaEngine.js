@@ -27,12 +27,14 @@ DELTA SOLICITADO:
 BRIEF ORIGINAL:
 "{BRIEF}"
 
-CONTRATOS DISPONIBLES:
+CONTRATOS DISPONIBLES (usa SOLO estos componentes, ninguno más):
 {CONTRACTS}
 
-Tu tarea: genera la lista de componentes resultante después de aplicar el delta.
-Mantén todos los componentes de la base que no se modifican ni eliminan.
-Para los componentes nuevos o modificados, infiere las props correctas del brief.
+REGLAS ESTRICTAS:
+1. Mantén TODOS los componentes de la base que no se modifican ni eliminan — cópialos exactamente con delta_action: "base"
+2. Para componentes añadidos, usa ÚNICAMENTE nombres de la lista de contratos disponibles
+3. NO inventes componentes que no estén en los contratos (card-summary, amount-display, chart-sparkline, etc. solo si están en la lista)
+4. Si el delta está vacío (add/remove/modify todos vacíos), devuelve la base tal cual sin cambios
 
 Responde ÚNICAMENTE con JSON válido:
 {
@@ -58,13 +60,61 @@ async function apply({ base, delta, brief, contracts }) {
     throw new Error('DeltaEngine: base y delta son obligatorios');
   }
 
-  // Serializar componentes de la base
-  const baseComponents = base.components.join('\n');
+  // Serializar componentes de la base correctamente (son objetos, no strings)
+  // Priorizar slots si existen, sino usar components[]
+  let baseComponents;
+  if (base.has_slots && base.slots) {
+    const slotLines = [];
+    for (const [zone, comps] of Object.entries(base.slots)) {
+      if (comps && comps.length > 0) {
+        slotLines.push(`[${zone}]`);
+        comps.forEach(c => {
+          slotLines.push(`  - ${c.component} (variant: ${c.variant || 'default'}${c.props?.title ? `, title: "${c.props.title}"` : ''})`);
+        });
+      }
+    }
+    baseComponents = slotLines.join('\n');
+  } else {
+    baseComponents = (base.components || []).map(c =>
+      `- ${c.component} (variant: ${c.variant || 'default'}${c.props?.title ? `, title: "${c.props.title}"` : ''})`
+    ).join('\n');
+  }
 
   // Serializar contratos disponibles (solo nombres y variantes)
   const contractList = Object.keys(contracts || {})
     .map(k => `- ${k}`)
     .join('\n') || '(sin contratos disponibles)';
+
+  // Si delta está vacío, devolver la base directamente sin llamar a Claude
+  const isEmpty = (!delta.add || delta.add.length === 0) &&
+                  (!delta.remove || delta.remove.length === 0) &&
+                  (!delta.modify || delta.modify.length === 0);
+
+  if (isEmpty) {
+    // Construir proposal directamente desde la base
+    const proposal = (base.components || []).map((c, i) => ({
+      component:    c.component,
+      order:        i + 1,
+      variant:      c.variant || 'default',
+      props:        c.props || {},
+      delta_action: 'base',
+    }));
+
+    console.log(
+      '  ✓ [DeltaEngine] Base sin cambios | base:', base.id,
+      '| =' + proposal.length + ' componentes'
+    );
+
+    return {
+      proposal,
+      diff: { added: [], removed: [], modified: [] },
+      diff_summary: { added: [], removed: [], modified: [] },
+      base_id:     base.id,
+      base_title:  base.title,
+      is_proposal: true,
+      reasoning:   'Pantalla base sin modificaciones — se muestra tal como fue aprobada.',
+    };
+  }
 
   const prompt = DELTA_PROMPT
     .replace('{BASE_COMPONENTS}', baseComponents)
@@ -84,6 +134,11 @@ async function apply({ base, delta, brief, contracts }) {
     const raw    = response.content[0].text.trim();
     const clean  = raw.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
+
+    // Asegurar que components existe
+    if (!Array.isArray(result.components)) {
+      throw new Error('DeltaEngine: components no es un array en la respuesta');
+    }
 
     // Separar componentes por acción para el diff visual
     const added    = result.components.filter(c => c.delta_action === 'added');
