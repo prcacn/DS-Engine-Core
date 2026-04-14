@@ -1,6 +1,6 @@
 // api/routes/generate-doc.js
 // POST /generate-doc
-// Genera documentación completa de pantalla siguiendo el template oficial del DS
+// Genera documentación completa de pantalla y la sube a engine/examples/ en GitHub
 
 const express           = require('express');
 const router            = express.Router();
@@ -8,6 +8,58 @@ const Anthropic         = require('@anthropic-ai/sdk');
 const { loadContracts } = require('../../loaders/contractLoader');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ── Sube un archivo markdown a GitHub ────────────────────────────────────────
+async function saveToGitHub(filename, content) {
+  const token = process.env.GITHUB_TOKEN;
+  const repo  = process.env.GITHUB_REPO || 'prcacn/DS-Engine-Core';
+  if (!token) {
+    console.warn('  ⚠ [generate-doc] GITHUB_TOKEN no configurado — doc no guardada en repo');
+    return null;
+  }
+
+  const path    = 'engine/examples/' + filename;
+  const apiUrl  = 'https://api.github.com/repos/' + repo + '/contents/' + path;
+  const encoded = Buffer.from(content, 'utf-8').toString('base64');
+
+  // Comprobar si el archivo ya existe para obtener su SHA
+  let existingSha = null;
+  try {
+    const checkRes = await fetch(apiUrl, {
+      headers: { Authorization: 'token ' + token, 'User-Agent': 'DS-Engine' }
+    });
+    if (checkRes.ok) {
+      const existing = await checkRes.json();
+      existingSha = existing.sha;
+    }
+  } catch (_) {}
+
+  const body = {
+    message: 'docs: add screen documentation — ' + filename,
+    content: encoded,
+  };
+  if (existingSha) body.sha = existingSha;
+
+  const res = await fetch(apiUrl, {
+    method:  'PUT',
+    headers: {
+      Authorization:  'token ' + token,
+      'Content-Type': 'application/json',
+      'User-Agent':   'DS-Engine',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('  ✗ [generate-doc] GitHub upload error:', res.status, err.slice(0, 200));
+    return null;
+  }
+
+  const data = await res.json();
+  console.log('  ✓ [generate-doc] Guardado en GitHub:', path, '| commit:', data.commit?.sha?.slice(0, 8));
+  return path;
+}
 
 router.post('/', async function(req, res, next) {
   try {
@@ -21,21 +73,21 @@ router.post('/', async function(req, res, next) {
 
     // ── Contexto de contratos ──────────────────────────────────────────────
     const contractContext = components.map((c, i) => {
-      const contract = contracts[c.component];
-      const nodeId   = c.node_id || 'pending';
-      if (!contract) return `| ${i} | ${c.component} | \`${nodeId}\` | - | - |`;
-      return `| ${i} | ${c.component} | \`${nodeId}\` | ${contract.description ? contract.description.slice(0, 60) : '-'} | - |`;
+      const name     = typeof c === 'string' ? c : c.component;
+      const contract = contracts[name];
+      const nodeId   = (typeof c === 'object' && c.node_id) ? c.node_id : 'pending';
+      if (!contract) return '| ' + i + ' | ' + name + ' | `' + nodeId + '` | - | - |';
+      return '| ' + i + ' | ' + name + ' | `' + nodeId + '` | ' + (contract.description ? contract.description.slice(0, 60) : '-') + ' | - |';
     }).join('\n');
 
     // ── Contexto KB ────────────────────────────────────────────────────────
     const kbContext = (kb_rules || []).length > 0
-      ? (kb_rules || []).map(r => `- [${r.categoria || r.tipo || 'regla'}] ${(r.content || r.text || '').slice(0, 120)}`).join('\n')
+      ? (kb_rules || []).map(r => '- [' + (r.categoria || r.tipo || 'regla') + '] ' + (r.content || r.text || '').slice(0, 120)).join('\n')
       : 'No se aplicaron reglas KB específicas.';
 
-    // ── Componentes para la tabla de navegación ────────────────────────────
-    const componentNames = components.map(c => c.component).join(', ');
+    const componentNames = components.map(c => typeof c === 'string' ? c : c.component).join(', ');
     const scoreStatus    = score >= 80 ? 'APROBADO' : score >= 60 ? 'REVISAR' : 'BLOQUEADO';
-    const templateId     = (brief.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30)) + '-' + Date.now().toString().slice(-4);
+    const slugBrief      = brief.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
 
     const prompt = `Eres un experto en Design Systems. Genera documentación técnica completa de esta pantalla siguiendo EXACTAMENTE el formato del template oficial.
 
@@ -56,42 +108,38 @@ ${kbContext}
 
 ---
 
-Genera el documento Markdown completo siguiendo EXACTAMENTE esta estructura. Rellena cada sección con los datos reales de la pantalla. No omitas ninguna sección. No añadas secciones extra.
+Genera el documento Markdown completo siguiendo EXACTAMENTE esta estructura:
 
 \`\`\`
-# Template: [Nombre descriptivo de la pantalla] - [variante si aplica]
+# Template: [Nombre descriptivo de la pantalla]
 
 ## IDENTIFICACIÓN
 - **Tipo de recurso:** template
-- **Template ID:** [slug-del-brief]
+- **Template ID:** ${slugBrief}
 - **Tipo:** [tipo de pantalla según el patrón]
-- **Categoría:** [dominio detectado, ej: investments / payments / onboarding]
+- **Categoría:** [dominio: investments / payments / onboarding / etc]
 - **Nodo Figma:** \`${frame_id || 'pending'}\`
 - **Score DS:** ${score}% - ${scoreStatus}
 - **Patrón:** ${pattern || 'desconocido'}
 
 ## DESCRIPCIÓN
-[2-3 frases describiendo qué hace esta pantalla, para quién y en qué contexto aparece]
+[2-3 frases describiendo qué hace esta pantalla, para quién y en qué contexto]
 
 ## ESTRUCTURA VISUAL
-[Dibuja un diagrama ASCII que represente la composición de la pantalla con los componentes en orden. Usa el estilo del ejemplo:
+[Diagrama ASCII con los componentes en orden]
 ┌─────────────────────────────────────────────────────────┐
 │  [Navigation Header]                                    │
 ├─────────────────────────────────────────────────────────┤
-│  [Componente 1]                                         │
-│  [Componente 2 × N]                                     │
-│  [...]                                                  │
-│  [Componente último - CTA o tab-bar]                    │
+│  [Componentes en orden...]                              │
 └─────────────────────────────────────────────────────────┘
-]
 
 ---
 
-## COMPONENTES REQUERIDOS (ORDEN EXACTO - NO CAMBIAR)
+## COMPONENTES REQUERIDOS (ORDEN EXACTO)
 
-| Orden | Componente | Node ID | Variante / Estado | Notas |
-|-------|------------|---------|-------------------|-------|
-[Una fila por cada componente detectado, en orden de aparición]
+| Orden | Componente | Node ID | Variante | Notas |
+|-------|------------|---------|----------|-------|
+[Una fila por componente]
 
 ---
 
@@ -100,9 +148,9 @@ Genera el documento Markdown completo siguiendo EXACTAMENTE esta estructura. Rel
 | Propiedad | Valor |
 |-----------|-------|
 | Direction | VERTICAL |
-| Gap | [inferir según tipo de pantalla] |
+| Gap | [inferir] |
 | Padding | [inferir] |
-| Fondo | [token de color de fondo] |
+| Fondo | [token de color] |
 | Ancho | 390px |
 
 ---
@@ -110,8 +158,8 @@ Genera el documento Markdown completo siguiendo EXACTAMENTE esta estructura. Rel
 ## TOKENS APLICADOS
 
 | Token | Valor resuelto |
-|-------|---------------|
-[Lista los tokens de diseño relevantes para esta pantalla. Usa los tokens del DS si los conoces, o deja el valor como [pending] si no tienes certeza]
+|-------|----------------|
+[Tokens relevantes]
 
 ---
 
@@ -119,22 +167,7 @@ Genera el documento Markdown completo siguiendo EXACTAMENTE esta estructura. Rel
 
 | Acción | Destino |
 |--------|---------|
-[Lista las acciones posibles del usuario y a dónde llevan. Infiere a partir del brief y los componentes]
-
----
-
-## ANOTACIONES
-
-\`\`\`yaml
-annotations:
-[Una anotación por cada componente relevante. Formato:
-  - nodeId: "[node_id]"
-    label: "[nombre del componente]"
-    note: >
-      [Explicación de para qué sirve este componente en esta pantalla específica,
-      qué datos muestra, qué reglas aplican sobre él]
-]
-\`\`\`
+[Acciones del usuario y destinos]
 
 ---
 
@@ -142,18 +175,18 @@ annotations:
 
 | Regla | Descripción |
 |-------|-------------|
-[Lista las reglas de negocio que afectan a esta pantalla. Incluye las reglas KB aplicadas y cualquier regla inferida del brief]
+[Reglas KB aplicadas e inferidas]
 
 ---
 
-## COMPONENTES UTILIZADOS (Resumen)
+## COMPONENTES (Resumen)
 
 | Componente | Node ID | Notas |
 |------------|---------|-------|
-[Tabla resumen de todos los componentes]
+[Tabla resumen]
 \`\`\`
 
-IMPORTANTE: Responde SOLO con el documento Markdown. Sin explicaciones previas ni comentarios posteriores.`;
+IMPORTANTE: Responde SOLO con el documento Markdown. Sin explicaciones ni comentarios.`;
 
     const response = await anthropic.messages.create({
       model:      'claude-opus-4-6',
@@ -162,13 +195,24 @@ IMPORTANTE: Responde SOLO con el documento Markdown. Sin explicaciones previas n
     });
 
     const doc = response.content[0]?.text || '// Error generando documentación';
-
-    // Limpiar posibles backticks envolventes que Claude añada
     const cleanDoc = doc.replace(/^```(?:markdown)?\n?/, '').replace(/\n?```$/, '').trim();
 
-    console.log(`  ✓ [generate-doc] "${brief.slice(0,40)}..." · ${components.length} componentes · score ${score}% · ${cleanDoc.length} chars`);
+    // ── Subir a GitHub ────────────────────────────────────────────────────
+    const filename  = 'doc-' + slugBrief + '-' + Date.now().toString().slice(-4) + '.md';
+    const githubPath = await saveToGitHub(filename, cleanDoc);
 
-    res.json({ ok: true, doc: cleanDoc, brief, score, components: components.length, pattern });
+    console.log(`  ✓ [generate-doc] "${brief.slice(0,40)}" · ${components.length} comps · score ${score}% · ${cleanDoc.length} chars`);
+
+    res.json({
+      ok:          true,
+      doc:         cleanDoc,
+      brief,
+      score,
+      components:  components.length,
+      pattern,
+      github_path: githubPath,
+      filename,
+    });
 
   } catch (err) {
     next(err);
