@@ -843,6 +843,7 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
   const pat = document.getElementById('patternSelect').value;
   if (!brief) return;
   setStatus('genStatus', 'loading', spin() + 'Generando pantalla...');
+  state.lastResult = null;
   document.getElementById('btnGenerate').disabled = true;
   document.getElementById('rightGenerate').innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--p-text3);font-size:12px;">' + spin() + ' Generando...</div>';
   try {
@@ -946,10 +947,11 @@ function renderGenerateResult(data) {
   setBar('barPrecedent', 'pctPrecedent', precedent);
   setBar('barRules', 'pctRules', rules);
 
-  document.getElementById('btnPaint')?.addEventListener('click', () => {
+  const btnPaint = document.getElementById('btnPaint');
+  if (btnPaint) btnPaint.onclick = () => {
     if (!state.lastResult) return;
     parent.postMessage({ pluginMessage: { type: 'paint', data: state.lastResult } }, '*');
-  });
+  };
 
   document.getElementById('kbStripToggle')?.addEventListener('click', () => {
     const d = document.getElementById('kbDrawer');
