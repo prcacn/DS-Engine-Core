@@ -1173,17 +1173,44 @@ function toggleExport(type) {
 
 async function generateDocPreview() {
   const el = document.getElementById('docPreview');
-  el.textContent = 'Generando con KB...';
+  el.textContent = 'Generando documentación con KB...';
+  state.docContent = null;
+
+  const sv = state.studioValidation;
+  if (!sv || !sv.brief) {
+    el.textContent = '// Error: no hay validación activa. Valida una pantalla primero.';
+    return;
+  }
+
+  // Normalizar components al formato que espera /generate-doc
+  let comps = sv.components || [];
+  if (comps.length > 0 && typeof comps[0] === 'string') {
+    comps = comps.map(name => ({ component: name, variant: 'default' }));
+  }
+
+  const payload = {
+    brief:      sv.brief,
+    components: comps,
+    score:      state.studioScore || 0,
+    kb_rules:   sv.kb_rules || [],
+    pattern:    sv.pattern || 'desconocido',
+    frame_id:   sv.frameId || 'pending',
+  };
+
   try {
     const r = await fetch(ENGINE_URL + '/generate-doc', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
-      body: JSON.stringify({ brief: state.studioValidation?.brief, components: state.studioValidation?.components, score: state.studioScore, kb_rules: state.studioValidation?.kb_rules || [] }),
+      body: JSON.stringify(payload),
     });
     const data = await r.json();
-    state.docContent = data.doc || '// Sin documentación';
-    el.textContent = state.docContent;
-  } catch (e) { el.textContent = '// Error: ' + e.message; }
+    if (!data.ok) throw new Error(data.message || data.error || 'Error del servidor');
+    state.docContent = data.doc || '// Sin documentación generada';
+    el.textContent = state.docContent.slice(0, 300) + (state.docContent.length > 300 ? '\n...' : '');
+  } catch (e) {
+    el.textContent = '// Error: ' + e.message;
+    console.error('[generate-doc]', e);
+  }
 }
 
 document.getElementById('btnExport').addEventListener('click', async () => {
