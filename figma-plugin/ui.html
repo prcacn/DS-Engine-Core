@@ -5,950 +5,769 @@
 <title>DS IA-Ready Engine</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0f0f11;
-  --surface: #1a1a1f;
-  --surface2: #222228;
-  --surface3: #2a2a34;
-  --border: #2e2e38;
-  --border2: #3c3c4a;
-  --accent: #7c5cfc;
-  --accent-dim: rgba(124,92,252,0.1);
-  --accent-glow: rgba(124,92,252,0.22);
-  --text: #eaeaf2;
-  --text-dim: #7a7a94;
-  --text-muted: #44445a;
-  --success: #4ade80;
-  --success-bg: rgba(74,222,128,0.08);
-  --warning: #fbbf24;
-  --warning-bg: rgba(251,191,36,0.08);
-  --error: #f87171;
-  --error-bg: rgba(248,113,113,0.08);
-  --r: 10px;
-  --r-sm: 7px;
-  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-}
 
+/* ── THEME VARS ── */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  width: 420px;
-  height: 680px;
+  font-size: 13px;
+  line-height: 1.4;
+  width: 680px;
+  height: 600px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  font-size: 13px;
-  line-height: 1.4;
+  transition: background 0.2s;
 }
 
-/* ── HEADER ──────────────────────────────────────────────── */
-.header {
-  padding: 16px 20px 0;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  background: rgba(15,15,17,0.95);
+/* DARK MODE (default) */
+body.dark {
+  --p-bg: #1a1a2e;
+  --p-surface: #13131f;
+  --p-surface2: #222236;
+  --p-border: rgba(255,255,255,0.07);
+  --p-border2: rgba(255,255,255,0.04);
+  --p-text: #e8e6ff;
+  --p-text2: rgba(232,230,255,0.55);
+  --p-text3: rgba(232,230,255,0.25);
+  --p-accent: #7c6fff;
+  --p-accent-light: rgba(124,111,255,0.12);
+  --p-note-bg: rgba(255,255,255,0.02);
+  --p-input-bg: #1e1c36;
+  --p-input-border: #3a3660;
+  --p-input-border-focus: #7c6fff;
+  --p-input-text: #ccc8f0;
+  --p-input-placeholder: rgba(180,170,255,0.28);
+  --p-btn-bg: #7c6fff;
+  --p-btn-text: #fff;
+  --p-btn-shadow: rgba(124,111,255,0.3);
+  --p-btn-paint-bg: rgba(124,111,255,0.15);
+  --p-btn-paint-border: rgba(124,111,255,0.4);
+  --p-btn-paint-text: #c4b8ff;
+  --p-green: #4ade80;
+  --p-green-bg: rgba(34,197,94,0.08);
+  --p-green-border: rgba(34,197,94,0.22);
+  --p-amber: #fbbf24;
+  --p-amber-bg: rgba(251,191,36,0.08);
+  --p-amber-border: rgba(251,191,36,0.22);
+  --p-red: #f87171;
+  --p-red-bg: rgba(239,68,68,0.08);
+  --p-red-border: rgba(239,68,68,0.22);
+  --p-purple-text: #a78bfa;
+  --p-bar-track: rgba(255,255,255,0.07);
+  --p-comp-bg: rgba(255,255,255,0.025);
+  --p-mono: 'SF Mono','Fira Code','Consolas',monospace;
+  background: var(--p-bg);
+  color: var(--p-text);
 }
-.header-top {
+
+/* LIGHT MODE */
+body.light {
+  --p-bg: #f5f4ff;
+  --p-surface: #ffffff;
+  --p-surface2: #eeeaff;
+  --p-border: rgba(180,170,240,0.3);
+  --p-border2: rgba(180,170,240,0.15);
+  --p-text: #3a3760;
+  --p-text2: #7e7aaa;
+  --p-text3: #b8b4d4;
+  --p-accent: #7c6fff;
+  --p-accent-light: rgba(124,111,255,0.07);
+  --p-note-bg: #efecff;
+  --p-input-bg: #f9f8ff;
+  --p-input-border: #d8d4ee;
+  --p-input-border-focus: #9d91f0;
+  --p-input-text: #6e6a96;
+  --p-input-placeholder: #ccc9e4;
+  --p-btn-bg: #6457e8;
+  --p-btn-text: #ffffff;
+  --p-btn-shadow: rgba(100,87,232,0.22);
+  --p-btn-paint-bg: #3a3760;
+  --p-btn-paint-border: #3a3760;
+  --p-btn-paint-text: #ffffff;
+  --p-green: #16a34a;
+  --p-green-bg: #f0fdf4;
+  --p-green-border: #86efac;
+  --p-amber: #d97706;
+  --p-amber-bg: #fffbeb;
+  --p-amber-border: #fcd34d;
+  --p-red: #dc2626;
+  --p-red-bg: #fef2f2;
+  --p-red-border: #fca5a5;
+  --p-purple-text: #6457e8;
+  --p-bar-track: #e8e5f8;
+  --p-comp-bg: #faf9ff;
+  --p-mono: 'SF Mono','Fira Code','Consolas',monospace;
+  background: var(--p-bg);
+  color: var(--p-text);
+}
+
+/* ── TITLEBAR ── */
+.titlebar {
+  background: var(--p-surface);
+  border-bottom: 1px solid var(--p-border);
+  padding: 9px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
-}
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-icon {
-  width: 30px; height: 30px;
-  background: var(--accent);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 15px;
   flex-shrink: 0;
 }
-.logo-name { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
-.logo-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 1px; }
-.header-right { display: flex; align-items: center; gap: 8px; }
-.status-pill {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 10px; color: var(--text-dim);
-  background: var(--surface2);
-  padding: 3px 8px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-}
-.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); transition: all 0.3s; flex-shrink: 0; }
-.status-dot.online { background: var(--success); box-shadow: 0 0 6px rgba(74,222,128,0.5); }
-.status-dot.error  { background: var(--error); }
+.titlebar-left { display: flex; align-items: center; gap: 8px; }
+.tb-icon { width: 20px; height: 20px; background: var(--p-accent); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.tb-name { font-size: 12px; color: var(--p-text); font-weight: 500; }
 
-/* ── TABS ────────────────────────────────────────────────── */
-.tabs { display: flex; gap: 2px; padding: 0 2px; }
-.tab {
-  flex: 1;
-  padding: 9px 14px;
+/* ── TOP NAV ── */
+.top-nav {
+  background: var(--p-surface);
+  border-bottom: 1px solid var(--p-border);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.nav-tabs { display: flex; }
+.nav-tab {
+  padding: 11px 16px;
   font-size: 12px;
   font-weight: 600;
-  text-align: center;
+  color: var(--p-text3);
   cursor: pointer;
-  color: var(--text-dim);
   border-bottom: 2px solid transparent;
-  transition: all 0.15s;
   user-select: none;
-  letter-spacing: 0.01em;
+  transition: color 0.12s;
 }
-.tab:hover { color: var(--text); }
-.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-tab.active { color: var(--p-accent); border-bottom-color: var(--p-accent); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
 
-/* ── PANELS ──────────────────────────────────────────────── */
-.panels { flex: 1; overflow: hidden; position: relative; }
-.panel {
-  position: absolute; inset: 0;
-  overflow-y: auto;
-  padding: 18px 20px 20px;
+.status-pill {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--p-green);
+}
+.sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--p-text3); transition: background 0.3s; }
+.sdot.online { background: var(--p-green); }
+.sdot.error { background: var(--p-red); }
+
+/* Mode toggle */
+.mode-toggle {
+  display: flex;
+  background: var(--p-surface2);
+  border: 1px solid var(--p-border);
+  border-radius: 20px;
+  padding: 2px;
+  cursor: pointer;
+  user-select: none;
+}
+.mt-opt {
+  padding: 3px 9px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--p-text3);
+  transition: all 0.15s;
+}
+.mt-opt.on { background: var(--p-accent); color: #fff; }
+
+/* ── TWO-COL LAYOUT ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  flex: 1;
+  overflow: hidden;
+  background: var(--p-bg);
+}
+.left-col {
+  background: var(--p-surface);
+  border-right: 1px solid var(--p-border);
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(8px);
-  transition: opacity 0.2s, transform 0.2s;
+  gap: 12px;
+  overflow-y: auto;
 }
-.panel.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+.right-col {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
 
-/* ── SCROLLBAR ───────────────────────────────────────────── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-/* ── FIELD LABEL ─────────────────────────────────────────── */
-.field-label {
+.col-label {
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-dim);
+  color: var(--p-text3);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 7px;
+  margin-bottom: 5px;
 }
 
-/* ── TEXTAREA ────────────────────────────────────────────── */
-textarea {
+/* ── INPUTS ── */
+textarea, select, input[type=text] {
   width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  color: var(--text);
-  font-size: 13px;
-  line-height: 1.55;
-  padding: 11px 13px;
-  resize: none;
-  height: 74px;
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 12px;
   font-family: inherit;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-textarea::placeholder { color: var(--text-muted); }
+textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(124,111,255,0.1); }
+textarea { resize: none; }
+select { appearance: none; -webkit-appearance: none; cursor: pointer; }
 
-/* ── SELECT ──────────────────────────────────────────────── */
 .select-wrap { position: relative; }
 .select-wrap::after {
   content: '▾';
-  position: absolute; right: 11px; top: 50%;
+  position: absolute; right: 10px; top: 50%;
   transform: translateY(-50%);
-  font-size: 11px; color: var(--text-dim);
+  font-size: 10px; color: var(--p-text3);
   pointer-events: none;
 }
-select {
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--p-border); border-radius: 2px; }
+
+/* ── BUTTONS ── */
+.btn-gen {
   width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  color: var(--text);
+  background: var(--p-btn-bg);
+  color: var(--p-btn-text);
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
   font-size: 12px;
-  padding: 9px 32px 9px 12px;
-  font-family: inherit;
-  transition: border-color 0.15s;
-  appearance: none; -webkit-appearance: none;
-  cursor: pointer;
-}
-select:focus { outline: none; border-color: var(--accent); }
-
-/* ── CHIPS ───────────────────────────────────────────────── */
-.chips { display: flex; gap: 5px; flex-wrap: wrap; }
-.chip {
-  padding: 5px 11px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-size: 11px;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: all 0.12s;
-  user-select: none;
-}
-.chip:hover { border-color: var(--accent); color: var(--text); }
-.chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 600; }
-
-/* ── BUTTONS ─────────────────────────────────────────────── */
-.btn {
-  width: 100%;
-  padding: 12px 18px;
-  border-radius: var(--r);
-  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-  letter-spacing: 0.01em;
+  font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  box-shadow: 0 2px 10px var(--p-btn-shadow);
+  transition: opacity 0.12s;
 }
-.btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover:not(:disabled) {
-  background: #8d6ffd;
-  box-shadow: 0 4px 18px var(--accent-glow);
-  transform: translateY(-1px);
+.btn-gen:hover:not(:disabled) { opacity: 0.9; }
+.btn-gen:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-paint {
+  background: var(--p-btn-paint-bg);
+  border: 1.5px solid var(--p-btn-paint-border);
+  color: var(--p-btn-paint-text);
+  border-radius: 8px; padding: 9px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: opacity 0.12s;
 }
-.btn-primary:active:not(:disabled) { transform: translateY(0); }
-.btn-primary:disabled { background: var(--surface3); color: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-paint:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-act {
+  border-radius: 8px; padding: 9px 4px;
+  font-size: 11px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  border: 1.5px solid;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.12s;
+}
+.btn-act:hover { opacity: 0.8; }
+.ba-ok { background: var(--p-green-bg); border-color: var(--p-green-border); color: var(--p-green); }
+.ba-mod { background: var(--p-amber-bg); border-color: var(--p-amber-border); color: var(--p-amber); }
+.ba-rej { background: var(--p-red-bg); border-color: var(--p-red-border); color: var(--p-red); }
 
 .btn-secondary {
+  width: 100%;
   background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text-dim);
+  border: 1px solid var(--p-border);
+  color: var(--p-text2);
+  border-radius: 8px; padding: 9px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all 0.12s;
 }
-.btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--text); background: var(--accent-dim); }
+.btn-secondary:hover { border-color: var(--p-accent); color: var(--p-accent); }
 .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.btn-sm {
-  padding: 9px 14px;
-  font-size: 12px;
-  border-radius: var(--r-sm);
+/* ── NOTE BOX ── */
+.note-box {
+  background: var(--p-note-bg);
+  border: 1px solid var(--p-border);
+  border-radius: 8px; padding: 9px 11px;
+  font-size: 11px; color: var(--p-text3);
+  display: flex; gap: 6px; line-height: 1.6;
 }
 
-/* ── STATUS MSG ──────────────────────────────────────────── */
-.status-msg {
-  padding: 10px 13px;
-  border-radius: var(--r-sm);
-  font-size: 12px;
-  line-height: 1.45;
-  display: none;
-}
-.status-msg.show { display: block; }
-.status-msg.loading { background: var(--surface2); color: var(--text-dim); }
-.status-msg.success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(74,222,128,0.18); }
-.status-msg.error   { background: var(--error-bg);   color: var(--error);   border: 1px solid rgba(248,113,113,0.18); }
-.status-msg.warn    { background: var(--warning-bg);  color: var(--warning); border: 1px solid rgba(251,191,36,0.18); }
-
-/* ── SCORE CARD ──────────────────────────────────────────── */
+/* ── SCORE CARD ── */
 .score-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 14px;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 10px;
+  padding: 13px 14px;
+  display: flex; align-items: center; gap: 14px;
 }
-.score-main { display: flex; align-items: center; gap: 14px; }
-.score-ring { position: relative; width: 62px; height: 62px; flex-shrink: 0; }
+.score-ring {
+  position: relative; width: 58px; height: 58px; flex-shrink: 0;
+}
 .score-ring svg { transform: rotate(-90deg); }
-.score-ring .track { fill: none; stroke: var(--surface3); stroke-width: 4.5; }
-.score-ring .fill  { fill: none; stroke-width: 4.5; stroke-linecap: round; stroke-dasharray: 163; stroke-dashoffset: 163; transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1), stroke 0.4s; }
-.score-number { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; }
-.score-breakdown { flex: 1; display: flex; flex-direction: column; gap: 7px; }
-.score-row { display: flex; align-items: center; gap: 8px; }
-.score-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; width: 64px; flex-shrink: 0; }
-.score-bar-track { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
-.score-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.65s cubic-bezier(.4,0,.2,1); width: 0%; }
-.score-pct { font-size: 11px; font-weight: 700; color: var(--text-dim); width: 30px; text-align: right; font-family: var(--mono); }
+.score-ring .track { fill: none; stroke: var(--p-bar-track); stroke-width: 4.5; }
+.score-ring .fill { fill: none; stroke-width: 4.5; stroke-linecap: round; stroke-dasharray: 163; stroke-dashoffset: 163; transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1), stroke 0.4s; }
+.score-number { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; }
+.score-right { flex: 1; }
+.score-title { font-size: 11px; font-weight: 500; color: var(--p-text); margin-bottom: 9px; }
+.bar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 14px; }
+.bar-item { display: flex; flex-direction: column; gap: 3px; }
+.bi-label { font-size: 10px; color: var(--p-text3); text-transform: uppercase; letter-spacing: 0.04em; display: flex; justify-content: space-between; }
+.bi-pct { font-weight: 600; color: var(--p-text2); }
+.bar-track { height: 3px; background: var(--p-bar-track); border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width 0.65s cubic-bezier(.4,0,.2,1); width: 0%; }
 
-/* ── LOCK STATE ──────────────────────────────────────────── */
-.lock-state {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 11px 13px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  font-size: 12px; color: var(--text-dim); line-height: 1.45;
-}
-.lock-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-.lock-state.unlocked { background: var(--success-bg); border-color: rgba(74,222,128,0.22); color: var(--success); }
-.lock-state.blocked  { background: var(--error-bg);   border-color: rgba(248,113,113,0.18); color: var(--error); }
-.lock-state.review   { background: var(--warning-bg); border-color: rgba(251,191,36,0.18);  color: var(--warning); }
-
-/* ── KB CHANGES ──────────────────────────────────────────── */
-.kb-section { display: flex; flex-direction: column; gap: 5px; }
-.kb-header  {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 10px; color: var(--text-dim);
-  text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;
-}
-.kb-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
-.kb-change {
-  padding: 7px 10px;
-  background: var(--surface2);
-  border-radius: var(--r-sm);
-  border-left: 2px solid var(--accent);
-  display: flex; gap: 8px; align-items: flex-start;
-}
-.kb-tag {
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
-  padding: 2px 5px; border-radius: 3px; flex-shrink: 0; margin-top: 1px;
-}
-.kb-tag.replaced { background: rgba(248,113,113,0.14); color: var(--error); }
-.kb-tag.added    { background: rgba(74,222,128,0.12);  color: var(--success); }
-.kb-tag.removed  { background: var(--surface3); color: var(--text-dim); }
-.kb-change-text  { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
-.kb-change-text strong { color: var(--text); }
-
-/* ── COMP LIST ───────────────────────────────────────────── */
-.comp-list { display: flex; flex-direction: column; gap: 4px; }
-.comp-row {
-  display: flex; align-items: center; gap: 9px;
-  padding: 7px 10px;
-  background: var(--surface2);
-  border-radius: var(--r-sm);
-  border: 1px solid transparent;
-  transition: border-color 0.1s;
-}
-.comp-row:hover { border-color: var(--border2); }
-.comp-order  { font-size: 10px; color: var(--text-muted); width: 14px; font-family: var(--mono); flex-shrink: 0; }
-.comp-name   { font-size: 12px; font-weight: 500; flex: 1; }
-.comp-variant{ font-size: 10px; color: var(--text-dim); font-family: var(--mono); }
-.comp-kb     { font-size: 9px; color: var(--accent); background: var(--accent-dim); padding: 2px 5px; border-radius: 3px; font-weight: 700; flex-shrink: 0; }
-
-/* ── SECTION TITLE ───────────────────────────────────────── */
-.section-title {
-  font-size: 10px; font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: 0.07em;
-  margin-bottom: 6px;
-}
-
-/* ── STEPS ───────────────────────────────────────────────── */
-.steps { display: flex; align-items: center; gap: 0; }
-.step  { display: flex; align-items: center; gap: 7px; flex: 1; }
-.step-num {
-  width: 24px; height: 24px; border-radius: 50%;
-  background: var(--surface2); border: 1px solid var(--border);
-  font-size: 10px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-dim); flex-shrink: 0; transition: all 0.2s;
-}
-.step-num.active { background: var(--accent); border-color: var(--accent); color: white; }
-.step-num.done   { background: var(--success-bg); border-color: var(--success); color: var(--success); }
-.step-label { font-size: 11px; color: var(--text-dim); }
-.step-label.active { color: var(--text); font-weight: 600; }
-.step-connector { height: 1px; background: var(--border); flex: 0 0 16px; }
-.step-connector.done { background: var(--success); }
-
-/* ── EXPORT OPTIONS ──────────────────────────────────────── */
-.export-option {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 12px 14px;
+/* ── KB STRIP ── */
+.kb-strip {
+  background: var(--p-accent-light);
+  border: 1px solid rgba(124,111,255,0.15);
+  border-radius: 8px; padding: 7px 11px;
+  font-size: 11px; color: var(--p-purple-text);
+  display: flex; align-items: center; gap: 7px;
   cursor: pointer;
-  transition: all 0.15s;
-  display: flex; align-items: flex-start; gap: 12px;
+}
+.kb-num { background: var(--p-accent); color: #fff; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
+.kb-link { margin-left: auto; font-size: 10px; opacity: 0.6; }
+
+/* KB drawer */
+.kb-drawer { display: none; flex-direction: column; gap: 5px; background: var(--p-surface); border: 1px solid var(--p-border); border-radius: 8px; padding: 9px; margin-top: 4px; }
+.kb-drawer.open { display: flex; }
+.kb-drawer-rule { background: var(--p-comp-bg); border-radius: 6px; padding: 7px 9px; border-left: 2px solid var(--p-border); }
+.kb-drawer-rule.restriccion { border-left-color: var(--p-red); }
+.kb-drawer-rule.recomendacion { border-left-color: var(--p-accent); }
+.kb-drawer-rule.normativa { border-left-color: var(--p-amber); }
+.kb-drawer-rule.ds-pattern { border-left-color: var(--p-green); }
+.kb-drawer-rule-header { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+.kb-drawer-tag { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; text-transform: uppercase; }
+.kb-drawer-tag.restriccion { background: var(--p-red-bg); color: var(--p-red); }
+.kb-drawer-tag.recomendacion { background: var(--p-accent-light); color: var(--p-purple-text); }
+.kb-drawer-tag.normativa { background: var(--p-amber-bg); color: var(--p-amber); }
+.kb-drawer-tag.ds-pattern { background: var(--p-green-bg); color: var(--p-green); }
+.kb-drawer-priority { font-size: 9px; color: var(--p-text3); text-transform: uppercase; }
+.kb-drawer-score { margin-left: auto; font-size: 9px; color: var(--p-text3); }
+.kb-drawer-text { font-size: 10px; color: var(--p-text2); line-height: 1.45; }
+
+/* ── COMP GRID ── */
+.comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.comp-card {
+  background: var(--p-comp-bg);
+  border: 1px solid var(--p-border2);
+  border-radius: 7px; padding: 7px 9px;
+  display: flex; align-items: center; gap: 7px;
+}
+.cn { font-size: 10px; color: var(--p-text3); width: 12px; flex-shrink: 0; }
+.ci { flex: 1; min-width: 0; }
+.cname { font-size: 11px; color: var(--p-text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cvar { font-size: 10px; color: var(--p-text3); }
+.cdot { width: 6px; height: 6px; border-radius: 50%; background: var(--p-green); flex-shrink: 0; }
+.cdot.warn { background: var(--p-amber); }
+.cdot.kb { background: var(--p-accent); }
+
+/* ── ACTION BAR ── */
+.action-bar { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 6px; padding-top: 10px; border-top: 1px solid var(--p-border); margin-top: auto; }
+
+/* ── STATUS MSG ── */
+.status-msg { padding: 9px 11px; border-radius: 7px; font-size: 11px; line-height: 1.45; display: none; }
+.status-msg.show { display: block; }
+.status-msg.loading { background: var(--p-surface2); color: var(--p-text2); }
+.status-msg.success { background: var(--p-green-bg); color: var(--p-green); border: 1px solid var(--p-green-border); }
+.status-msg.error { background: var(--p-red-bg); color: var(--p-red); border: 1px solid var(--p-red-border); }
+.status-msg.warn { background: var(--p-amber-bg); color: var(--p-amber); border: 1px solid var(--p-amber-border); }
+
+/* ── LOCK STATE ── */
+.lock-state {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 10px 12px;
+  background: var(--p-comp-bg);
+  border: 1px solid var(--p-border);
+  border-radius: 8px;
+  font-size: 11px; color: var(--p-text2); line-height: 1.45;
+}
+.lock-state.unlocked { background: var(--p-green-bg); border-color: var(--p-green-border); color: var(--p-green); }
+.lock-state.blocked { background: var(--p-red-bg); border-color: var(--p-red-border); color: var(--p-red); }
+.lock-state.review { background: var(--p-amber-bg); border-color: var(--p-amber-border); color: var(--p-amber); }
+
+/* ── STEPPER ── */
+.stepper { display: flex; align-items: center; }
+.st-item { display: flex; align-items: center; gap: 6px; }
+.st-c { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+.st-active { background: var(--p-accent); color: #fff; }
+.st-done { background: var(--p-green-bg); border: 1px solid var(--p-green-border); color: var(--p-green); }
+.st-off { background: var(--p-comp-bg); border: 1px solid var(--p-border); color: var(--p-text3); }
+.st-label { font-size: 11px; }
+.stl-on { color: var(--p-text); font-weight: 600; }
+.stl-off { color: var(--p-text3); }
+.st-line { flex: 1; height: 1px; background: var(--p-border); margin: 0 8px; }
+
+/* ── TYPE PILLS (KB) ── */
+.type-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; }
+.type-pill {
+  border-radius: 8px; padding: 7px 4px; text-align: center;
+  cursor: pointer; transition: all 0.12s;
+  border: 1.5px solid var(--p-input-border);
+  background: var(--p-input-bg);
+}
+.type-pill.sel { background: var(--p-accent-light); border-color: rgba(124,111,255,0.45); }
+.tp-icon { font-size: 13px; margin-bottom: 2px; }
+.tp-name { font-size: 10px; font-weight: 500; color: var(--p-input-text); }
+.type-pill.sel .tp-name { color: var(--p-purple-text); }
+
+/* ── FILTER CHIPS ── */
+.filter-row { display: flex; gap: 4px; flex-wrap: wrap; }
+.fchip {
+  padding: 3px 9px; border-radius: 20px; font-size: 10px;
+  cursor: pointer; border: 1px solid var(--p-input-border);
+  color: var(--p-input-text); background: var(--p-input-bg);
+  font-family: inherit; transition: all 0.12s;
+}
+.fchip.on { background: var(--p-accent-light); border-color: rgba(124,111,255,0.35); color: var(--p-purple-text); }
+
+/* ── KB RULE CARDS ── */
+.rule-item {
+  background: var(--p-comp-bg); border: 1px solid var(--p-border);
+  border-radius: 8px; padding: 9px 11px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.ri-top { display: flex; align-items: center; gap: 7px; }
+.rbadge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.rb-r { background: var(--p-red-bg); color: var(--p-red); }
+.rb-n { background: var(--p-amber-bg); color: var(--p-amber); }
+.rb-rec { background: var(--p-green-bg); color: var(--p-green); }
+.rb-pat { background: var(--p-accent-light); color: var(--p-purple-text); }
+.rb-doc { background: var(--p-comp-bg); color: var(--p-text2); border: 1px solid var(--p-border); }
+.rpri { font-size: 10px; color: var(--p-text3); margin-left: auto; }
+.rdel { background: none; border: none; color: var(--p-text3); cursor: pointer; font-size: 13px; padding: 0; opacity: 0.4; }
+.rdel:hover { opacity: 1; color: var(--p-red); }
+.ri-text { font-size: 11px; color: var(--p-text2); line-height: 1.45; }
+
+/* ── EXPORT OPTIONS ── */
+.export-option {
+  background: var(--p-surface); border: 1px solid var(--p-border);
+  border-radius: 9px; padding: 11px 13px;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: flex-start; gap: 10px;
   position: relative;
 }
-.export-option:hover:not(.disabled) { border-color: var(--border2); background: var(--surface2); }
-.export-option.selected { border-color: var(--accent); background: var(--accent-dim); }
-.export-option-icon  { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
-.export-option-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.export-option-desc  { font-size: 11px; color: var(--text-dim); line-height: 1.45; }
-.btn-export-html {
-  display: none; align-items: center; justify-content: center; gap: 6px;
-  width: 100%; padding: 9px 14px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--text); font-size: 12px; font-weight: 500;
-  font-family: var(--font); cursor: pointer; transition: all 0.15s;
-}
-.btn-export-html.visible { display: flex; }
-.btn-export-html:hover { border-color: var(--accent); color: var(--accent); }
-.btn-export-html .html-badge {
-  font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
-  background: var(--accent); color: #fff;
-  padding: 1px 5px; border-radius: 3px;
-}
-.html-copy-msg {
-  font-size: 10px; color: var(--success); text-align: center;
-  display: none; padding: 3px 0;
-}
-.html-copy-msg.visible { display: block; }
-.studio-preview-wrap {
-  border: 1px solid var(--border); border-radius: 6px;
-  overflow: hidden; background: #fff;
-  display: none; flex-direction: column;
-}
-.studio-preview-wrap.visible { display: flex; }
-.studio-preview-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 10px; background: var(--surface2);
-  border-bottom: 1px solid var(--border);
-}
-.studio-preview-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--text-dim);
-}
-.studio-preview-copy {
-  font-size: 10px; color: var(--accent); cursor: pointer;
-  background: none; border: none; font-family: var(--font);
-  padding: 0;
-}
-.studio-preview-frame {
-  width: 100%; height: 240px; border: none;
-  background: #f8fafc;
-}
+.export-option:hover { border-color: var(--p-accent); }
+.export-option.selected { border-color: var(--p-accent); background: var(--p-accent-light); }
+.export-option-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.export-option-title { font-size: 12px; font-weight: 600; color: var(--p-text); margin-bottom: 2px; }
+.export-option-desc { font-size: 10px; color: var(--p-text2); line-height: 1.4; }
 .export-badge {
-  position: absolute; top: 10px; right: 10px;
-  font-size: 9px; font-weight: 700;
-  padding: 2px 6px; border-radius: 3px;
-  text-transform: uppercase; letter-spacing: 0.04em;
-  background: var(--accent-dim); color: var(--accent);
+  position: absolute; top: 9px; right: 9px;
+  font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 3px;
+  text-transform: uppercase; background: var(--p-accent-light); color: var(--p-accent);
 }
 
-/* ── DOC PREVIEW ─────────────────────────────────────────── */
+/* ── DOC PREVIEW ── */
 .doc-preview {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: 11px 13px;
-  font-size: 11px; color: var(--text-dim);
-  line-height: 1.65; max-height: 120px;
-  overflow-y: auto; font-family: var(--mono);
+  background: var(--p-comp-bg); border: 1px solid var(--p-border);
+  border-radius: 7px; padding: 10px 11px;
+  font-size: 10px; color: var(--p-text2);
+  line-height: 1.6; max-height: 100px;
+  overflow-y: auto; font-family: var(--p-mono);
   white-space: pre-wrap;
 }
 
-/* ── DIVIDER ─────────────────────────────────────────────── */
-.divider { height: 1px; background: var(--border); }
+/* ── SECTION TITLE ── */
+.section-title { font-size: 10px; font-weight: 700; color: var(--p-text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
 
-/* ── LOADING DOTS ────────────────────────────────────────── */
-.dots { display: inline-flex; gap: 3px; }
-.dot {
-  width: 4px; height: 4px; border-radius: 50%;
-  background: currentColor;
-  animation: blink 1.2s infinite;
+/* ── COMP LIST (studio) ── */
+.comp-list { display: flex; flex-direction: column; gap: 3px; }
+.comp-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 9px;
+  background: var(--p-comp-bg);
+  border-radius: 6px; border: 1px solid transparent;
+  transition: border-color 0.1s;
 }
+.comp-row:hover { border-color: var(--p-border); }
+.comp-order { font-size: 10px; color: var(--p-text3); width: 14px; flex-shrink: 0; }
+.comp-name { font-size: 11px; font-weight: 500; flex: 1; color: var(--p-text); }
+.comp-variant { font-size: 10px; color: var(--p-text2); }
+.comp-kb { font-size: 9px; background: var(--p-accent-light); color: var(--p-accent); padding: 2px 5px; border-radius: 3px; font-weight: 700; flex-shrink: 0; }
+
+/* ── KB CHANGES ── */
+.kb-section { display: flex; flex-direction: column; gap: 4px; }
+.kb-header { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--p-text2); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+.kb-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--p-accent); }
+.kb-change { padding: 6px 9px; background: var(--p-comp-bg); border-radius: 6px; border-left: 2px solid var(--p-accent); display: flex; gap: 7px; align-items: flex-start; }
+.kb-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 2px 4px; border-radius: 3px; flex-shrink: 0; margin-top: 1px; }
+.kb-tag.replaced { background: var(--p-red-bg); color: var(--p-red); }
+.kb-tag.added { background: var(--p-green-bg); color: var(--p-green); }
+.kb-tag.removed { background: var(--p-comp-bg); color: var(--p-text2); }
+.kb-change-text { font-size: 10px; color: var(--p-text2); line-height: 1.4; }
+.kb-change-text strong { color: var(--p-text); }
+
+/* ── DOTS LOADER ── */
+.dots { display: inline-flex; gap: 3px; }
+.dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: blink 1.2s infinite; }
 .dot:nth-child(2) { animation-delay: 0.2s; }
 .dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
 
-  /* ── KB INDICATOR + DRAWER ── */
-.kb-indicator {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 3px 10px;
-  font-size: 10px; font-weight: 600; color: var(--text-dim);
-  cursor: pointer; user-select: none;
-  transition: all 0.15s;
-}
-.kb-indicator:hover { border-color: var(--accent); color: var(--text); }
-.kb-indicator.has-rules { color: var(--accent); border-color: rgba(124,92,252,0.4); }
-.kb-indicator .kb-badge {
-  background: var(--accent); color: #fff;
-  border-radius: 10px; padding: 1px 6px;
-  font-size: 9px; font-weight: 700;
-}
-.kb-indicator .kb-chevron {
-  font-size: 8px; transition: transform 0.2s;
-}
-.kb-indicator.open .kb-chevron { transform: rotate(180deg); }
+/* ── FROW ── */
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fblock { display: flex; flex-direction: column; gap: 4px; }
 
-.kb-drawer {
-  display: none; flex-direction: column; gap: 6px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r); padding: 10px;
-  margin-top: 4px;
+/* ── FEEDBACK BAR ── */
+.feedback-bar { display: flex; gap: 6px; }
+.btn-feedback {
+  flex: 1; padding: 8px 4px; border-radius: 8px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: inherit; border: 1.5px solid;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  transition: opacity 0.12s;
 }
-.kb-drawer.open { display: flex; }
-.kb-drawer-rule {
-  background: var(--surface2); border-radius: var(--r-sm);
-  padding: 8px 10px; border-left: 2px solid var(--border2);
-}
-.kb-drawer-rule.restriccion  { border-left-color: #f87171; }
-.kb-drawer-rule.recomendacion { border-left-color: #818cf8; }
-.kb-drawer-rule.normativa     { border-left-color: #fbbf24; }
-.kb-drawer-rule.ds-pattern    { border-left-color: #4ade80; }
-.kb-drawer-rule-header {
-  display: flex; align-items: center; gap: 5px; margin-bottom: 4px;
-}
-.kb-drawer-tag {
-  font-family: var(--mono); font-size: 9px; font-weight: 700;
-  padding: 1px 5px; border-radius: 4px; text-transform: uppercase;
-}
-.kb-drawer-tag.restriccion  { background: rgba(248,113,113,0.15); color: #f87171; }
-.kb-drawer-tag.recomendacion { background: rgba(99,102,241,0.15);  color: #818cf8; }
-.kb-drawer-tag.normativa     { background: rgba(251,191,36,0.15);  color: #fbbf24; }
-.kb-drawer-tag.ds-pattern    { background: rgba(34,197,94,0.15);   color: #4ade80; }
-.kb-drawer-priority {
-  font-family: var(--mono); font-size: 9px; color: var(--text-muted);
-  text-transform: uppercase;
-}
-.kb-drawer-score {
-  margin-left: auto; font-family: var(--mono); font-size: 9px;
-  color: var(--text-muted);
-}
-.kb-drawer-text {
-  font-size: 10px; color: var(--text-dim); line-height: 1.45;
-}
+.btn-feedback:hover { opacity: 0.8; }
+.btn-approve { background: var(--p-green-bg); border-color: var(--p-green-border); color: var(--p-green); }
+.btn-modify { background: var(--p-amber-bg); border-color: var(--p-amber-border); color: var(--p-amber); }
+.btn-reject { background: var(--p-red-bg); border-color: var(--p-red-border); color: var(--p-red); }
+.feedback-sent { font-size: 11px; color: var(--p-green); padding: 8px 0; text-align: center; }
 
-/* ── KB TAB ── */
-  .kb-filter-btn {
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--txt2); border-radius: 20px; padding: 3px 10px;
-    font-size: 10px; font-family: var(--font); cursor: pointer;
-    transition: all 0.15s;
-  }
-  .kb-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .kb-filter-btn:hover:not(.active) { color: var(--text); border-color: var(--txt2); }
-  .kb-rule-card {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 10px;
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .kb-rule-card-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-  .kb-rule-cat { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 10px; }
-  .kb-rule-cat.restriccion  { background: rgba(248,113,113,0.15); color: #f87171; }
-  .kb-rule-cat.recomendacion { background: rgba(99,102,241,0.15); color: var(--accent); }
-  .kb-rule-cat.normativa    { background: rgba(251,191,36,0.15); color: #fbbf24; }
-  .kb-rule-cat.ds-pattern   { background: rgba(34,197,94,0.15); color: #22c55e; }
-  .kb-rule-cat.screen-doc   { background: rgba(148,163,184,0.15); color: #94a3b8; }
-  .kb-rule-priority { font-size: 9px; color: var(--txt2); }
-  .kb-rule-text { font-size: 11px; color: var(--txt2); line-height: 1.45; }
-  .kb-rule-delete { font-size: 10px; color: var(--txt2); background: none; border: none; cursor: pointer; padding: 0 2px; opacity: 0.5; }
-  .kb-rule-delete:hover { opacity: 1; color: #f87171; }
+/* Export html */
+.btn-export-html {
+  display: none; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 8px 12px;
+  background: var(--p-comp-bg); border: 1px solid var(--p-border);
+  border-radius: 7px; color: var(--p-text2); font-size: 11px; font-weight: 500;
+  font-family: inherit; cursor: pointer; transition: all 0.15s;
+}
+.btn-export-html.visible { display: flex; }
+.btn-export-html:hover { border-color: var(--p-accent); color: var(--p-accent); }
+.html-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; background: var(--p-accent); color: #fff; padding: 1px 5px; border-radius: 3px; }
+.html-copy-msg { font-size: 10px; color: var(--p-green); text-align: center; display: none; padding: 3px 0; }
+.html-copy-msg.visible { display: block; }
+
+/* Studio preview */
+.studio-preview-wrap { border: 1px solid var(--p-border); border-radius: 7px; overflow: hidden; background: #fff; display: none; flex-direction: column; }
+.studio-preview-wrap.visible { display: flex; }
+.studio-preview-header { display: flex; align-items: center; justify-content: space-between; padding: 5px 9px; background: var(--p-surface2); border-bottom: 1px solid var(--p-border); }
+.studio-preview-label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--p-text2); }
+.studio-preview-copy { font-size: 10px; color: var(--p-accent); cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; }
+.studio-preview-frame { width: 100%; height: 200px; border: none; background: #f8fafc; }
 </style>
 </head>
-<body>
+<body class="dark">
 
-<!-- ── HEADER ─────────────────────────────────────────────── -->
-<div class="header">
-  <div class="header-top">
-    <div class="logo">
-      <div class="logo-icon">⚡</div>
-      <div>
-        <div class="logo-name">DS IA-Ready Engine</div>
-        <div class="logo-sub">Fase 4 · Knowledge Base activa</div>
-      </div>
-    </div>
-    <div class="header-right">
-      <div class="status-pill">
-        <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">conectando</span>
-      </div>
-    </div>
-  </div>
-  <div class="tabs">
-    <div class="tab active" data-tab="generate">Generate</div>
-    <div class="tab" data-tab="studio">Studio</div>
-    <div class="tab" data-tab="kb">KB</div>
+<!-- TITLEBAR -->
+<div class="titlebar">
+  <div class="titlebar-left">
+    <div class="tb-icon">⚡</div>
+    <span class="tb-name">DS IA-Ready Engine</span>
   </div>
 </div>
 
-<!-- ── PANELS ─────────────────────────────────────────────── -->
-<div class="panels">
-
-  <!-- ═══════════════════════════════════════════
-       PANEL GENERATE
-  ═══════════════════════════════════════════ -->
-  <div class="panel active" id="panel-generate">
-
-    <!-- Brief -->
-    <div>
-      <div class="field-label">Brief de pantalla</div>
-      <textarea id="briefInput" placeholder="Describe la pantalla en lenguaje natural&#10;Ej: quiero ver mis fondos de inversión con filtros por categoría" maxlength="300"></textarea>
-    </div>
-
-    <!-- Fila: Geografía + Patrón -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-      <div>
-        <div class="field-label">Geografía</div>
-        <div class="select-wrap">
-          <select id="geoSelect">
-            <option value="">Todas</option>
-            <option value="colombia">🇨🇴 Colombia</option>
-            <option value="mexico">🇲🇽 México</option>
-            <option value="spain">🇪🇸 España</option>
-            <option value="latam">🌎 LATAM</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <div class="field-label">Patrón</div>
-        <div class="select-wrap">
-          <select id="patternSelect">
-            <option value="">auto-detect</option>
-            <optgroup label="── Pantalla única">
-              <option value="dashboard">dashboard (L0)</option>
-              <option value="lista-con-filtros">lista-con-filtros (L1)</option>
-              <option value="detalle">detalle (L2)</option>
-              <option value="formulario-simple">formulario-simple (L2)</option>
-              <option value="confirmacion">confirmacion (L3)</option>
-              <option value="onboarding">onboarding</option>
-              <option value="error-estado">error-estado</option>
-            </optgroup>
-            <optgroup label="── Flujo multipantalla">
-              <option value="transferencia-bancaria">⚡ transferencia bancaria (5 pantallas)</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Botón generar -->
-    <button class="btn btn-primary" id="btnGenerate">
-      ⚡&nbsp; Generate Screen
-    </button>
-
-    <!-- Status -->
-    <div class="status-msg" id="genStatus"></div>
-
-    <!-- Resultado -->
-    <div id="genResult" style="display:none; flex-direction:column; gap:12px;">
-
-      <!-- Score -->
-      <div class="score-card">
-        <div class="score-main">
-          <div class="score-ring">
-            <svg width="62" height="62" viewBox="0 0 62 62">
-              <circle class="track" cx="31" cy="31" r="26"/>
-              <circle class="fill" id="scoreArc" cx="31" cy="31" r="26"/>
-            </svg>
-            <div class="score-number" id="scoreNumber">—</div>
-          </div>
-          <div class="score-breakdown">
-            <div class="score-row">
-              <div class="score-label">Intent</div>
-              <div class="score-bar-track"><div class="score-bar-fill" id="barIntent"></div></div>
-              <div class="score-pct" id="pctIntent">—</div>
-            </div>
-            <div class="score-row">
-              <div class="score-label">Contract</div>
-              <div class="score-bar-track"><div class="score-bar-fill" id="barContract"></div></div>
-              <div class="score-pct" id="pctContract">—</div>
-            </div>
-            <div class="score-row">
-              <div class="score-label">Precedent</div>
-              <div class="score-bar-track"><div class="score-bar-fill" id="barPrecedent"></div></div>
-              <div class="score-pct" id="pctPrecedent">—</div>
-            </div>
-            <div class="score-row">
-              <div class="score-label">Rules</div>
-              <div class="score-bar-track"><div class="score-bar-fill" id="barRules"></div></div>
-              <div class="score-pct" id="pctRules">—</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- KB indicator + drawer -->
-      <div id="kbIndicatorWrap" style="display:none">
-        <div class="kb-indicator" id="kbIndicator">
-          <span>⚡ KB activa</span>
-          <span class="kb-badge" id="kbBadgeCount">0</span>
-          <span class="kb-chevron">▼</span>
-        </div>
-        <div class="kb-drawer" id="kbDrawer">
-          <div id="kbDrawerRules"></div>
-        </div>
-      </div>
-
-      <!-- KB changes (aplicados por governance) -->
-      <div class="kb-section" id="kbSection" style="display:none">
-        <div class="kb-header"><div class="kb-dot"></div>KB aplicó cambios</div>
-        <div id="kbChanges"></div>
-      </div>
-
-      <!-- Componentes -->
-      <div>
-        <div class="section-title">Composición</div>
-        <div class="comp-list" id="compList"></div>
-      </div>
-
-      <!-- Flujo multipantalla -->
-      <div id="flowSection" style="display:none; flex-direction:column; gap:5px;">
-        <div class="section-title">⚡ Pantallas del flujo</div>
-        <div id="flowScreenList"></div>
-      </div>
-
-      <!-- Paint -->
-      <button class="btn btn-secondary" id="btnPaint">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M2 14l3.5-3.5L13 3 10 0 2.5 7.5V11H6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-          <circle cx="13" cy="13" r="2.5" fill="currentColor"/>
-        </svg>
-        Paint in Figma
-      </button>
-
-      <!-- Feedback loop -->
-      <div id="feedbackBar" style="display:none; flex-direction:column; gap:6px;">
-        <div class="feedback-bar">
-          <button class="btn-feedback btn-approve" data-v="approved" onclick="sendFeedback(this.dataset.v)">✓ Aprobar</button>
-          <button class="btn-feedback btn-modify"  data-v="modified" onclick="sendFeedback(this.dataset.v)">✏ Modificar</button>
-          <button class="btn-feedback btn-reject"  data-v="rejected" onclick="sendFeedback(this.dataset.v)">✗ Rechazar</button>
-        </div>
-      </div>
-
-    </div>
-    <!-- Exportar HTML de producción -->
-  <div style="padding: 0 0 4px;">
-    <button class="btn-export-html" id="btnExportHTML">
-      <span>💾</span>
-      <span>Copiar HTML de producción</span>
-      <span class="html-badge">DS</span>
-    </button>
-    <div class="html-copy-msg" id="htmlCopyMsg">✓ HTML copiado al portapapeles</div>
+<!-- TOP NAV -->
+<div class="top-nav">
+  <div class="nav-tabs">
+    <div class="nav-tab active" data-tab="generate">Generate</div>
+    <div class="nav-tab" data-tab="studio">Studio</div>
+    <div class="nav-tab" data-tab="kb">KB</div>
   </div>
-
-</div><!-- /generate -->
-
-
-  <!-- ═══════════════════════════════════════════
-       PANEL STUDIO
-  ═══════════════════════════════════════════ -->
-  <div class="panel" id="panel-studio">
-
-    <!-- Steps -->
-    <div class="steps">
-      <div class="step">
-        <div class="step-num active" id="step1num">1</div>
-        <div class="step-label active" id="step1label">Validar pantalla</div>
-      </div>
-      <div class="step-connector" id="connector1"></div>
-      <div class="step">
-        <div class="step-num" id="step2num">2</div>
-        <div class="step-label" id="step2label">Exportar</div>
-      </div>
+  <div class="nav-right">
+    <div class="status-pill">
+      <div class="sdot" id="statusDot"></div>
+      <span id="statusText">conectando</span>
     </div>
+    <div class="mode-toggle" id="modeToggle">
+      <div class="mt-opt on" id="mt-dark">🌙</div>
+      <div class="mt-opt" id="mt-light">☀</div>
+    </div>
+  </div>
+</div>
 
-    <!-- STEP 1 -->
-    <div id="studioStep1" style="display:flex; flex-direction:column; gap:12px;">
+<!-- PANELS -->
+<div style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
 
+  <!-- ═══ GENERATE ═══ -->
+  <div class="two-col" id="panel-generate">
+    <div class="left-col">
       <div>
-        <div class="field-label">Brief de la pantalla seleccionada</div>
-        <textarea id="studioBrief" placeholder="¿Qué hace esta pantalla? Describe su intención..." style="height:64px"></textarea>
+        <div class="col-label">Brief de pantalla</div>
+        <textarea id="briefInput" style="height:72px" placeholder="Describe la pantalla en lenguaje natural&#10;Ej: fondos de inversión con filtros por categoría"></textarea>
       </div>
-
-      <div class="lock-state" id="studioHint">
-        <div class="lock-icon">🔍</div>
-        <div>Selecciona un frame generado por el engine en Figma, escribe el brief y pulsa Validar.</div>
-      </div>
-
-      <button class="btn btn-primary" id="btnValidate">
-        Validar pantalla seleccionada
-      </button>
-
-      <div class="status-msg" id="studioStatus"></div>
-
-      <!-- Resultado validación -->
-      <div id="studioResult" style="display:none; flex-direction:column; gap:10px;">
-
-        <div class="score-card">
-          <div class="score-main">
-            <div class="score-ring">
-              <svg width="62" height="62" viewBox="0 0 62 62">
-                <circle class="track" cx="31" cy="31" r="26"/>
-                <circle class="fill" id="studioScoreArc" cx="31" cy="31" r="26"/>
-              </svg>
-              <div class="score-number" id="studioScoreNumber">—</div>
-            </div>
-            <div class="score-breakdown">
-              <div class="score-row">
-                <div class="score-label">Intent</div>
-                <div class="score-bar-track"><div class="score-bar-fill" id="sBarIntent"></div></div>
-                <div class="score-pct" id="sPctIntent">—</div>
-              </div>
-              <div class="score-row">
-                <div class="score-label">Contract</div>
-                <div class="score-bar-track"><div class="score-bar-fill" id="sBarContract"></div></div>
-                <div class="score-pct" id="sPctContract">—</div>
-              </div>
-              <div class="score-row">
-                <div class="score-label">Rules</div>
-                <div class="score-bar-track"><div class="score-bar-fill" id="sBarRules"></div></div>
-                <div class="score-pct" id="sPctRules">—</div>
-              </div>
-              <div class="score-row">
-                <div class="score-label">Precedent</div>
-                <div class="score-bar-track"><div class="score-bar-fill" id="sBarPrecedent"></div></div>
-                <div class="score-pct" id="sPctPrecedent">—</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="lock-state" id="studioLock">
-          <div class="lock-icon" id="studioLockIcon">🔒</div>
-          <div id="studioLockText">Calculando...</div>
-        </div>
-
-        <!-- Componentes detacheados -->
-        <div id="studioDetached" style="display:none; flex-direction:column; gap:5px;">
-          <div class="section-title" style="color:var(--warning);">⚠ Componentes detacheados</div>
-          <div id="studioDetachedList"></div>
-        </div>
-
-        <!-- Componentes detectados con contratos -->
-        <div id="studioComponents" style="display:none; flex-direction:column; gap:5px;">
-          <div class="section-title">Componentes detectados</div>
-          <div id="studioCompList"></div>
-        </div>
-
-        <!-- Errores y warnings -->
-        <div id="studioIssues" style="display:none; flex-direction:column; gap:5px;">
-          <div class="section-title">Problemas detectados</div>
-          <div id="studioIssueList"></div>
-        </div>
-
-        <!-- Contratos recuperados -->
-        <div id="studioContracts" style="display:none; flex-direction:column; gap:5px;">
-          <div class="section-title">Contratos DS</div>
-          <div id="studioContractList"></div>
-        </div>
-
-        <!-- Preview HTML del engine — comparación visual -->
-        <div class="studio-preview-wrap" id="studioPreviewWrap">
-          <div class="studio-preview-header">
-            <span class="studio-preview-label">⚡ Preview del engine</span>
-            <button class="studio-preview-copy" id="studioPreviewCopy">Copiar HTML</button>
-          </div>
-          <iframe class="studio-preview-frame" id="studioPreviewFrame" sandbox="allow-same-origin"></iframe>
-        </div>
-
-        <button class="btn btn-primary" id="btnGoExport" disabled>
-          Continuar a Exportar →
-        </button>
-
-      </div>
-    </div><!-- /step1 -->
-
-    <!-- STEP 2 -->
-    <div id="studioStep2" style="display:none; flex-direction:column; gap:12px;">
-
-      <div class="lock-state unlocked">
-        <div class="lock-icon">✅</div>
-        <div id="exportScoreLabel">Score aprobado — pantalla lista para exportar</div>
-      </div>
-
-      <div>
-        <div class="section-title">Elige qué generar</div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-
-          <div class="export-option" id="optExample" onclick="toggleExport('example')">
-            <div class="export-option-icon">📐</div>
-            <div>
-              <div class="export-option-title">Guardar como Example</div>
-              <div class="export-option-desc">Añade esta pantalla al banco de ejemplos. Mejora el score PRECEDENT en generaciones futuras.</div>
-            </div>
-          </div>
-
-          <div class="export-option" id="optTemplate" onclick="toggleExport('template')">
-            <div class="export-option-icon">🗂️</div>
-            <div>
-              <div class="export-option-title">Guardar como Template</div>
-              <div class="export-option-desc">Punto de partida reutilizable para el equipo, sin brief ni score asociado.</div>
-            </div>
-          </div>
-
-          <div class="export-option" id="optDoc" onclick="toggleExport('doc')">
-            <div class="export-option-icon">📄</div>
-            <div>
-              <div class="export-option-title">Generar documentación</div>
-              <div class="export-option-desc">Doc con flujo, componentes, reglas KB y decisiones de diseño. Conectada al conocimiento del equipo.</div>
-            </div>
-            <div class="export-badge">KB</div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Doc preview -->
-      <div id="docPreviewWrap" style="display:none; flex-direction:column; gap:7px;">
-        <div class="section-title">Vista previa documentación</div>
-        <div class="doc-preview" id="docPreview">Generando con KB...</div>
-      </div>
-
-      <div class="status-msg" id="exportStatus"></div>
-
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-secondary btn-sm" id="btnBackValidate" style="flex:0 0 90px;">← Volver</button>
-        <button class="btn btn-primary" id="btnExport" style="flex:1;" disabled>
-          Exportar seleccionados
-        </button>
-      </div>
-
-    </div><!-- /step2 -->
-
-  </div><!-- /studio -->
-
-  <div class="panel" id="panel-kb">
-
-    <div style="display:flex; flex-direction:column; gap:14px; padding-bottom:16px;">
-
-      <!-- Añadir regla -->
-      <div>
-        <div class="section-title">Añadir regla a la KB</div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-
-          <div>
-            <div class="field-label">Categoría</div>
-            <select id="kbCat" style="width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:12px; font-family:var(--font);">
-              <option value="restriccion">🚫 Restricción — regla que no se puede incumplir</option>
-              <option value="recomendacion">💡 Recomendación — buena práctica del equipo</option>
-              <option value="normativa">⚖️ Normativa — legal o regulatoria</option>
-              <option value="ds-pattern">🧩 DS Pattern — decisión de composición o UX</option>
-              <option value="screen-doc">📄 Screen Doc — documentación de pantalla</option>
+      <div class="frow">
+        <div class="fblock">
+          <div class="col-label">Geografía</div>
+          <div class="select-wrap">
+            <select id="geoSelect">
+              <option value="">Todas</option>
+              <option value="colombia">🇨🇴 Colombia</option>
+              <option value="mexico">🇲🇽 México</option>
+              <option value="spain">🇪🇸 España</option>
+              <option value="latam">🌎 LATAM</option>
             </select>
           </div>
+        </div>
+        <div class="fblock">
+          <div class="col-label">Patrón</div>
+          <div class="select-wrap">
+            <select id="patternSelect">
+              <option value="">auto-detect</option>
+              <option value="dashboard">dashboard</option>
+              <option value="lista-con-filtros">lista-con-filtros</option>
+              <option value="detalle">detalle</option>
+              <option value="formulario-simple">formulario-simple</option>
+              <option value="confirmacion">confirmacion</option>
+              <option value="onboarding">onboarding</option>
+              <option value="error-estado">error-estado</option>
+              <option value="transferencia-bancaria">⚡ transferencia (flujo)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button class="btn-gen" id="btnGenerate">⚡ Generate Screen</button>
+      <div class="note-box">💡 Describe el contexto: tipo de usuario, mercado, restricciones. El engine usa la KB para enriquecer el resultado.</div>
+      <div class="status-msg" id="genStatus"></div>
+    </div>
 
-          <div>
-            <div class="field-label">Prioridad</div>
-            <select id="kbPriority" style="width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:12px; font-family:var(--font);">
+    <div class="right-col" id="rightGenerate">
+      <div style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--p-text3); font-size:12px; text-align:center; padding:20px 0;">
+        Escribe un brief y pulsa Generate
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STUDIO ═══ -->
+  <div class="two-col" id="panel-studio" style="display:none">
+    <div class="left-col" id="studioLeft">
+      <div class="stepper">
+        <div class="st-item">
+          <div class="st-c st-active" id="step1num">1</div>
+          <span class="st-label stl-on" id="step1label">Validar</span>
+        </div>
+        <div class="st-line" id="connector1"></div>
+        <div class="st-item">
+          <div class="st-c st-off" id="step2num">2</div>
+          <span class="st-label stl-off" id="step2label">Exportar</span>
+        </div>
+      </div>
+
+      <!-- Step 1 -->
+      <div id="studioStep1" style="display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <div class="col-label">Brief de la pantalla</div>
+          <textarea id="studioBrief" style="height:56px" placeholder="¿Qué hace esta pantalla?"></textarea>
+        </div>
+        <div class="lock-state" id="studioHint">
+          <span>🔍</span>
+          <span>Selecciona un frame del engine en Figma, escribe el brief y pulsa Validar.</span>
+        </div>
+        <button class="btn-gen" id="btnValidate">Validar pantalla seleccionada</button>
+        <div class="status-msg" id="studioStatus"></div>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="studioStep2" style="display:none; flex-direction:column; gap:10px;">
+        <div class="lock-state unlocked">
+          <span>✅</span>
+          <span id="exportScoreLabel">Score aprobado — lista para exportar</span>
+        </div>
+        <div class="section-title">Elige qué generar</div>
+        <div class="export-option" id="optExample" onclick="toggleExport('example')">
+          <div class="export-option-icon">📐</div>
+          <div><div class="export-option-title">Guardar como Example</div><div class="export-option-desc">Mejora el score PRECEDENT en generaciones futuras.</div></div>
+        </div>
+        <div class="export-option" id="optTemplate" onclick="toggleExport('template')">
+          <div class="export-option-icon">🗂️</div>
+          <div><div class="export-option-title">Guardar como Template</div><div class="export-option-desc">Punto de partida reutilizable para el equipo.</div></div>
+        </div>
+        <div class="export-option" id="optDoc" onclick="toggleExport('doc')">
+          <div class="export-option-icon">📄</div>
+          <div><div class="export-option-title">Generar documentación</div><div class="export-option-desc">Doc con componentes, reglas KB y decisiones.</div></div>
+          <div class="export-badge">KB</div>
+        </div>
+        <div id="docPreviewWrap" style="display:none; flex-direction:column; gap:5px;">
+          <div class="section-title">Vista previa</div>
+          <div class="doc-preview" id="docPreview">Generando con KB...</div>
+        </div>
+        <div class="status-msg" id="exportStatus"></div>
+        <div style="display:flex; gap:7px;">
+          <button class="btn-secondary" id="btnBackValidate" style="flex:0 0 80px; padding:8px;">← Volver</button>
+          <button class="btn-gen" id="btnExport" style="flex:1;" disabled>Exportar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-col" id="studioRight">
+      <div style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--p-text3); font-size:12px; text-align:center; padding:20px 0;">
+        Valida una pantalla para ver los resultados
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ KB ═══ -->
+  <div class="two-col" id="panel-kb" style="display:none">
+    <div class="left-col">
+      <div>
+        <div class="col-label">Tipo de regla</div>
+        <div class="type-row">
+          <div class="type-pill sel" data-cat="restriccion" onclick="selKBType(this)">
+            <div class="tp-icon">🚫</div><div class="tp-name">Restricción</div>
+          </div>
+          <div class="type-pill" data-cat="recomendacion" onclick="selKBType(this)">
+            <div class="tp-icon">💡</div><div class="tp-name">Recom.</div>
+          </div>
+          <div class="type-pill" data-cat="normativa" onclick="selKBType(this)">
+            <div class="tp-icon">⚖️</div><div class="tp-name">Normativa</div>
+          </div>
+          <div class="type-pill" data-cat="ds-pattern" onclick="selKBType(this)">
+            <div class="tp-icon">📐</div><div class="tp-name">DS Pattern</div>
+          </div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fblock">
+          <div class="col-label">Prioridad</div>
+          <div class="select-wrap">
+            <select id="kbPriority">
               <option value="alta">Alta</option>
               <option value="media" selected>Media</option>
               <option value="baja">Baja</option>
             </select>
           </div>
-
-          <div>
-            <div class="field-label">Geografía</div>
-            <select id="kbGeo" style="width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:12px; font-family:var(--font);">
-              <option value="global" selected>Global — aplica en todos los mercados</option>
+        </div>
+        <div class="fblock">
+          <div class="col-label">Geografía</div>
+          <div class="select-wrap">
+            <select id="kbGeo">
+              <option value="global">Global</option>
               <option value="españa">España</option>
               <option value="mexico">México</option>
               <option value="colombia">Colombia</option>
             </select>
           </div>
-
-          <div>
-            <div class="field-label">Regla</div>
-            <textarea id="kbText" placeholder="Escribe la regla, decisión o patrón..." style="height:90px; resize:none;"></textarea>
-          </div>
-
-          <button class="btn btn-primary" id="btnAddKB">Añadir a la KB</button>
-          <div class="status-msg" id="kbAddStatus"></div>
         </div>
       </div>
-
-      <div style="border-top:1px solid var(--border); padding-top:14px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-          <div class="section-title" style="margin:0;">Reglas actuales</div>
-          <button class="btn btn-secondary btn-sm" id="btnRefreshKB" style="padding:4px 10px; font-size:11px;">↺ Actualizar</button>
-        </div>
-
-        <!-- Filtro por categoría -->
-        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px;" id="kbFilterBar">
-          <button class="kb-filter-btn active" data-cat="all">Todas</button>
-          <button class="kb-filter-btn" data-cat="restriccion">Restricción</button>
-          <button class="kb-filter-btn" data-cat="recomendacion">Recom.</button>
-          <button class="kb-filter-btn" data-cat="normativa">Normativa</button>
-          <button class="kb-filter-btn" data-cat="ds-pattern">Pattern</button>
-          <button class="kb-filter-btn" data-cat="screen-doc">Doc</button>
-        </div>
-
-        <div id="kbRulesList" style="display:flex; flex-direction:column; gap:6px;">
-          <div style="font-size:11px; color:var(--txt2); text-align:center; padding:20px 0;">Pulsa Actualizar para cargar las reglas</div>
-        </div>
+      <div>
+        <div class="col-label">Regla</div>
+        <textarea id="kbText" style="height:80px" placeholder="Describe la regla, decisión o patrón..."></textarea>
       </div>
-
+      <button class="btn-gen" id="btnAddKB">+ Añadir a la KB</button>
+      <div class="status-msg" id="kbAddStatus"></div>
     </div>
-  </div><!-- /kb -->
+
+    <div class="right-col">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+        <div class="col-label" style="margin:0">Reglas actuales</div>
+        <button class="btn-act" id="btnRefreshKB" style="padding:4px 10px; font-size:10px; background:var(--p-input-bg); border-color:var(--p-input-border); color:var(--p-input-text);">↻ Actualizar</button>
+      </div>
+      <div class="filter-row" id="kbFilterBar">
+        <button class="fchip on" data-cat="all">Todas</button>
+        <button class="fchip" data-cat="restriccion">Restricción</button>
+        <button class="fchip" data-cat="recomendacion">Recom.</button>
+        <button class="fchip" data-cat="normativa">Normativa</button>
+        <button class="fchip" data-cat="ds-pattern">Pattern</button>
+        <button class="fchip" data-cat="screen-doc">Doc</button>
+      </div>
+      <div id="kbRulesList" style="display:flex; flex-direction:column; gap:5px;">
+        <div style="font-size:11px; color:var(--p-text3); text-align:center; padding:16px 0;">Pulsa Actualizar para cargar las reglas</div>
+      </div>
+    </div>
+  </div>
 
 </div><!-- /panels -->
 
@@ -962,48 +781,74 @@ let state = {
   studioScore: 0,
   exportSelected: new Set(),
   docContent: null,
+  kbActiveCat: 'restriccion',
 };
 
-// ── TABS ───────────────────────────────────────────────────
-document.querySelectorAll('.tab').forEach(tab => {
+// ── MODE TOGGLE ──
+let isDark = true;
+document.getElementById('modeToggle').addEventListener('click', () => {
+  isDark = !isDark;
+  document.body.className = isDark ? 'dark' : 'light';
+  document.getElementById('mt-dark').className = 'mt-opt' + (isDark ? ' on' : '');
+  document.getElementById('mt-light').className = 'mt-opt' + (!isDark ? ' on' : '');
+  setTimeout(applyInputStyles, 10);
+});
+
+function applyInputStyles() {
+  const cs = getComputedStyle(document.body);
+  const bg = cs.getPropertyValue('--p-input-bg').trim();
+  const color = cs.getPropertyValue('--p-input-text').trim();
+  const border = cs.getPropertyValue('--p-input-border').trim();
+  document.querySelectorAll('textarea, select').forEach(el => {
+    el.style.setProperty('background-color', bg, 'important');
+    el.style.setProperty('color', color, 'important');
+    el.style.setProperty('-webkit-text-fill-color', color, 'important');
+    el.style.setProperty('border-color', border, 'important');
+  });
+}
+applyInputStyles();
+
+// ── TABS ──
+document.querySelectorAll('.nav-tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    ['generate','studio','kb'].forEach(p => {
+      document.getElementById('panel-' + p).style.display = 'none';
+    });
     tab.classList.add('active');
-    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).style.display = 'grid';
+    if (tab.dataset.tab === 'kb' && kbAllRules.length === 0) loadKBRules();
+    setTimeout(applyInputStyles, 10);
   });
 });
 
-// ── PING ───────────────────────────────────────────────────
+// ── PING ──
 (async () => {
   try {
     const r = await fetch(ENGINE_URL + '/health');
     const d = await r.json();
     const ok = d.status === 'ok';
-    document.getElementById('statusDot').className = 'status-dot ' + (ok ? 'online' : 'error');
-    document.getElementById('statusText').textContent = ok ? 'online' : 'error';
+    document.getElementById('statusDot').className = 'sdot ' + (ok ? 'online' : 'error');
+    document.getElementById('statusText').textContent = ok ? 'L5 · online' : 'error';
   } catch {
-    document.getElementById('statusDot').className = 'status-dot error';
+    document.getElementById('statusDot').className = 'sdot error';
     document.getElementById('statusText').textContent = 'offline';
   }
 })();
 
-// ── GENERATE ───────────────────────────────────────────────
+// ── GENERATE ──
 document.getElementById('btnGenerate').addEventListener('click', async () => {
   const brief = document.getElementById('briefInput').value.trim();
-  const geo   = document.getElementById('geoSelect').value;
-  const pat   = document.getElementById('patternSelect').value;
+  const geo = document.getElementById('geoSelect').value;
+  const pat = document.getElementById('patternSelect').value;
   if (!brief) return;
-
   setStatus('genStatus', 'loading', spin() + 'Generando pantalla...');
   document.getElementById('btnGenerate').disabled = true;
-  document.getElementById('genResult').style.display = 'none';
-
+  document.getElementById('rightGenerate').innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--p-text3);font-size:12px;">' + spin() + ' Generando...</div>';
   try {
     const body = { brief };
     if (pat) body.pattern = pat;
     if (geo) body.geography = geo;
-
     const r = await fetch(ENGINE_URL + '/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
@@ -1011,13 +856,13 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
     });
     const data = await r.json();
     if (data.error) throw new Error(data.message || data.error);
-
     state.lastResult = data;
     renderGenerateResult(data);
     const score = Math.round((data.confidence?.global || 0) * 100);
-    setStatus('genStatus', 'success', `✓ ${data.pattern}  ·  ${score}% confianza`);
+    setStatus('genStatus', 'success', '✓ ' + data.pattern + ' · ' + score + '% confianza');
   } catch (e) {
     setStatus('genStatus', 'error', '✗ ' + e.message);
+    document.getElementById('rightGenerate').innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--p-red);font-size:12px;">Error al generar</div>';
   } finally {
     document.getElementById('btnGenerate').disabled = false;
   }
@@ -1025,197 +870,143 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
 
 function renderGenerateResult(data) {
   const conf = data.confidence || {};
-  animScore('scoreArc', 'scoreNumber', Math.round((conf.global    || 0) * 100));
   const sig = conf.signals || {};
-  setBar('barIntent',    'pctIntent',    Math.round((sig.intent_clarity     || conf.intent    || 0) * 100));
-  setBar('barContract',  'pctContract',  Math.round((sig.contract_coverage  || conf.contract  || 0) * 100));
-  setBar('barPrecedent', 'pctPrecedent', Math.round((sig.precedent          || conf.precedent || 0) * 100));
-  setBar('barRules',     'pctRules',     Math.round((sig.rule_compliance    || conf.rules     || 0) * 100));
+  const score = Math.round((conf.global || 0) * 100);
+  const intent = Math.round((sig.intent_clarity || conf.intent || 0) * 100);
+  const contract = Math.round((sig.contract_coverage || conf.contract || 0) * 100);
+  const precedent = Math.round((sig.precedent || conf.precedent || 0) * 100);
+  const rules = Math.round((sig.rule_compliance || conf.rules || 0) * 100);
 
-  const kbSec = document.getElementById('kbSection');
-  if (data.kb_changes?.length > 0) {
-    document.getElementById('kbChanges').innerHTML = data.kb_changes.map(ch => `
-      <div class="kb-change">
-        <div class="kb-tag ${ch.type === 'reemplazado' ? 'replaced' : ch.type === 'añadido' ? 'added' : 'removed'}">${ch.type}</div>
-        <div class="kb-change-text">
-          ${ch.type === 'reemplazado'
-            ? `<strong>${ch.from}</strong> → <strong>${ch.to}</strong>`
-            : `<strong>${ch.component || ''}</strong>`}
-        </div>
-      </div>`).join('');
-    kbSec.style.display = 'flex';
-  } else {
-    kbSec.style.display = 'none';
-  }
-
-  document.getElementById('compList').innerHTML = (data.components || []).map(c => `
-    <div class="comp-row">
-      <div class="comp-order">${c.order}</div>
-      <div class="comp-name">${c.component}</div>
-      ${c.variant ? `<div class="comp-variant">${c.variant}</div>` : ''}
-      ${c.kb_injected ? '<div class="comp-kb">KB</div>' : ''}
-    </div>`).join('');
-
-  // ── Flujo multipantalla — mostrar listado de pantallas ──────────────────
-  const flowSec  = document.getElementById('flowSection');
-  const flowList = document.getElementById('flowScreenList');
-  if (data.screens && data.screens.length > 1) {
-    flowSec.style.display = 'flex';
-    flowList.innerHTML = data.screens.map((s, i) => {
-      const lvl   = s.nav_level || ('L' + i);
-      const name  = s.screen_name || s.pattern || ('Pantalla ' + (i+1));
-      const sc    = Math.round(((s.confidence || {}).global || 0) * 100);
-      const comps = (s.components || []).length;
-      return `<div class="comp-row">
-        <div class="comp-order" style="background:var(--accent);color:#fff;border-radius:4px;padding:1px 5px;font-size:10px;">${lvl}</div>
-        <div class="comp-name">${name}</div>
-        <div class="comp-variant">${comps} comp.</div>
-        <div class="comp-kb" style="background:${sc>=80?'var(--success)':sc>=60?'var(--accent)':'var(--warning)'};color:#fff">${sc}%</div>
-      </div>`;
-    }).join('');
-  } else if (flowSec) {
-    flowSec.style.display = 'none';
-  }
-
-  document.getElementById('genResult').style.display = 'flex';
-  document.getElementById('feedbackBar').style.display = 'flex';
-
-  // ── KB FLOATING CARDS ──────────────────────────────────────────────────────
-  spawnKBFloatingCards(data.kb_rules || []);
-}
-
-function spawnKBFloatingCards(rules) {
-  // Reemplazado por renderKBIndicator — las reglas KB ya no flotan sobre la UI
-  renderKBIndicator(rules);
-}
-
-function renderKBIndicator(rules) {
-  const wrap      = document.getElementById('kbIndicatorWrap');
-  const indicator = document.getElementById('kbIndicator');
-  const badge     = document.getElementById('kbBadgeCount');
-  const drawer    = document.getElementById('kbDrawer');
-  const rulesEl   = document.getElementById('kbDrawerRules');
-  if (!wrap || !indicator || !badge || !drawer || !rulesEl) return;
-
-  if (!rules || rules.length === 0) {
-    wrap.style.display = 'none';
-    return;
-  }
-
-  // Mostrar indicador con conteo
-  wrap.style.display = 'block';
-  badge.textContent  = rules.length;
-  indicator.classList.add('has-rules');
-  indicator.classList.remove('open');
-  drawer.classList.remove('open');
-
-  // Renderizar reglas en el drawer
-  const CAT_LABEL = { restriccion:'Restricción', recomendacion:'Recomendación', normativa:'Normativa', 'ds-pattern':'DS Pattern' };
-  rulesEl.innerHTML = rules.map(function(rule) {
-    const cat   = rule.categoria || 'recomendacion';
-    const text  = (rule.content || rule.text || '').slice(0, 160);
-    const score = rule.score ? Math.round(rule.score * 100) + '%' : '';
-    const prio  = rule.prioridad || '';
-    return '<div class="kb-drawer-rule ' + cat + '">' +
-      '<div class="kb-drawer-rule-header">' +
-        '<span class="kb-drawer-tag ' + cat + '">' + (CAT_LABEL[cat] || cat) + '</span>' +
-        (prio ? '<span class="kb-drawer-priority">' + prio + '</span>' : '') +
-        (score ? '<span class="kb-drawer-score">' + score + '</span>' : '') +
-      '</div>' +
-      '<div class="kb-drawer-text">' + text + '</div>' +
-    '</div>';
+  const comps = (data.components || []).map((c, i) => {
+    const dotClass = c.kb_injected ? 'cdot kb' : 'cdot';
+    return '<div class="comp-card"><span class="cn">' + (i+1) + '</span><div class="ci"><div class="cname">' + c.component + '</div><div class="cvar">' + (c.variant || '') + '</div></div><div class="' + dotClass + '"></div></div>';
   }).join('');
 
-  // Toggle drawer al clicar el indicador
-  indicator.onclick = function() {
-    const isOpen = drawer.classList.contains('open');
-    drawer.classList.toggle('open', !isOpen);
-    indicator.classList.toggle('open', !isOpen);
-  };
+  const kbRules = data.kb_rules || [];
+  const kbHTML = kbRules.length > 0 ? `
+    <div>
+      <div class="kb-strip" id="kbStripToggle">
+        ⚡ KB activa <span class="kb-num">${kbRules.length}</span>
+        <span class="kb-link">Ver reglas ▾</span>
+      </div>
+      <div class="kb-drawer" id="kbDrawer">
+        ${kbRules.map(r => {
+          const cat = r.categoria || 'recomendacion';
+          return '<div class="kb-drawer-rule ' + cat + '"><div class="kb-drawer-rule-header"><span class="kb-drawer-tag ' + cat + '">' + cat + '</span>' + (r.prioridad ? '<span class="kb-drawer-priority">' + r.prioridad + '</span>' : '') + '</div><div class="kb-drawer-text">' + (r.content || r.text || '').slice(0, 140) + '</div></div>';
+        }).join('')}
+      </div>
+    </div>` : '';
 
+  const kbChanges = data.kb_changes?.length > 0 ? `
+    <div class="kb-section">
+      <div class="kb-header"><div class="kb-dot"></div>KB aplicó cambios</div>
+      ${data.kb_changes.map(ch => '<div class="kb-change"><div class="kb-tag ' + (ch.type === 'reemplazado' ? 'replaced' : ch.type === 'añadido' ? 'added' : 'removed') + '">' + ch.type + '</div><div class="kb-change-text">' + (ch.type === 'reemplazado' ? '<strong>' + ch.from + '</strong> → <strong>' + ch.to + '</strong>' : '<strong>' + (ch.component || '') + '</strong>') + '</div></div>').join('')}
+    </div>` : '';
+
+  document.getElementById('rightGenerate').innerHTML = `
+    <div class="score-card">
+      <div class="score-ring">
+        <svg width="58" height="58" viewBox="0 0 62 62">
+          <circle class="track" cx="31" cy="31" r="26"/>
+          <circle class="fill" id="scoreArc" cx="31" cy="31" r="26"/>
+        </svg>
+        <div class="score-number" id="scoreNumber">—</div>
+      </div>
+      <div class="score-right">
+        <div class="score-title">${data.pattern} · generado</div>
+        <div class="bar-grid">
+          <div class="bar-item"><div class="bi-label">Intent <span class="bi-pct" id="pctIntent">—</span></div><div class="bar-track"><div class="bar-fill" id="barIntent"></div></div></div>
+          <div class="bar-item"><div class="bi-label">Contract <span class="bi-pct" id="pctContract">—</span></div><div class="bar-track"><div class="bar-fill" id="barContract"></div></div></div>
+          <div class="bar-item"><div class="bi-label">Precedent <span class="bi-pct" id="pctPrecedent">—</span></div><div class="bar-track"><div class="bar-fill" id="barPrecedent"></div></div></div>
+          <div class="bar-item"><div class="bi-label">Rules <span class="bi-pct" id="pctRules">—</span></div><div class="bar-track"><div class="bar-fill" id="barRules"></div></div></div>
+        </div>
+      </div>
+    </div>
+    ${kbHTML}
+    ${kbChanges}
+    <div>
+      <div class="col-label">Composición</div>
+      <div class="comp-grid">${comps}</div>
+    </div>
+    <div class="action-bar" style="margin-top:auto;">
+      <button class="btn-paint" id="btnPaint">✏ Paint in Figma</button>
+      <button class="btn-act ba-ok" onclick="sendFeedback('approved')">✓ Aprobar</button>
+      <button class="btn-act ba-mod" onclick="sendFeedback('modified')">⇄ Modificar</button>
+      <button class="btn-act ba-rej" onclick="sendFeedback('rejected')">✕ Rechazar</button>
+    </div>
+    <button class="btn-export-html" id="btnExportHTML">
+      <span>💾</span><span>Copiar HTML de producción</span><span class="html-badge">DS</span>
+    </button>
+    <div class="html-copy-msg" id="htmlCopyMsg">✓ HTML copiado al portapapeles</div>
+  `;
+
+  animScore('scoreArc', 'scoreNumber', score);
+  setBar('barIntent', 'pctIntent', intent);
+  setBar('barContract', 'pctContract', contract);
+  setBar('barPrecedent', 'pctPrecedent', precedent);
+  setBar('barRules', 'pctRules', rules);
+
+  document.getElementById('btnPaint')?.addEventListener('click', () => {
+    if (!state.lastResult) return;
+    parent.postMessage({ pluginMessage: { type: 'paint', data: state.lastResult } }, '*');
+  });
+
+  document.getElementById('kbStripToggle')?.addEventListener('click', () => {
+    const d = document.getElementById('kbDrawer');
+    d.classList.toggle('open');
+  });
+
+  document.getElementById('btnExportHTML')?.addEventListener('click', async () => {
+    if (!state.lastResult) return;
+    const btn = document.getElementById('btnExportHTML');
+    btn.disabled = true;
+    try {
+      const r = await fetch(ENGINE_URL + '/render', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
+        body: JSON.stringify({ brief: state.lastResult.brief || '', pattern: state.lastResult.pattern || '' }),
+      });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      await navigator.clipboard.writeText(d.html);
+      btn.innerHTML = '<span>✓</span><span>Copiado</span><span class="html-badge">DS</span>';
+      document.getElementById('htmlCopyMsg')?.classList.add('visible');
+      setTimeout(() => document.getElementById('htmlCopyMsg')?.classList.remove('visible'), 3000);
+    } catch (e) {
+      setStatus('genStatus', 'error', '✗ ' + e.message);
+    } finally {
+      btn.disabled = false;
+      setTimeout(() => { if (btn) btn.innerHTML = '<span>💾</span><span>Copiar HTML de producción</span><span class="html-badge">DS</span>'; }, 3000);
+    }
+  });
 }
 
-// ── FEEDBACK LOOP ─────────────────────────────────────────
+// ── FEEDBACK ──
 function sendFeedback(status) {
   if (!state.lastResult) return;
-  let motivo = '';
-  let modificaciones = '';
-  if (status === 'rejected') {
-    motivo = prompt('Motivo del rechazo (opcional):') || '';
-  }
-  if (status === 'modified') {
-    modificaciones = prompt('Describe los cambios que harías:') || '';
-  }
+  let motivo = '', modificaciones = '';
+  if (status === 'rejected') motivo = prompt('Motivo del rechazo (opcional):') || '';
+  if (status === 'modified') modificaciones = prompt('Describe los cambios:') || '';
   fetch(ENGINE_URL + '/knowledge/feedback', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
     body: JSON.stringify({
-      screen_id:      state.lastResult.screen_id,
-      brief:          state.lastResult.brief,
-      status:         status,
-      pattern:        state.lastResult.pattern,
-      components:     state.lastResult.components,
-      motivo:         motivo,
-      modificaciones: modificaciones,
+      screen_id: state.lastResult.screen_id,
+      brief: state.lastResult.brief,
+      status, pattern: state.lastResult.pattern,
+      components: state.lastResult.components,
+      motivo, modificaciones,
     }),
-  })
-  .then(r => r.json())
-  .then(d => {
-    const bar = document.getElementById('feedbackBar');
-    if (bar) bar.innerHTML = '<div class="feedback-sent">✓ Feedback registrado en KB</div>';
-    console.log('[feedback]', status, d.ok ? 'OK' : d.error);
-  })
-  .catch(e => console.error('[feedback] error:', e.message));
+  }).then(r => r.json()).then(() => {
+    const bar = document.querySelector('.action-bar');
+    if (bar) bar.innerHTML = '<div class="feedback-sent" style="grid-column:1/-1;">✓ Feedback registrado en KB</div>';
+  }).catch(e => console.error('[feedback]', e.message));
 }
 
-// ── PAINT ──────────────────────────────────────────────────
-document.getElementById('btnPaint').addEventListener('click', () => {
-  if (!state.lastResult) return;
-  parent.postMessage({ pluginMessage: { type: 'paint', data: state.lastResult } }, '*');
-});
-
-// ── EXPORTAR HTML DE PRODUCCIÓN ────────────────────────────
-document.getElementById('btnExportHTML')?.addEventListener('click', async () => {
-  if (!state.lastResult) return;
-  const btn = document.getElementById('btnExportHTML');
-  const msg = document.getElementById('htmlCopyMsg');
-  btn.disabled = true;
-  btn.innerHTML = '<span>⏳</span><span>Generando HTML...</span>';
-
-  try {
-    const r = await fetch(ENGINE_URL + '/render', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
-      body: JSON.stringify({
-        brief:   state.lastResult.brief   || state.lastResult.meta?.brief   || '',
-        pattern: state.lastResult.pattern || state.lastResult.meta?.pattern || '',
-      }),
-    });
-    const data = await r.json();
-    if (data.error) throw new Error(data.message || data.error);
-
-    // Copiar al portapapeles
-    await navigator.clipboard.writeText(data.html);
-    btn.innerHTML = '<span>✓</span><span>Copiado al portapapeles</span><span class="html-badge">DS</span>';
-    if (msg) { msg.classList.add('visible'); setTimeout(() => msg.classList.remove('visible'), 3000); }
-  } catch (e) {
-    btn.innerHTML = '<span>💾</span><span>Copiar HTML de producción</span><span class="html-badge">DS</span>';
-    setStatus('genStatus', 'error', '✗ Error al generar HTML: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    setTimeout(() => {
-      btn.innerHTML = '<span>💾</span><span>Copiar HTML de producción</span><span class="html-badge">DS</span>';
-    }, 3000);
-  }
-});
-
-// ── STUDIO: VALIDATE ───────────────────────────────────────
+// ── STUDIO VALIDATE ──
 document.getElementById('btnValidate').addEventListener('click', () => {
   const brief = document.getElementById('studioBrief').value.trim();
-  if (!brief) {
-    setStatus('studioStatus', 'warn', '⚠ Escribe el brief antes de validar');
-    return;
-  }
+  if (!brief) { setStatus('studioStatus', 'warn', '⚠ Escribe el brief antes de validar'); return; }
   parent.postMessage({ pluginMessage: { type: 'get-selection' } }, '*');
   setStatus('studioStatus', 'loading', spin() + 'Leyendo frame seleccionado...');
   document.getElementById('btnValidate').disabled = true;
@@ -1224,32 +1015,21 @@ document.getElementById('btnValidate').addEventListener('click', () => {
 window.addEventListener('message', async (event) => {
   const msg = event.data?.pluginMessage;
   if (!msg) return;
-
   if (msg.type === 'paint-done') {
-    if (msg.is_flow) {
-      setStatus('genStatus', 'success', `✓ Flujo pintado en Figma · ${msg.screen_count} pantallas · ${msg.score}%`);
-    } else {
-      setStatus('genStatus', 'success', `✓ Pintado en Figma · ${msg.score}%`);
-    }
-    // Mostrar botón exportar HTML tras pintar en Figma
+    setStatus('genStatus', 'success', '✓ Pintado en Figma · ' + msg.score + '%');
     document.getElementById('btnExportHTML')?.classList.add('visible');
   }
-  if (msg.type === 'selection-data') {
-    await runValidation(msg.components, msg.frameId);
-  }
+  if (msg.type === 'selection-data') await runValidation(msg.components, msg.frameId);
   if (msg.type === 'selection-empty') {
     setStatus('studioStatus', 'warn', '⚠ Selecciona un frame del engine en Figma');
     document.getElementById('btnValidate').disabled = false;
   }
-  if (msg.type === 'export-done') {
-    setStatus('exportStatus', 'success', '✓ ' + msg.message);
-  }
+  if (msg.type === 'export-done') setStatus('exportStatus', 'success', '✓ ' + msg.message);
 });
 
 async function runValidation(components, frameId) {
   const brief = document.getElementById('studioBrief').value.trim();
   setStatus('studioStatus', 'loading', spin() + 'Validando con el engine...');
-
   try {
     const r = await fetch(ENGINE_URL + '/validate', {
       method: 'POST',
@@ -1258,14 +1038,10 @@ async function runValidation(components, frameId) {
     });
     const data = await r.json();
     if (data.error) throw new Error(data.message || data.error);
-
     state.studioValidation = { ...data, components, frameId, brief };
     renderStudioResult(data);
     setStatus('studioStatus', '');
-
-    // ── Llamar a /render para generar preview HTML ─────────────────
-    loadStudioPreview(brief, state.studioValidation?.components || []);
-
+    loadStudioPreview(brief);
   } catch (e) {
     setStatus('studioStatus', 'error', '✗ ' + e.message);
   } finally {
@@ -1273,16 +1049,87 @@ async function runValidation(components, frameId) {
   }
 }
 
-// ── Cargar preview HTML en el iframe del Studio ─────────────────────
-async function loadStudioPreview(brief, components) {
-  const wrap  = document.getElementById('studioPreviewWrap');
+function renderStudioResult(data) {
+  const score = Math.round((data.confidence?.global || 0) * 100);
+  state.studioScore = score;
+  const intent = Math.round((data.confidence?.intent || 0) * 100);
+  const contract = Math.round((data.confidence?.contract || 0) * 100);
+  const precedent = Math.round((data.confidence?.precedent || 0) * 100);
+  const rules = Math.round((data.confidence?.rules || 0) * 100);
+
+  const comps = (data.components_detail || state.studioValidation?.components || []);
+  const unknowns = data.unknown_components || [];
+  const detached = data.detached_components || [];
+
+  const lockClass = score >= 80 ? 'unlocked' : score >= 60 ? 'review' : 'blocked';
+  const lockIcon = score >= 80 ? '🔓' : score >= 60 ? '⚠️' : '🔴';
+  const lockText = score >= 80 ? 'Score ' + score + '% — pantalla aprobada' : score >= 60 ? 'Score ' + score + '% — revisar antes de entregar' : 'Score ' + score + '% — composición con errores';
+
+  document.getElementById('studioRight').innerHTML = `
+    <div class="score-card">
+      <div class="score-ring">
+        <svg width="58" height="58" viewBox="0 0 62 62">
+          <circle class="track" cx="31" cy="31" r="26"/>
+          <circle class="fill" id="studioScoreArc" cx="31" cy="31" r="26"/>
+        </svg>
+        <div class="score-number" id="studioScoreNumber">—</div>
+      </div>
+      <div class="score-right">
+        <div class="score-title">Resultado validación</div>
+        <div class="bar-grid">
+          <div class="bar-item"><div class="bi-label">Intent <span class="bi-pct" id="sPctIntent">—</span></div><div class="bar-track"><div class="bar-fill" id="sBarIntent"></div></div></div>
+          <div class="bar-item"><div class="bi-label">Contract <span class="bi-pct" id="sPctContract">—</span></div><div class="bar-track"><div class="bar-fill" id="sBarContract"></div></div></div>
+          <div class="bar-item"><div class="bi-label">Rules <span class="bi-pct" id="sPctRules">—</span></div><div class="bar-track"><div class="bar-fill" id="sBarRules"></div></div></div>
+          <div class="bar-item"><div class="bi-label">Precedent <span class="bi-pct" id="sPctPrecedent">—</span></div><div class="bar-track"><div class="bar-fill" id="sBarPrecedent"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="lock-state ${lockClass}"><span>${lockIcon}</span><span>${lockText}</span></div>
+    <div>
+      <div class="col-label">Componentes detectados</div>
+      <div class="comp-grid">
+        ${comps.map((c, i) => {
+          const isUnknown = unknowns.includes(c.component);
+          const isDetached = detached.some(d => d.component === c.component);
+          const dotClass = isUnknown ? 'cdot warn' : isDetached ? 'cdot warn' : 'cdot';
+          return '<div class="comp-card"><span class="cn">' + (i+1) + '</span><div class="ci"><div class="cname">' + c.component + '</div></div><div class="' + dotClass + '"></div></div>';
+        }).join('')}
+      </div>
+    </div>
+    <div id="studioPreviewWrap" class="studio-preview-wrap">
+      <div class="studio-preview-header">
+        <span class="studio-preview-label">⚡ Preview del engine</span>
+        <button class="studio-preview-copy" id="studioPreviewCopy">Copiar HTML</button>
+      </div>
+      <iframe class="studio-preview-frame" id="studioPreviewFrame" sandbox="allow-same-origin"></iframe>
+    </div>
+    <div style="margin-top:auto;">
+      <button class="btn-gen" id="btnGoExport">Continuar a Exportar →</button>
+    </div>
+  `;
+
+  animScore('studioScoreArc', 'studioScoreNumber', score);
+  setBar('sBarIntent', 'sPctIntent', intent);
+  setBar('sBarContract', 'sPctContract', contract);
+  setBar('sBarRules', 'sPctRules', rules);
+  setBar('sBarPrecedent', 'sPctPrecedent', precedent);
+
+  document.getElementById('btnGoExport').addEventListener('click', () => {
+    document.getElementById('studioStep1').style.display = 'none';
+    document.getElementById('studioStep2').style.display = 'flex';
+    document.getElementById('step1num').className = 'st-c st-done';
+    document.getElementById('step2num').className = 'st-c st-active';
+    document.getElementById('step1label').className = 'st-label stl-off';
+    document.getElementById('step2label').className = 'st-label stl-on';
+    document.getElementById('connector1').style.background = 'var(--p-green)';
+    document.getElementById('exportScoreLabel').textContent = 'Score ' + score + '% — lista para exportar';
+  });
+}
+
+async function loadStudioPreview(brief) {
+  const wrap = document.getElementById('studioPreviewWrap');
   const frame = document.getElementById('studioPreviewFrame');
-  const copy  = document.getElementById('studioPreviewCopy');
   if (!wrap || !frame) return;
-
-  wrap.classList.remove('visible');
-  let generatedHtml = '';
-
   try {
     const r = await fetch(ENGINE_URL + '/render', {
       method: 'POST',
@@ -1291,279 +1138,170 @@ async function loadStudioPreview(brief, components) {
     });
     const data = await r.json();
     if (data.error || !data.html) return;
-
-    generatedHtml = data.html;
-
-    // Inyectar HTML en el iframe de forma segura (sin src, via srcdoc)
-    frame.srcdoc = `<!DOCTYPE html><html><head>
-      <meta charset="utf-8">
-      <style>body{margin:0;overflow:hidden;}</style>
-    </head><body>${generatedHtml}</body></html>`;
-
+    frame.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden;}</style></head><body>' + data.html + '</body></html>';
     wrap.classList.add('visible');
-
-    // Handler copiar HTML
-    if (copy) {
-      copy.onclick = async () => {
-        await navigator.clipboard.writeText(generatedHtml);
-        copy.textContent = '✓ Copiado';
-        setTimeout(() => { copy.textContent = 'Copiar HTML'; }, 2000);
-      };
-    }
-  } catch (e) {
-    console.warn('[Studio] preview error:', e.message);
-  }
+    document.getElementById('studioPreviewCopy').onclick = async () => {
+      await navigator.clipboard.writeText(data.html);
+      document.getElementById('studioPreviewCopy').textContent = '✓ Copiado';
+      setTimeout(() => { document.getElementById('studioPreviewCopy').textContent = 'Copiar HTML'; }, 2000);
+    };
+  } catch (e) { console.warn('[Studio preview]', e.message); }
 }
 
-function renderStudioResult(data) {
-  const score = Math.round((data.confidence?.global || 0) * 100);
-  state.studioScore = score;
-  animScore('studioScoreArc', 'studioScoreNumber', score);
-  setBar('sBarIntent',    'sPctIntent',    Math.round((data.confidence?.intent    || 0) * 100));
-  setBar('sBarContract',  'sPctContract',  Math.round((data.confidence?.contract  || 0) * 100));
-  setBar('sBarPrecedent', 'sPctPrecedent', Math.round((data.confidence?.precedent || 0) * 100));
-  setBar('sBarRules',     'sPctRules',     Math.round((data.confidence?.rules     || 0) * 100));
-
-  // ── Componentes detacheados ─────────────────────────────
-  const detached = data.detached_components || [];
-  const detachedSection = document.getElementById('studioDetached');
-  const detachedList    = document.getElementById('studioDetachedList');
-  if (detached.length > 0) {
-    detachedSection.style.display = 'flex';
-    detachedList.innerHTML = detached.map(d =>
-      `<div class="violation-row warning">
-        <div class="violation-rule">⚠ Detach — ${d.component}</div>
-        <div class="violation-detail">${d.reason}</div>
-      </div>`
-    ).join('');
-  } else {
-    detachedSection.style.display = 'none';
-  }
-
-  // ── Componentes detectados ──────────────────────────────
-  const comps = data.components_detail || state.studioValidation?.components || [];
-  const unknowns = data.unknown_components || [];
-  if (comps.length > 0) {
-    document.getElementById('studioComponents').style.display = 'flex';
-    document.getElementById('studioCompList').innerHTML = comps.map((c, i) => {
-      const isUnknown  = unknowns.includes(c.component);
-      const isDetached = detached.some(d => d.component === c.component);
-      const badge = isUnknown
-        ? '<div class="comp-kb" style="background:var(--warning);color:#000">?</div>'
-        : isDetached
-          ? '<div class="comp-kb" style="background:#f59e0b;color:#000">detach</div>'
-          : '<div class="comp-kb" style="background:var(--success);color:#000">✓</div>';
-      return `<div class="comp-row" style="${isDetached ? 'opacity:0.7' : ''}">
-        <div class="comp-order">${i + 1}</div>
-        <div class="comp-name">${c.component}</div>
-        ${badge}
-      </div>`;
-    }).join('');
-  }
-
-  // ── Problemas estructurales y KB ────────────────────────
-  const errors   = data.struct_errors   || [];
-  const warnings = data.struct_warnings || [];
-  const kbViol   = data.kb_violations   || [];
-  const allIssues = [
-    ...errors.map(e   => ({ sev: 'error',   text: e.detail })),
-    ...warnings.map(w => ({ sev: 'warning', text: w.detail })),
-    ...kbViol.map(v   => ({ sev: 'error',   text: `KB: ${(v.rule || '').slice(0, 80)}` })),
-  ];
-  if (allIssues.length > 0) {
-    document.getElementById('studioIssues').style.display = 'flex';
-    document.getElementById('studioIssueList').innerHTML = allIssues.map(issue =>
-      `<div class="violation-row ${issue.sev}">
-        <div class="violation-rule">${issue.sev === 'error' ? '✗ Error' : '⚠ Warning'}</div>
-        <div class="violation-detail">${issue.text}</div>
-      </div>`
-    ).join('');
-  } else {
-    document.getElementById('studioIssues').style.display = 'none';
-  }
-
-  // ── Contratos recuperados ───────────────────────────────
-  const kbRules = data.kb_rules || [];
-  if (kbRules.length > 0) {
-    document.getElementById('studioContracts').style.display = 'flex';
-    document.getElementById('studioContractList').innerHTML = kbRules.map(r => {
-      const cat = r.categoria || r.tipo || 'regla';
-      const text = r.content || r.text || '';
-      return `<div class="kb-block" style="margin-bottom:4px;">
-        <div class="kb-block-header active" style="justify-content:space-between;">
-          <span style="font-size:10px;opacity:0.6;">${cat}</span>
-        </div>
-        <div style="padding:7px 10px;font-size:11px;color:var(--txt2);line-height:1.45;">${text.slice(0, 120)}${text.length > 120 ? '…' : ''}</div>
-      </div>`;
-    }).join('');
-  } else {
-    document.getElementById('studioContracts').style.display = 'none';
-  }
-
-  // ── Lock / unlock — documentar siempre disponible ─────
-  const lock = document.getElementById('studioLock');
-  const btn  = document.getElementById('btnGoExport');
-  if (score >= 80) {
-    lock.className = 'lock-state unlocked';
-    document.getElementById('studioLockIcon').textContent = '🔓';
-    document.getElementById('studioLockText').textContent = `Score ${score}% — pantalla aprobada`;
-  } else if (score >= 60) {
-    lock.className = 'lock-state review';
-    document.getElementById('studioLockIcon').textContent = '⚠️';
-    document.getElementById('studioLockText').textContent = `Score ${score}% — revisar antes de entregar`;
-  } else {
-    lock.className = 'lock-state blocked';
-    document.getElementById('studioLockIcon').textContent = '🔴';
-    document.getElementById('studioLockText').textContent = `Score ${score}% — composición con errores`;
-  }
-  // Documentar siempre está disponible — el score es orientativo
-  btn.disabled = false;
-  document.getElementById('studioResult').style.display = 'flex';
-}
-
-// ── STEP NAV ───────────────────────────────────────────────
-document.getElementById('btnGoExport').addEventListener('click', () => {
-  goStep(2);
-  const sc = state.studioScore;
-  const label = sc >= 80
-    ? `Score ${sc}% aprobado — pantalla lista para exportar`
-    : sc >= 60
-      ? `Score ${sc}% — exportando con advertencias`
-      : `Score ${sc}% — exportando con errores de composición`;
-  document.getElementById('exportScoreLabel').textContent = label;
+document.getElementById('btnBackValidate').addEventListener('click', () => {
+  document.getElementById('studioStep1').style.display = 'flex';
+  document.getElementById('studioStep2').style.display = 'none';
+  document.getElementById('step1num').className = 'st-c st-active';
+  document.getElementById('step2num').className = 'st-c st-off';
+  document.getElementById('step1label').className = 'st-label stl-on';
+  document.getElementById('step2label').className = 'st-label stl-off';
+  document.getElementById('connector1').style.background = '';
 });
-document.getElementById('btnBackValidate').addEventListener('click', () => goStep(1));
 
-function goStep(n) {
-  document.getElementById('studioStep1').style.display = n === 1 ? 'flex' : 'none';
-  document.getElementById('studioStep2').style.display = n === 2 ? 'flex' : 'none';
-
-  document.getElementById('step1num').className = n === 1 ? 'step-num active' : 'step-num done';
-  document.getElementById('step1label').className = n === 1 ? 'step-label active' : 'step-label';
-  document.getElementById('step2num').className   = n === 2 ? 'step-num active' : 'step-num';
-  document.getElementById('step2label').className = n === 2 ? 'step-label active' : 'step-label';
-  document.getElementById('connector1').className = n === 2 ? 'step-connector done' : 'step-connector';
-
-  if (n === 2 && state.exportSelected.has('doc') && !state.docContent) generateDocPreview();
-}
-
-// ── EXPORT TOGGLE ──────────────────────────────────────────
+// ── EXPORT TOGGLE ──
 function toggleExport(type) {
   const el = document.getElementById('opt' + type.charAt(0).toUpperCase() + type.slice(1));
-  if (state.exportSelected.has(type)) {
-    state.exportSelected.delete(type);
-    el.classList.remove('selected');
-  } else {
-    state.exportSelected.add(type);
-    el.classList.add('selected');
-  }
+  if (state.exportSelected.has(type)) { state.exportSelected.delete(type); el.classList.remove('selected'); }
+  else { state.exportSelected.add(type); el.classList.add('selected'); }
   document.getElementById('btnExport').disabled = state.exportSelected.size === 0;
-
   const wrap = document.getElementById('docPreviewWrap');
-  if (state.exportSelected.has('doc')) {
-    wrap.style.display = 'flex';
-    if (!state.docContent) generateDocPreview();
-  } else {
-    wrap.style.display = 'none';
-  }
+  if (state.exportSelected.has('doc')) { wrap.style.display = 'flex'; if (!state.docContent) generateDocPreview(); }
+  else wrap.style.display = 'none';
 }
 
 async function generateDocPreview() {
   const el = document.getElementById('docPreview');
   el.textContent = 'Generando con KB...';
-  state.docContent = null;
   try {
     const r = await fetch(ENGINE_URL + '/generate-doc', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
-      body: JSON.stringify({
-        brief: state.studioValidation?.brief,
-        components: state.studioValidation?.components,
-        score: state.studioScore,
-        kb_rules: state.studioValidation?.kb_rules || [],
-      }),
+      body: JSON.stringify({ brief: state.studioValidation?.brief, components: state.studioValidation?.components, score: state.studioScore, kb_rules: state.studioValidation?.kb_rules || [] }),
     });
     const data = await r.json();
-    state.docContent = data.doc || '// Sin documentación generada';
+    state.docContent = data.doc || '// Sin documentación';
     el.textContent = state.docContent;
-  } catch (e) {
-    el.textContent = '// Error: ' + e.message;
-  }
+  } catch (e) { el.textContent = '// Error: ' + e.message; }
 }
 
-// ── EXPORT ─────────────────────────────────────────────────
 document.getElementById('btnExport').addEventListener('click', async () => {
   if (!state.exportSelected.size) return;
   document.getElementById('btnExport').disabled = true;
   setStatus('exportStatus', 'loading', spin() + 'Exportando...');
-
   try {
     for (const action of state.exportSelected) {
       if (action === 'example' || action === 'template') {
-        // Usar el feedback loop real en lugar del endpoint inexistente
         await fetch(ENGINE_URL + '/knowledge/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
-          body: JSON.stringify({
-            screen_id:  state.studioValidation.frameId || 'studio-' + Date.now(),
-            brief:      state.studioValidation.brief,
-            status:     'approved',
-            pattern:    state.studioValidation.pattern,
-            components: state.studioValidation.components,
-            motivo:     'Aprobado desde Studio (' + action + ')',
-          }),
+          body: JSON.stringify({ screen_id: state.studioValidation.frameId || 'studio-' + Date.now(), brief: state.studioValidation.brief, status: 'approved', pattern: state.studioValidation.pattern, components: state.studioValidation.components, motivo: 'Aprobado desde Studio (' + action + ')' }),
         });
       }
       if (action === 'doc' && state.docContent) {
-        // 1. Guardar en KB como "decision" para que el engine aprenda de ella
-        try {
-          await fetch(ENGINE_URL + '/knowledge/ingest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
-            body: JSON.stringify({
-              text:      `DOC DE PANTALLA\nBrief: ${state.studioValidation?.brief || ''}\n\n${state.docContent}`,
-              tipo:      'documentation',
-              categoria: 'screen-doc',
-              geografia: 'global',
-              prioridad: 'media',
-              autor:     'studio',
-            }),
-          });
-        } catch (e) {
-          console.warn('KB ingest error:', e.message);
-        }
-
-        // 2. Descargar el .md como archivo en el navegador
-        try {
-          const slug = (state.studioValidation?.brief || 'screen')
-            .toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
-          const filename = `doc-${slug}-${Date.now()}.md`;
-          const blob = new Blob([state.docContent], { type: 'text/markdown;charset=utf-8' });
-          const url  = URL.createObjectURL(blob);
-          const a    = document.createElement('a');
-          a.href     = url;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
-        } catch (e) {
-          // Fallback: mostrar en consola si la descarga falla (entorno sandbox)
-          parent.postMessage({ pluginMessage: { type: 'save-doc', content: state.docContent } }, '*');
-          console.warn('Download fallback:', e.message);
-        }
+        await fetch(ENGINE_URL + '/knowledge/ingest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
+          body: JSON.stringify({ text: 'DOC DE PANTALLA\nBrief: ' + (state.studioValidation?.brief || '') + '\n\n' + state.docContent, tipo: 'documentation', categoria: 'screen-doc', geografia: 'global', prioridad: 'media', autor: 'studio' }),
+        }).catch(e => console.warn('KB ingest:', e.message));
+        const blob = new Blob([state.docContent], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'doc-' + Date.now() + '.md';
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
       }
     }
-    const hasdoc = state.exportSelected.has('doc');
-    setStatus('exportStatus', 'success', hasdoc ? '✓ Guardado en KB · Descarga iniciada' : '✓ Guardado en KB correctamente');
+    setStatus('exportStatus', 'success', state.exportSelected.has('doc') ? '✓ Guardado en KB · Descarga iniciada' : '✓ Guardado en KB');
   } catch (e) {
     setStatus('exportStatus', 'error', '✗ ' + e.message);
     document.getElementById('btnExport').disabled = false;
   }
 });
 
-// ── HELPERS ────────────────────────────────────────────────
+// ── KB TAB ──
+let kbAllRules = [];
+
+function selKBType(el) {
+  document.querySelectorAll('.type-pill').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+  state.kbActiveCat = el.dataset.cat;
+}
+
+document.getElementById('kbFilterBar').addEventListener('click', (e) => {
+  const btn = e.target.closest('.fchip');
+  if (!btn) return;
+  document.querySelectorAll('.fchip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderKBRules(btn.dataset.cat);
+});
+
+document.getElementById('btnRefreshKB').addEventListener('click', loadKBRules);
+
+async function loadKBRules() {
+  const list = document.getElementById('kbRulesList');
+  list.innerHTML = '<div style="font-size:11px;color:var(--p-text3);text-align:center;padding:16px 0;">Cargando...</div>';
+  try {
+    const r = await fetch(ENGINE_URL + '/knowledge/list', { headers: { 'X-API-Key': ENGINE_KEY } });
+    const data = await r.json();
+    kbAllRules = data.entries || [];
+    renderKBRules('all');
+  } catch (e) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--p-amber);padding:10px 0;">✗ Error: ' + e.message + '</div>';
+  }
+}
+
+function renderKBRules(cat) {
+  const list = document.getElementById('kbRulesList');
+  const filtered = !cat || cat === 'all' ? kbAllRules : kbAllRules.filter(r => r.categoria === cat);
+  if (!filtered.length) { list.innerHTML = '<div style="font-size:11px;color:var(--p-text3);text-align:center;padding:16px 0;">Sin reglas en esta categoría</div>'; return; }
+  const ICONS = { restriccion:'🚫', recomendacion:'💡', normativa:'⚖️', 'ds-pattern':'📐', 'screen-doc':'📄' };
+  const BADGE = { restriccion:'rb-r', recomendacion:'rb-rec', normativa:'rb-n', 'ds-pattern':'rb-pat', 'screen-doc':'rb-doc' };
+  list.innerHTML = filtered.map(r => {
+    const cat = r.categoria || 'sin-categoria';
+    const text = (r.text || '').slice(0, 100) + ((r.text||'').length > 100 ? '…' : '');
+    return '<div class="rule-item"><div class="ri-top"><span class="rbadge ' + (BADGE[cat]||'rb-doc') + '">' + (ICONS[cat]||'·') + ' ' + cat + '</span><span class="rpri">' + (r.prioridad||'') + '</span><button class="rdel" onclick="deleteKBRule(\'' + r.id + '\')">×</button></div><div class="ri-text">' + text + '</div></div>';
+  }).join('');
+}
+
+async function deleteKBRule(id) {
+  try {
+    await fetch(ENGINE_URL + '/knowledge/delete/' + id, { method: 'DELETE', headers: { 'X-API-Key': ENGINE_KEY } });
+    kbAllRules = kbAllRules.filter(r => r.id !== id);
+    renderKBRules(document.querySelector('.fchip.on')?.dataset.cat || 'all');
+  } catch (e) { console.error('Error eliminando regla:', e.message); }
+}
+
+document.getElementById('btnAddKB').addEventListener('click', async () => {
+  const text = document.getElementById('kbText').value.trim();
+  if (!text) { setStatus('kbAddStatus', 'warn', '⚠ Escribe el contenido de la regla'); return; }
+  const cat = state.kbActiveCat || 'restriccion';
+  const priority = document.getElementById('kbPriority').value;
+  const geo = document.getElementById('kbGeo').value;
+  setStatus('kbAddStatus', 'loading', spin() + 'Añadiendo a la KB...');
+  document.getElementById('btnAddKB').disabled = true;
+  try {
+    const r = await fetch(ENGINE_URL + '/knowledge/ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
+      body: JSON.stringify({ text, categoria: cat, prioridad: priority, geografia: geo, autor: 'plugin', tipo: cat }),
+    });
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error || 'Error desconocido');
+    setStatus('kbAddStatus', 'success', '✓ Regla añadida a la KB');
+    document.getElementById('kbText').value = '';
+    applyInputStyles();
+    await loadKBRules();
+  } catch (e) {
+    setStatus('kbAddStatus', 'error', '✗ ' + e.message);
+  } finally {
+    document.getElementById('btnAddKB').disabled = false;
+  }
+});
+
+// ── HELPERS ──
 function setStatus(id, type, html = '') {
   const el = document.getElementById(id);
+  if (!el) return;
   if (!type) { el.className = 'status-msg'; el.style.display = 'none'; return; }
   el.className = 'status-msg show ' + type;
   el.innerHTML = html;
@@ -1571,154 +1309,26 @@ function setStatus(id, type, html = '') {
 
 function setBar(barId, pctId, value) {
   const bar = document.getElementById(barId);
+  if (!bar) return;
   bar.style.width = value + '%';
-  bar.style.background = value >= 80 ? 'var(--success)' : value >= 60 ? 'var(--accent)' : 'var(--warning)';
-  document.getElementById(pctId).textContent = value + '%';
+  bar.style.background = value >= 80 ? 'var(--p-green)' : value >= 60 ? 'var(--p-accent)' : 'var(--p-amber)';
+  const pct = document.getElementById(pctId);
+  if (pct) pct.textContent = value + '%';
 }
 
 function animScore(arcId, numId, score) {
   const arc = document.getElementById(arcId);
   const num = document.getElementById(numId);
-  // r=26 → circunferencia = 2π×26 ≈ 163.4
+  if (!arc || !num) return;
   arc.style.strokeDashoffset = 163 - (163 * score / 100);
-  arc.style.stroke = score >= 80 ? 'var(--success)' : score >= 60 ? 'var(--accent)' : 'var(--warning)';
-  num.textContent  = score + '%';
-  num.style.color  = score >= 80 ? 'var(--success)' : score >= 60 ? 'var(--text)' : 'var(--warning)';
+  arc.style.stroke = score >= 80 ? 'var(--p-green)' : score >= 60 ? 'var(--p-accent)' : 'var(--p-amber)';
+  num.textContent = score + '%';
+  num.style.color = score >= 80 ? 'var(--p-green)' : score >= 60 ? 'var(--p-text)' : 'var(--p-amber)';
 }
 
 function spin() {
   return '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span> ';
 }
-
-// ── KB TAB ─────────────────────────────────────────────────
-let kbAllRules = [];
-let kbActiveCat = 'all';
-
-// Filtros
-document.getElementById('kbFilterBar').addEventListener('click', (e) => {
-  const btn = e.target.closest('.kb-filter-btn');
-  if (!btn) return;
-  document.querySelectorAll('.kb-filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  kbActiveCat = btn.dataset.cat;
-  renderKBRules();
-});
-
-// Cargar reglas
-document.getElementById('btnRefreshKB').addEventListener('click', loadKBRules);
-
-async function loadKBRules() {
-  const list = document.getElementById('kbRulesList');
-  list.innerHTML = '<div style="font-size:11px;color:var(--txt2);text-align:center;padding:20px 0;">Cargando...</div>';
-  try {
-    const r = await fetch(ENGINE_URL + '/knowledge/list', {
-      headers: { 'X-API-Key': ENGINE_KEY }
-    });
-    const data = await r.json();
-    kbAllRules = data.entries || [];
-    renderKBRules();
-  } catch(e) {
-    list.innerHTML = '<div style="font-size:11px;color:var(--warning);padding:10px 0;">✗ Error cargando KB: ' + e.message + '</div>';
-  }
-}
-
-function renderKBRules() {
-  const list = document.getElementById('kbRulesList');
-  const filtered = kbActiveCat === 'all'
-    ? kbAllRules
-    : kbAllRules.filter(r => r.categoria === kbActiveCat);
-
-  if (filtered.length === 0) {
-    list.innerHTML = '<div style="font-size:11px;color:var(--txt2);text-align:center;padding:20px 0;">Sin reglas en esta categoría</div>';
-    return;
-  }
-
-  const CAT_ICONS = {
-    restriccion: '🚫', recomendacion: '💡', normativa: '⚖️',
-    'ds-pattern': '🧩', 'screen-doc': '📄'
-  };
-
-  list.innerHTML = filtered.map(r => {
-    const cat   = r.categoria || 'sin-categoria';
-    const icon  = CAT_ICONS[cat] || '·';
-    const text  = (r.text || '').slice(0, 100) + ((r.text||'').length > 100 ? '…' : '');
-    const prio  = r.prioridad || '';
-    return `<div class="kb-rule-card">
-      <div class="kb-rule-card-header">
-        <span class="kb-rule-cat ${cat}">${icon} ${cat}</span>
-        <span class="kb-rule-priority">${prio}</span>
-        <button class="kb-rule-delete" onclick="deleteKBRule('${r.id}')" title="Eliminar">✕</button>
-      </div>
-      <div class="kb-rule-text">${text}</div>
-    </div>`;
-  }).join('');
-}
-
-async function deleteKBRule(id) {
-  try {
-    await fetch(ENGINE_URL + '/knowledge/delete/' + id, {
-      method: 'DELETE',
-      headers: { 'X-API-Key': ENGINE_KEY }
-    });
-    kbAllRules = kbAllRules.filter(r => r.id !== id);
-    renderKBRules();
-  } catch(e) {
-    console.error('Error eliminando regla:', e.message);
-  }
-}
-
-// Añadir regla
-document.getElementById('btnAddKB').addEventListener('click', async () => {
-  const text = document.getElementById('kbText').value.trim();
-  if (!text) {
-    setStatus('kbAddStatus', 'warn', '⚠ Escribe el contenido de la regla');
-    return;
-  }
-
-  const cat      = document.getElementById('kbCat').value;
-  const priority = document.getElementById('kbPriority').value;
-  const geo      = document.getElementById('kbGeo').value;
-
-  setStatus('kbAddStatus', 'loading', spin() + 'Añadiendo a la KB...');
-  document.getElementById('btnAddKB').disabled = true;
-
-  try {
-    const r = await fetch(ENGINE_URL + '/knowledge/ingest', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
-      body: JSON.stringify({
-        text,
-        categoria: cat,
-        prioridad: priority,
-        geografia: geo,
-        autor: 'plugin',
-        tipo: cat,
-      })
-    });
-    const data = await r.json();
-    if (!data.ok) throw new Error(data.error || 'Error desconocido');
-
-    setStatus('kbAddStatus', 'success', '✓ Regla añadida a la KB');
-    document.getElementById('kbText').value = '';
-    // Recargar lista automáticamente
-    await loadKBRules();
-  } catch(e) {
-    setStatus('kbAddStatus', 'error', '✗ ' + e.message);
-  } finally {
-    document.getElementById('btnAddKB').disabled = false;
-  }
-});
-
-// Cargar al entrar al tab KB
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    if (tab.dataset.tab === 'kb' && kbAllRules.length === 0) {
-      loadKBRules();
-    }
-  });
-});
-
 </script>
-
 </body>
 </html>
