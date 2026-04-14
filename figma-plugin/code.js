@@ -737,7 +737,7 @@ function getGap(prevName, nextName) {
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
 figma.showUI(__html__, {
-  width: 420,
+  width: 680,
   height: 680,
   title: 'DS IA-Ready Engine',
 });
