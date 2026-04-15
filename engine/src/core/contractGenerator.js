@@ -45,7 +45,7 @@ function resolveTokens(rawTokens) {
 
 // ─── GENERAR DOCUMENTACIÓN COMPLETA CON IA ───────────────────────────────────
 async function generateDescription(payload) {
-  const { name, variants, height, width, tokens, properties, nodeId } = payload;
+  const { name, variants, height, width, tokens, properties, nodeId, description } = payload;
 
   const resolvedTokens = resolveTokens(tokens);
 
@@ -75,6 +75,7 @@ async function generateDescription(payload) {
 
 COMPONENTE A DOCUMENTAR:
 - Nombre: ${name}
+- Descripción del diseñador: ${description || "(no proporcionada — inferir del nombre y tokens)"}
 - Node ID Figma: ${nodeId}
 - Dimensiones: ${width}×${height}px
 - Variantes detectadas:
