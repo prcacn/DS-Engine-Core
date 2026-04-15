@@ -57,6 +57,7 @@ var HEIGHT_MAP = {
   'badge':                          26,
   'notification-banner':            64,
   'amount-display':                 126,
+  'card-accounts': 237,
   'chart-sparkline':                80,
   'skeleton-loader':                72,
 };
