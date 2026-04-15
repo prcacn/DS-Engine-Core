@@ -223,8 +223,10 @@ function fallbackParse(brief) {
       b.includes('cambiar') && (b.includes('perfil') || b.includes('datos') || b.includes('cuenta'))) {
     intent_type = 'edicion-perfil';
     confidence  = 0.80;
-  } else if (b.includes('contratar') || b.includes('solicitar') || b.includes('abrir cuenta') ||
-      b.includes('configurar') && b.includes('producto')) {
+  } else if ((b.includes('contratar') || b.includes('solicitar') || b.includes('abrir cuenta') ||
+      b.includes('configurar') && b.includes('producto')) &&
+      !b.includes('muestra') && !b.includes('detalle') && !b.includes('ver ') &&
+      !b.includes('mostrar') && !b.includes('información') && !b.includes('visualiz')) {
     intent_type = 'formulario-producto';
     confidence  = 0.80;
   } else if (b.includes('formulario') || b.includes('campo') || b.includes('guardar datos')) {
@@ -251,9 +253,13 @@ function fallbackParse(brief) {
     intent_type = 'notificaciones';
     confidence  = 0.75;
   } else if (b.includes('detalle') || b.includes('ficha') || b.includes('información de') ||
-             b.includes('ver más') || b.includes('perfil de')) {
+             b.includes('ver más') || b.includes('perfil de') ||
+             b.includes('valor liquidativo') || b.includes('rentabilidad') ||
+             (b.includes('muestra') && (b.includes('fondo') || b.includes('producto') || b.includes('transacci'))) ||
+             (b.includes('muestra') && b.includes('fecha')) ||
+             (b.includes('nombre del') && (b.includes('fondo') || b.includes('producto')))) {
     intent_type = 'detalle';
-    confidence  = 0.70;
+    confidence  = 0.80;
   } else if (b.includes('lista') || b.includes('listado') || b.includes('filtro') ||
              b.includes('fondos') || b.includes('transacciones') || b.includes('resultados')) {
     intent_type = 'lista-con-filtros';
