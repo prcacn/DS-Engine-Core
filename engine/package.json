@@ -1,6 +1,6 @@
 {
   "name": "ds-engine-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Engine Core — DS IA-Ready. API REST para generación gobernada de pantallas.",
   "main": "src/server.js",
   "scripts": {
