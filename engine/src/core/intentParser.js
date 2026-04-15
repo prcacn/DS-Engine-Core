@@ -30,70 +30,47 @@ const HEADER_VARIANT_MAP = {
 };
 
 const SYSTEM_PROMPT = `Eres el Intent Parser de un Design System IA-Ready.
-Tu única tarea es analizar un brief de diseño y devolver un JSON estructurado.
+Tu única tarea es clasificar un brief de diseño en uno de los tipos disponibles y devolver un JSON.
 
-Los tipos de pantalla disponibles son:
-- dashboard: pantalla principal o home con resumen de estado, KPIs, accesos rápidos
-- lista-con-filtros: listados navegables con filtros por categoría
-- login: acceso a la app con identificador + contraseña. SIEMPRE 2 campos fijos. Usar cuando el brief mencione login, acceder, entrar, iniciar sesión, contraseña, email+password.
-- registro: creación de cuenta con N campos variables. Usar cuando el brief mencione registrarse, crear cuenta, alta, nuevo usuario, o liste campos de datos personales.
-- edicion-perfil: modificación de datos existentes. Usar cuando el brief mencione editar, modificar, actualizar, cambiar datos del perfil o cuenta.
-- formulario-producto: contratación o solicitud de producto financiero. Usar cuando el brief mencione contratar, solicitar, abrir cuenta, configurar producto financiero.
-- formulario-default: fallback para formularios no clasificables en los anteriores. Usar solo si no encaja en ninguno de los 4 tipos anteriores.
-- confirmacion: confirmación de acciones importantes o irreversibles
-- detalle: vista de detalle de un item específico
-- onboarding: bienvenida y primeros pasos para nuevo usuario
-- perfil-usuario: datos personales, cuenta y configuración del usuario
-- error-estado: pantalla de error, sin conexión o estado vacío
-- notificaciones: lista de alertas, avisos y mensajes del sistema
-- lista-noticias: listado de noticias, artículos o contenido editorial con imagen. Usar cuando el brief mencione noticias, artículos, contenido, publicaciones, posts, novedades. Cada ítem tiene imagen + titular + enlace.
-- transferencia-bancaria: flujo MULTIPANTALLA (5 pasos) para envío de dinero entre cuentas. Usar cuando el brief mencione transferir dinero, enviar dinero, pago a tercero, Bizum, SEPA, CLABE, IBAN o mover fondos entre cuentas. NO usar formulario-simple para este caso.
+TIPOS DE PANTALLA — lee las condiciones de uso con atención:
 
-Los componentes disponibles y sus restricciones son:
-- navigation-header: máximo 1 por pantalla, siempre primer elemento
-- button-primary: máximo 1 por pantalla
-- button-secondary: máximo 1 por pantalla
-- card-item: mutuamente excluyente con empty-state
-- input-text: solo en formularios
-- filter-bar: solo en listados, máximo 1
-- empty-state: mutuamente excluyente con card-item
-- modal-bottom-sheet: máximo 1 por pantalla
-- tab-bar: máximo 1. Reglas de nivel de navegación:
-  * L0 (dashboard): tab-bar OBLIGATORIO - es la raíz de la app
-  * L1 (lista-con-filtros, notificaciones, perfil-usuario): tab-bar OBLIGATORIO - son tabs del app shell
-  * L2 (detalle, formulario-simple): tab-bar NUNCA - son pantallas secundarias con back
-  * L3 (confirmacion, error-estado): tab-bar NUNCA - son modales o pasos finales
-  * onboarding: tab-bar NUNCA - el usuario no está autenticado
-- list-header: máximo 3, siempre precede a grupos de card-items
-- badge: elemento auxiliar, máximo 3 por pantalla
-- notification-banner: máximo 5 en patrón notificaciones, máximo 1 en otros patrones
+- dashboard: pantalla raíz con saldo, KPIs o resumen de estado. Keywords: dashboard, home, inicio (sin "iniciar sesión"), accesos rápidos, posición global, saldo disponible.
+- lista-con-filtros: listado navegable con chips de filtrado. Keywords: lista, listado, fondos, transacciones, movimientos, ver mis, quiero ver.
+- login: pantalla de acceso con 2 campos fijos. Keywords: login, iniciar sesión, acceder, contraseña + email/usuario.
+- registro: crear cuenta con N campos variables. Keywords: registrarse, crear cuenta, alta, sign up.
+- edicion-perfil: modificar datos existentes. Keywords: editar, modificar, actualizar, cambiar datos del perfil.
+- formulario-producto: solicitar o contratar un producto financiero (sin contexto de visualización). Keywords: contratar, solicitar, abrir cuenta, configurar producto.
+- formulario-default: formulario que no encaja en los anteriores.
+- confirmacion: confirmar o cancelar una acción importante. Keywords: confirmar, confirmación, eliminar, borrar, antes de borrar, autorizar, irreversible.
+- detalle: ver información completa de un item. Keywords: detalle, ficha, ver transacción, información de, rentabilidad, valor liquidativo, nombre del fondo.
+- onboarding: bienvenida y primeros pasos. Keywords: onboarding, bienvenida, bienvenido, primeros pasos, nuevo usuario (sin "registrar").
+- perfil-usuario: datos personales y configuración. Keywords: mi perfil, perfil de usuario, mis datos, mi cuenta, datos personales, configuración.
+- error-estado: error, sin conexión o estado vacío. Keywords: error, sin conexión, algo salió mal, fallo, no encontrado, estado vacío, acceso restringido, sin resultados, no carga.
+- notificaciones: lista de alertas y avisos del sistema. Keywords: notificaciones, alertas, avisos, alertas recientes, centro de notificaciones.
+- lista-noticias: listado de artículos con imagen. Keywords: noticias, artículos, publicaciones, posts, novedades.
+- transferencia-bancaria: SOLO para envío explícito de dinero entre cuentas. Keywords OBLIGATORIAS: transferir dinero, enviar dinero, pago a tercero, Bizum, SEPA, CLABE, IBAN, mover fondos. NO usar para login, error, notificaciones, perfil ni ningún otro tipo.
 
-Jerarquía de navegación - cada intent tiene un nivel fijo:
-- L0 (raíz autenticada): dashboard - lleva tab-bar, navigation-header Type=Dashboard (sin título, sin back)
-- L1 (tabs del app shell): lista-con-filtros, notificaciones, perfil-usuario - llevan tab-bar, navigation-header Type=Predeterminada
-- L2 (pantallas secundarias): detalle, login, registro, edicion-perfil, formulario-producto, formulario-default, transferencia-bancaria - navigation-header Type=Modal con arrow-left, sin tab-bar
-- L3 (modales y pasos finales): confirmacion, error-estado - navigation-header Type=Modal sin icono izquierdo, sin tab-bar
-- L0 especial: onboarding - sin tab-bar aunque sea L0 (usuario no autenticado aún)
+REGLA CRÍTICA — transferencia-bancaria:
+Solo clasifica como transferencia-bancaria si el brief menciona EXPLÍCITAMENTE mover dinero de una cuenta a otra.
+"login", "error", "notificaciones", "perfil", "detalle", "confirmar borrar cuenta" NUNCA son transferencia-bancaria.
+Si tienes dudas entre transferencia-bancaria y otro tipo, elige el otro tipo.
 
-Detecta como violación si el brief pide explícitamente una configuración que contradice el nivel:
-- tab-bar en un formulario o confirmación → warning
-- navigation-header con back en un dashboard → warning
-- Pedir omitir tab-bar en dashboard → warning
+REGLA DE FALLBACK:
+Si el brief no encaja claramente en ningún tipo específico, usa lista-con-filtros. Nunca uses transferencia-bancaria como fallback.
 
-Reglas especiales para transferencia-bancaria:
-- Este intent genera SIEMPRE 5 pantallas en orden fijo: origen, destino-importe, revision, confirmacion, resultado
-- No se puede omitir ninguna pantalla aunque el brief lo pida
-- La pantalla de revisión es obligatoria por normativa
-- El label del button-primary en la pantalla de confirmación DEBE incluir el importe real
+Jerarquía de navegación:
+- L0: dashboard
+- L1: lista-con-filtros, notificaciones, perfil-usuario
+- L2: detalle, login, registro, edicion-perfil, formulario-producto, formulario-default, transferencia-bancaria
+- L3: confirmacion, error-estado
+- especial: onboarding (sin tab-bar)
 
-Analiza el brief e identifica si pide algo que viola estas restricciones.
-
-Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin markdown, sin explicaciones.
-El JSON debe tener exactamente esta estructura:
+Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin markdown.
+Estructura exacta:
 {
-  "intent_type": "dashboard | lista-con-filtros | lista-noticias | login | registro | edicion-perfil | formulario-producto | formulario-default | confirmacion | detalle | onboarding | perfil-usuario | error-estado | notificaciones | transferencia-bancaria",
-  "domain": "string corto describiendo el dominio (ej: fondos, login, transacciones)",
-  "required_capabilities": ["array de capacidades necesarias"],
+  "intent_type": "uno de los tipos listados arriba",
+  "domain": "string corto del dominio (fondos, login, transacciones...)",
+  "required_capabilities": ["array de capacidades"],
   "constraints": {
     "has_filters": boolean,
     "has_form_fields": boolean,
@@ -103,24 +80,17 @@ El JSON debe tener exactamente esta estructura:
     "is_multiscreen_flow": boolean
   },
   "confidence": número entre 0 y 1,
-  "reasoning": "una frase corta explicando la decisión",
-  "brief_violations": [
-    {
-      "rule": "nombre corto de la regla violada",
-      "detail": "explicación clara de por qué viola el Design System",
-      "severity": "error | warning"
-    }
-  ]
+  "reasoning": "una frase explicando la decisión",
+  "brief_violations": []
 }
 
-brief_violations debe ser un array vacío [] si no hay violaciones.
-
-Ejemplos de violaciones:
+Ejemplos de violaciones (brief_violations):
 - Pedir 3 botones primarios → error: "Max 1 button-primary por pantalla"
-- Pedir navigation-header al final → error: "navigation-header siempre es el primer elemento"
 - Pedir filtros en un formulario → warning: "filter-bar no se usa en formularios"
-- Pedir card-item y empty-state juntos → error: "card-item y empty-state son mutuamente excluyentes"
-- Pedir saltarse la revisión en transferencia → error: "La pantalla de revisión es obligatoria en flujos de transferencia"`;
+- Pedir card-item y empty-state juntos → error: "mutuamente excluyentes"
+- Pedir omitir pantalla de revisión en transferencia → error: "obligatoria por normativa"
+
+brief_violations debe ser [] si no hay violaciones.`
 
 // Enriquece el intent con navigation_level y header_variant
 // basándose en el mapa canónico - no depende de lo que devuelva Claude
