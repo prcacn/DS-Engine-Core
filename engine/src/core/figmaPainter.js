@@ -302,53 +302,53 @@ function generatePainterCode(composition, options = {}) {
       if (item.type === 'grid-group') {
         const { items, meta } = item;
         const gap = _getGapBetween(prevComp, items[0], sp);
-        if (gap > 0) lines.push(\`_y += \${gap}; // gap before grid group\`);
+        if (gap > 0) lines.push(`_y += \${gap}; // gap before grid group`);
 
         const cols   = meta.gridCols || 2;
         const totalW = SCREEN_W - (MARGIN * 2);
         const colW   = Math.floor((totalW - (cols - 1) * 8) / cols);
-        const gridVar = \`_grid_\${items[0].component.replace(/[^a-zA-Z0-9]/g,'_')}_\${pi}\`;
+        const gridVar = `_grid_\${items[0].component.replace(/[^a-zA-Z0-9]/g,'_')}_\${pi}`;
 
-        lines.push(\`{ // grid-horizontal: \${items.map(c=>c.component).join(', ')}\`);
-        lines.push(\`  const \${gridVar} = figma.createFrame();\`);
-        lines.push(\`  \${gridVar}.name = 'grid-accounts';\`);
-        lines.push(\`  \${gridVar}.layoutMode = 'HORIZONTAL';\`);
-        lines.push(\`  \${gridVar}.itemSpacing = 8;\`);
-        lines.push(\`  \${gridVar}.paddingLeft = 0; \${gridVar}.paddingRight = 0;\`);
-        lines.push(\`  \${gridVar}.paddingTop = 0; \${gridVar}.paddingBottom = 0;\`);
-        lines.push(\`  \${gridVar}.fills = [];\`);
-        lines.push(\`  \${gridVar}.counterAxisSizingMode = 'AUTO';\`);
-        lines.push(\`  \${gridVar}.primaryAxisSizingMode = 'FIXED';\`);
-        lines.push(\`  \${gridVar}.resize(\${totalW}, 10);\`);
-        lines.push(\`  \${gridVar}.x = \${MARGIN};\`);
-        lines.push(\`  \${gridVar}.y = _y;\`);
+        lines.push(`{ // grid-horizontal: \${items.map(c=>c.component).join(', ')}`);
+        lines.push(`  const \${gridVar} = figma.createFrame();`);
+        lines.push(`  \${gridVar}.name = 'grid-accounts';`);
+        lines.push(`  \${gridVar}.layoutMode = 'HORIZONTAL';`);
+        lines.push(`  \${gridVar}.itemSpacing = 8;`);
+        lines.push(`  \${gridVar}.paddingLeft = 0; \${gridVar}.paddingRight = 0;`);
+        lines.push(`  \${gridVar}.paddingTop = 0; \${gridVar}.paddingBottom = 0;`);
+        lines.push(`  \${gridVar}.fills = [];`);
+        lines.push(`  \${gridVar}.counterAxisSizingMode = 'AUTO';`);
+        lines.push(`  \${gridVar}.primaryAxisSizingMode = 'FIXED';`);
+        lines.push(`  \${gridVar}.resize(\${totalW}, 10);`);
+        lines.push(`  \${gridVar}.x = \${MARGIN};`);
+        lines.push(`  \${gridVar}.y = _y;`);
 
         for (let gi = 0; gi < items.length; gi++) {
           const gc = items[gi];
           const nodeId = (gc.node_id && gc.node_id !== 'pending') ? gc.node_id : meta.nodeId;
-          const gv = \`_gc_\${gi}_\${pi}\`;
-          lines.push(\`  const _gsrc_\${gi} = await figma.getNodeByIdAsync('\${nodeId}');\`);
-          lines.push(\`  if (_gsrc_\${gi}) {\`);
-          lines.push(\`    const \${gv} = _gsrc_\${gi}.clone();\`);
-          lines.push(\`    \${gv}.resize(\${colW}, \${gv}.height);\`);
-          lines.push(\`    \${gridVar}.appendChild(\${gv});\`);
-          lines.push(\`  }\`);
+          const gv = `_gc_\${gi}_\${pi}`;
+          lines.push(`  const _gsrc_\${gi} = await figma.getNodeByIdAsync('\${nodeId}');`);
+          lines.push(`  if (_gsrc_\${gi}) {`);
+          lines.push(`    const \${gv} = _gsrc_\${gi}.clone();`);
+          lines.push(`    \${gv}.resize(\${colW}, \${gv}.height);`);
+          lines.push(`    \${gridVar}.appendChild(\${gv});`);
+          lines.push(`  }`);
         }
 
-        lines.push(\`  screen.appendChild(\${gridVar});\`);
-        lines.push(\`  _y += \${gridVar}.height;\`);
-        lines.push(\`}\`);
-        lines.push(\`\`);
+        lines.push(`  screen.appendChild(\${gridVar});`);
+        lines.push(`  _y += \${gridVar}.height;`);
+        lines.push(`}`);
+        lines.push(``);
 
       } else {
         const { comp } = item;
         const gap = _getGapBetween(prevComp, comp, sp);
         if (gap > 0) {
           const gapToken = _getMeta(prevComp?.component)?.gapAfterToken || 'Gap/MD';
-          lines.push(\`_y += \${gap}; // \${gapToken}\`);
+          lines.push(`_y += \${gap}; // \${gapToken}`);
         }
         lines.push(..._generateBlock(comp, { breakpoint, SCREEN_W, MARGIN, yMode: 'var', sp }));
-        lines.push(\`\`);
+        lines.push(``);
       }
     }
   }
