@@ -9,12 +9,12 @@ Tarjeta de resumen de cuenta bancaria. Muestra el nombre de la cuenta, los últi
 ## Metadata
 figma_id: 307:1164
 
-## Cuándo usar
+## Cuándo usarlo
 - Listado de cuentas del usuario en el dashboard
 - Selector de cuenta origen en flujos de transferencia
 - Resumen de saldo en pantalla de inicio
 
-## Cuándo NO usar
+## Cuándo NO usarlo
 - Detalle completo de cuenta — usar patrón detalle
 - Items de movimientos — usar card-item/financial
 - Productos de inversión — usar card-item/financial con trend
