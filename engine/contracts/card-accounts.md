@@ -4,31 +4,55 @@
 307:1164
 
 ## Descripción
-Tarjeta de resumen de cuenta bancaria. Muestra el nombre de la cuenta, los últimos dígitos del IBAN/número y el saldo disponible. Se usa en dashboards y pantallas de selección de cuenta.
+Componente card-accounts del Design System.
 
-## Metadata
-figma_id: 307:1164
+---
 
-## Cuándo usarlo
-- Listado de cuentas del usuario en el dashboard
-- Selector de cuenta origen en flujos de transferencia
-- Resumen de saldo en pantalla de inicio
+## Variantes
 
-## Cuándo NO usarlo
-- Detalle completo de cuenta — usar patrón detalle
-- Items de movimientos — usar card-item/financial
-- Productos de inversión — usar card-item/financial con trend
+| Nombre | Node ID | Dimensiones | Uso |
+|---|---|---|---|
+| `default` | `307:1164` | 210×237px | - |
+
+---
 
 ## Propiedades
-| Propiedad | Tipo | Valores | Default |
+
+| Propiedad | Tipo | Default | Editable |
 |---|---|---|---|
-| initials | string | — | "CC" |
-| title | string | — | "Cuenta corriente" |
-| account_number | string | — | "•••• •••• 4821" |
-| balance | string | — | "1.250,00 €" |
+| - | - | - | - |
+
+---
+
+## Tokens aplicados
+
+| Elemento | Variable Figma | Valor |
+|---|---|---|
+| bank-icon | `VariableID:22:475` | - |
+| initials | `VariableID:22:473` | - |
+| title | `VariableID:22:491` | - |
+| title | `VariableID:22:493` | - |
+
+---
+
+## Cuándo usarlo
+- Según contexto de diseño
+
+## Cuándo NO usarlo
+- En formularios sin relación
+
+---
 
 ## Restricciones
-- initials debe tener máximo 2 caracteres
-- account_number siempre con formato enmascarado (•••• •••• XXXX)
-- balance debe incluir siempre símbolo de moneda
-- No usar sin los tres campos principales (title, account_number, balance)
+- Máximo 1 instancia si es singleton
+
+---
+
+## Zona en pantalla
+`content` - ancho completo (sin márgenes laterales)
+**Repetible:** puede aparecer N veces.
+
+---
+
+## Keywords para brief
+card-accounts
