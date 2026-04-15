@@ -188,80 +188,132 @@ async function parseIntent(brief) {
 }
 
 // Fallback keyword-based + detección básica de violaciones
+// v2 — orden de prioridad corregido, operadores && con paréntesis explícitos
 function fallbackParse(brief) {
   const b = brief.toLowerCase();
 
-  let intent_type = 'lista-con-filtros';
+  let intent_type = 'lista-con-filtros'; // default seguro
   let confidence  = 0.50;
   let is_multiscreen_flow = false;
 
-  if (b.includes('dashboard') || b.includes('home') || b.includes('inicio') ||
+  // ── 1. DASHBOARD ─────────────────────────────────────────────────────────
+  if (b.includes('dashboard') || b.includes('home') ||
       b.includes('pantalla principal') || b.includes('pantalla de inicio') ||
       b.includes('pantalla home') || b.includes('bienvenida al cliente') ||
       b.includes('resumen de cuenta') || b.includes('vista general') ||
       b.includes('página principal') || b.includes('kpi') ||
-      b.includes('accesos rápidos')) {
+      b.includes('accesos rápidos') || b.includes('saldo disponible') ||
+      b.includes('posición global') ||
+      (b.includes('inicio') && !b.includes('iniciar sesión'))) {
     intent_type = 'dashboard';
     confidence  = 0.80;
+
+  // ── 2. ONBOARDING — antes que registro para capturar "bienvenida" ────────
+  } else if (b.includes('onboarding') || b.includes('bienvenida') ||
+             b.includes('bienvenido') || b.includes('primeros pasos') ||
+             b.includes('introducción') || b.includes('pantalla de inicio de sesión') ||
+             (b.includes('nuevo usuario') && !b.includes('registr'))) {
+    intent_type = 'onboarding';
+    confidence  = 0.75;
+
+  // ── 3. TRANSFERENCIA — solo keywords de movimiento de dinero ────────────
   } else if (b.includes('transferencia') || b.includes('transferir') ||
-      b.includes('enviar dinero') || b.includes('pago a tercero') ||
-      b.includes('bizum') || b.includes('sepa') ||
-      b.includes('mover fondos') || b.includes('mandar dinero') ||
-      b.includes('envío de dinero') || b.includes('pagar a')) {
+             b.includes('enviar dinero') || b.includes('pago a tercero') ||
+             b.includes('bizum') || b.includes('sepa') ||
+             b.includes('mover fondos') || b.includes('mandar dinero') ||
+             b.includes('envío de dinero') || b.includes('pagar a')) {
     intent_type = 'transferencia-bancaria';
     confidence  = 0.85;
     is_multiscreen_flow = true;
-  } else if (b.includes('login') || b.includes('iniciar sesión') || b.includes('acceder') ||
-      b.includes('entrar') || b.includes('contraseña') && b.includes('email')) {
+
+  // ── 4. LOGIN — paréntesis explícitos en el &&  ───────────────────────────
+  } else if (b.includes('login') || b.includes('iniciar sesión') ||
+             b.includes('acceder') || b.includes('entrar a la app') ||
+             (b.includes('contraseña') && b.includes('email')) ||
+             (b.includes('contraseña') && b.includes('usuario'))) {
     intent_type = 'login';
     confidence  = 0.85;
-  } else if (b.includes('registr') || b.includes('crear cuenta') || b.includes('nuevo usuario') ||
-      b.includes('alta') || b.includes('sign up')) {
-    intent_type = 'registro';
-    confidence  = 0.80;
-  } else if (b.includes('editar') || b.includes('modificar') || b.includes('actualizar') ||
-      b.includes('cambiar') && (b.includes('perfil') || b.includes('datos') || b.includes('cuenta'))) {
-    intent_type = 'edicion-perfil';
-    confidence  = 0.80;
-  } else if ((b.includes('contratar') || b.includes('solicitar') || b.includes('abrir cuenta') ||
-      b.includes('configurar') && b.includes('producto')) &&
-      !b.includes('muestra') && !b.includes('detalle') && !b.includes('ver ') &&
-      !b.includes('mostrar') && !b.includes('información') && !b.includes('visualiz')) {
-    intent_type = 'formulario-producto';
-    confidence  = 0.80;
-  } else if (b.includes('formulario') || b.includes('campo') || b.includes('guardar datos')) {
-    intent_type = 'formulario-default';
-    confidence  = 0.65;
-  } else if (b.includes('confirmar') || b.includes('confirmación') || b.includes('eliminar') ||
-             b.includes('borrar') || b.includes('irreversible')) {
+
+  // ── 5. CONFIRMACIÓN — antes que registro/edición ────────────────────────
+  } else if (b.includes('confirmar') || b.includes('confirmación') ||
+             b.includes('eliminar') || b.includes('borrar') ||
+             b.includes('irreversible') || b.includes('autorizar') ||
+             (b.includes('antes de') && b.includes('cuenta'))) {
     intent_type = 'confirmacion';
-    confidence  = 0.70;
-  } else if (b.includes('onboarding') || b.includes('bienvenida') || b.includes('bienvenido') ||
-             b.includes('primeros pasos') || b.includes('nuevo usuario') || b.includes('introducción')) {
-    intent_type = 'onboarding';
     confidence  = 0.75;
-  } else if (b.includes('mi perfil') || b.includes('perfil de usuario') || b.includes('mis datos') ||
-             b.includes('mi cuenta') || b.includes('datos personales') || b.includes('configuración')) {
-    intent_type = 'perfil-usuario';
-    confidence  = 0.75;
-  } else if (b.includes('error') || b.includes('sin conexión') || b.includes('algo salió mal') ||
-             b.includes('fallo') || b.includes('no encontrado') || b.includes('estado vacío')) {
+
+  // ── 6. ERROR / ESTADO VACÍO ──────────────────────────────────────────────
+  } else if (b.includes('error') || b.includes('sin conexión') ||
+             b.includes('algo salió mal') || b.includes('fallo') ||
+             b.includes('no encontrado') || b.includes('estado vacío') ||
+             b.includes('sin resultados') || b.includes('no hay') ||
+             b.includes('acceso restringido') || b.includes('bloqueado') ||
+             (b.includes('cargar') && b.includes('conexión')) ||
+             (b.includes('cargar') && b.includes('error'))) {
     intent_type = 'error-estado';
     confidence  = 0.75;
-  } else if (b.includes('notificaciones') || b.includes('alertas') || b.includes('avisos') ||
-             b.includes('mensajes del sistema') || b.includes('actividad reciente')) {
+
+  // ── 7. NOTIFICACIONES ────────────────────────────────────────────────────
+  } else if (b.includes('notificaciones') || b.includes('alertas') ||
+             b.includes('avisos') || b.includes('mensajes del sistema') ||
+             b.includes('actividad reciente') || b.includes('alertas recientes') ||
+             b.includes('centro de notificaciones')) {
     intent_type = 'notificaciones';
     confidence  = 0.75;
-  } else if (b.includes('detalle') || b.includes('ficha') || b.includes('información de') ||
-             b.includes('ver más') || b.includes('perfil de') ||
-             b.includes('valor liquidativo') || b.includes('rentabilidad') ||
+
+  // ── 8. PERFIL ────────────────────────────────────────────────────────────
+  } else if (b.includes('mi perfil') || b.includes('perfil de usuario') ||
+             b.includes('mis datos') || b.includes('mi cuenta') ||
+             b.includes('datos personales') || b.includes('configuración') ||
+             (b.includes('perfil') && b.includes('datos'))) {
+    intent_type = 'perfil-usuario';
+    confidence  = 0.75;
+
+  // ── 9. EDICIÓN ───────────────────────────────────────────────────────────
+  } else if (b.includes('editar') || b.includes('modificar') ||
+             b.includes('actualizar') ||
+             (b.includes('cambiar') && (b.includes('perfil') || b.includes('datos') || b.includes('cuenta')))) {
+    intent_type = 'edicion-perfil';
+    confidence  = 0.80;
+
+  // ── 10. REGISTRO ─────────────────────────────────────────────────────────
+  } else if (b.includes('registr') || b.includes('crear cuenta') ||
+             b.includes('alta') || b.includes('sign up')) {
+    intent_type = 'registro';
+    confidence  = 0.80;
+
+  // ── 11. FORMULARIO PRODUCTO — contratar sin contexto de visualización ────
+  } else if ((b.includes('contratar') || b.includes('solicitar') ||
+              b.includes('abrir cuenta') ||
+              (b.includes('configurar') && b.includes('producto'))) &&
+             !b.includes('muestra') && !b.includes('detalle') &&
+             !b.includes('ver ') && !b.includes('mostrar') &&
+             !b.includes('información') && !b.includes('visualiz')) {
+    intent_type = 'formulario-producto';
+    confidence  = 0.80;
+
+  // ── 12. FORMULARIO GENÉRICO ──────────────────────────────────────────────
+  } else if (b.includes('formulario') || b.includes('campo') ||
+             b.includes('guardar datos')) {
+    intent_type = 'formulario-default';
+    confidence  = 0.65;
+
+  // ── 13. DETALLE ──────────────────────────────────────────────────────────
+  } else if (b.includes('detalle') || b.includes('ficha') ||
+             b.includes('información de') || b.includes('ver más') ||
+             b.includes('perfil de') || b.includes('valor liquidativo') ||
+             b.includes('rentabilidad') ||
              (b.includes('muestra') && (b.includes('fondo') || b.includes('producto') || b.includes('transacci'))) ||
              (b.includes('muestra') && b.includes('fecha')) ||
              (b.includes('nombre del') && (b.includes('fondo') || b.includes('producto')))) {
     intent_type = 'detalle';
     confidence  = 0.80;
-  } else if (b.includes('lista') || b.includes('listado') || b.includes('filtro') ||
-             b.includes('fondos') || b.includes('transacciones') || b.includes('resultados')) {
+
+  // ── 14. LISTA — default para contenido navegable ─────────────────────────
+  } else if (b.includes('lista') || b.includes('listado') ||
+             b.includes('filtro') || b.includes('fondos') ||
+             b.includes('transacciones') || b.includes('resultados') ||
+             b.includes('ver mis') || b.includes('quiero ver')) {
     intent_type = 'lista-con-filtros';
     confidence  = 0.75;
   }
