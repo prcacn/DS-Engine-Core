@@ -304,9 +304,25 @@ router.post('/', async function(req, res, next) {
         return contract ? { ...c, node_id: contract.nodeId, resolution_confidence: c.resolution_confidence || 0.90 } : c;
       });
 
+      // ── UXWriter sobre el template: adaptar copy al brief real ──────────
+      // El template da la estructura, el UXWriter rellena el texto con contexto del brief
+      console.log('  → [UXWriter] Enriqueciendo copy del template con brief real...');
+      const templateAgentResult = await runAgents({
+        brief,
+        components: templateComponents,
+        intent,
+        kbRules,
+        contracts,
+      }).catch(err => {
+        console.warn('  ⚠ [Agents] Error enriqueciendo template:', err.message);
+        return { components: templateComponents, agent_meta: null };
+      });
+      const enrichedTemplateComponents = templateAgentResult.components;
+      const templateAgentMeta = templateAgentResult.agent_meta;
+
       const confidence = calculateScore({
         pattern:    patternName,
-        components: templateComponents,
+        components: enrichedTemplateComponents,
         intent,
         contracts:  Object.values(contracts),
       });
@@ -323,10 +339,11 @@ router.post('/', async function(req, res, next) {
         status:           confidence.status,
         confidence,
         violations:       [],
-        components:       templateComponents,
+        components:       enrichedTemplateComponents,
         missing_components: [],
         kb_rules:         kbRules,
         kb_changes:       [],
+        agent_meta:       templateAgentMeta,
         meta: { engine_version: '1.0.0', generated_at: new Date().toISOString() }
       });
     }
