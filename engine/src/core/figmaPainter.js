@@ -147,7 +147,7 @@ const PAINTER_META = {
     slot: 'summary-card', withMargin: true, group: 'summary',
   },
   'amount-display': {
-    nodeId: '137:1740',
+    nodeId: '179:3469',
     texts: {},
     slot: 'amount', withMargin: true,
   },
@@ -155,6 +155,19 @@ const PAINTER_META = {
     nodeId: '137:1746',
     texts: {},
     slot: 'chart', withMargin: true,
+  },
+  'card-accounts': {
+    nodeId: '307:1164',
+    texts: { title: 'title', account_number: 'title', balance: 'title' },
+    slot: 'account-card', repeatable: true,
+    withMargin: true, group: 'accounts',
+    layout: 'grid-horizontal', gridCols: 2,
+  },
+  'movements-set': {
+    nodeId: '307:1165',
+    texts: { header_title: 'title', header_date: 'title' },
+    slot: 'movements', repeatable: true,
+    fullWidth: true, group: 'movements',
   },
   'skeleton-loader': {
     nodeId: '137:1752',
@@ -346,10 +359,18 @@ function _generateBlock(comp, { SCREEN_W, MARGIN, yMode, yFixed, sp }) {
     lines.push(`    _y += _nativeH_${varName}; // acumulamos con altura nativa - nunca hardcodeada`);
   }
 
-  // Resize SOLO en X - nunca forzar la altura
-  // Si el componente tiene respectNativeHeight: true (todos los que tienen auto-layout)
-  // solo ajustamos el ancho
-  if (meta.respectNativeHeight !== false) {
+  // ── GRID HORIZONTAL: componentes en fila (ej: card-accounts 2×1) ─────────
+  // Si layout === 'grid-horizontal', se agrupa con el siguiente componente del mismo grupo
+  // El painter genera un frame contenedor horizontal y coloca las instancias dentro
+  // Este bloque se resuelve en generatePainterCode — aquí solo aplicamos el ancho correcto
+  if (meta.layout === 'grid-horizontal' && meta.gridCols) {
+    const colW = Math.floor((w - (meta.gridCols - 1) * 8) / meta.gridCols);
+    lines.push(`    // grid-horizontal: ancho de columna = ${SCREEN_W - (marginH * 2)} / ${meta.gridCols} cols`);
+    lines.push(`    if (${varName}.type === 'INSTANCE' || ${varName}.type === 'FRAME') {`);
+    lines.push(`      ${varName}.resize(${colW}, ${varName}.height);`);
+    lines.push(`    }`);
+  } else if (meta.respectNativeHeight !== false) {
+    // Resize SOLO en X - nunca forzar la altura
     lines.push(`    // Resize solo ancho - altura nativa respetada (respectNativeHeight: true)`);
     lines.push(`    if (${varName}.type === 'INSTANCE' || ${varName}.type === 'FRAME') {`);
     lines.push(`      ${varName}.resize(${w}, ${varName}.height);`);
