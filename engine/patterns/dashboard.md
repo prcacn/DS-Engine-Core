@@ -15,6 +15,8 @@ Pantalla de inicio autenticada (L0) con resumen de la posición global del usuar
 
 ## Componentes opcionales
 - list-header — para separar secciones ("Tu posición", "Actividad reciente")
+- card-accounts — para mostrar cuentas bancarias del usuario con saldo. Usar cuando el brief mencione cuentas, saldo o banca personal
+- movements-set — para mostrar movimientos agrupados por fecha. Usar cuando el brief mencione movimientos, transacciones, historial o actividad reciente
 - notification-banner — alertas activas, variant: info o warning. Máximo 1
 - button-primary — acción principal del dashboard ("Añadir fondos", "Nueva transferencia")
 - badge — indicadores de estado en cards
@@ -25,6 +27,8 @@ Pantalla de inicio autenticada (L0) con resumen de la posición global del usuar
 - tab-bar es OBLIGATORIO — el dashboard es L0 por definición
 - Máximo 1 notification-banner por pantalla
 - Si dominio es fintech (fondos, cartera, saldo, transferencias), usar card-item/financial
+- Si el brief menciona cuentas bancarias o saldo personal, usar card-accounts en lugar de o además de card-item/financial
+- Si el brief menciona movimientos, historial o actividad reciente, usar movements-set en lugar de card-item/financial sueltos
 - No usar filter-bar — la exploración se gestiona con list-header y secciones
 - No usar input-text — el dashboard no tiene formularios
 - No usar modal-bottom-sheet — los modales son L3, incompatibles con L0
@@ -33,6 +37,8 @@ Pantalla de inicio autenticada (L0) con resumen de la posición global del usuar
 - El título del navigation-header debe ser el nombre de la app o estar vacío (no el dominio)
 - list-header debe usar labels orientados al usuario: "Tu posición", "Actividad reciente"
 - card-item en el dashboard muestra el resumen — no el detalle completo
+- card-accounts muestra siempre: initials, nombre de cuenta, número enmascarado y saldo
+- movements-set agrupa los movimientos por fecha con header_title (Hoy, Ayer) y lista de card-item/financial
 
 ## Ejemplos aprobados
 (vacío — se irán añadiendo en /examples)
