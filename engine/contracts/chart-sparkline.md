@@ -4,50 +4,28 @@
 137:1746
 
 ## Descripción
-Gráfica de evolución compacta. Muestra la tendencia de un valor a lo largo del tiempo de forma visual y resumida. Complementa al `amount-display` en pantallas de detalle financiero.
+Gráfico sparkline de evolución temporal. Muestra la tendencia de un valor (saldo, posición, activo) como línea compacta sin ejes ni etiquetas. Siempre acompaña a amount-display en el dashboard.
 
----
-
-## Variantes
-Componente simple — sin variantes de tipo.
-
-| Node ID | Dimensiones | Uso |
-|---------|-------------|-----|
-| `137:1746` | 390×80px | Evolución temporal de un activo |
-
----
-
-## Layout
-
-| Propiedad | Valor |
-|---|---|
-| width | 390px (fill) |
-| height | 80px |
-
----
+## Metadata
+figma_id: 137:1746
 
 ## Cuándo usarlo
-- En detalles de producto financiero tras el `amount-display`
-- En dashboards cuando la evolución de cartera es relevante
-- Para mostrar tendencia de los últimos 12 meses
+- Evolución del saldo en el dashboard tras amount-display
+- Tendencia de un activo en pantalla de detalle
+- Resumen visual de rendimiento en cartera
 
 ## Cuándo NO usarlo
-- Sin `amount-display` en la misma pantalla
-- En listados — usar `badge` para indicar tendencia de forma compacta
-- En pantallas de formulario
+- Datos sin contexto temporal
+- Cuando se necesitan ejes o valores exactos — usar un gráfico completo
+- En pantallas de formulario o confirmación
 
----
+## Propiedades
+| Propiedad | Tipo | Valores | Default |
+|---|---|---|---|
+| trend | enum | positive, negative, neutral | positive |
 
 ## Restricciones
-- Siempre va **después del `amount-display`**, nunca antes
-- Los datos del gráfico deben estar actualizados — nunca mostrar datos estáticos como si fueran en tiempo real
-- Incluir eje de tiempo legible (meses/semanas)
-
----
-
-## Uso en patrones
-
-| Patrón | Posición | Notas |
-|---|---|---|
-| `detalle` | Order 2, tras amount-display | Evolución del fondo |
-| `dashboard` | Opcional, tras amount-display | Evolución de cartera |
+- Siempre aparece después de amount-display, nunca solo
+- Solo uno por pantalla en contexto dashboard
+- trend:positive → línea verde ascendente
+- trend:negative → línea roja descendente
