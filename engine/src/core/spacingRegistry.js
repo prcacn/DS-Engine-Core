@@ -58,6 +58,17 @@ const SPACING_BY_BREAKPOINT = {
     headerHeight:   64,
     bottomHeight:   56,
   },
+  'card-accounts': {
+    nodeId:              '307:1164',
+    height:              237,
+    respectNativeHeight: true,
+    resizeWidth:         true,
+    gapAfter:            8,
+    gapAfterToken:       'Gap/MD',
+    zone:                'content',
+    singleton:           false,
+  },
+
 };
 
 // ─── REGISTRY DE COMPONENTES ──────────────────────────────────────────────────
