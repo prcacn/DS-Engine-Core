@@ -1,3 +1,4 @@
+// intentParser v2 — build 1776284895
 // core/intentParser.js
 // Fase 2+ - Usa Claude API para interpretar el brief en lenguaje natural
 // y devolver un IntentObject estructurado + brief_violations[]
