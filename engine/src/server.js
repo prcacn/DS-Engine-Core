@@ -57,6 +57,25 @@ app.use('/approve',      auth, approveRoute);
 app.use('/register',     auth, registerRoute);
 app.use('/render',       auth, renderRoute);
 
+
+// ── Debug: verificar versión de archivos en disco ─────────────────────────
+app.get('/debug/intent-version', (req, res) => {
+  const fs   = require('fs');
+  const path = require('path');
+  const file = path.join(__dirname, 'core/intentParser.js');
+  try {
+    const lines = fs.readFileSync(file, 'utf8').split('\n');
+    res.json({
+      first_line: lines[0],
+      second_line: lines[1],
+      total_lines: lines.length,
+      path: file,
+    });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
+});
+
 // ── Error handler global ───────────────────────────────────────────────────
 app.use(errorHandler);
 
