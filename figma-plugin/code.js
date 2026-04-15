@@ -29,6 +29,7 @@ var COMPONENT_NODE_IDS = {
   'skeleton-loader':                '185:3908', // COMPONENT_SET
   'card-summary':                   '185:3918', // COMPONENT_SET
   'card-item/account':              '185:3928', // COMPONENT_SET
+  'card-accounts': '307:1164', // COMPONENT_SET
   'chart-sparkline':                '137:1746', // COMPONENT (sin set)
   'card-media':                     '217:2086', // COMPONENT_SET
 };
