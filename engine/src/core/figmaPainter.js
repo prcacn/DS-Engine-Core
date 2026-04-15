@@ -416,7 +416,16 @@ function _generateBlock(comp, { SCREEN_W, MARGIN, yMode, yFixed, sp }) {
   lines.push(`  const _src = await figma.getNodeByIdAsync('${nodeId}');`);
   lines.push(`  if (!_src) { console.warn('[Painter] Node not found: ${nodeId} (${comp.component})'); }`);
   lines.push(`  else {`);
-  lines.push(`    const ${varName} = _src.clone();`);
+  lines.push(`    // createInstance() mantiene vínculo al maestro — respeta tokens y tipografías del DS`);
+  lines.push(`    let ${varName};`);
+  lines.push(`    if (_src.type === 'COMPONENT_SET') {`);
+  lines.push(`      const _dv = _src.defaultVariant || _src.children[0];`);
+  lines.push(`      ${varName} = _dv ? _dv.createInstance() : _src.clone();`);
+  lines.push(`    } else if (_src.type === 'COMPONENT') {`);
+  lines.push(`      ${varName} = _src.createInstance();`);
+  lines.push(`    } else {`);
+  lines.push(`      ${varName} = _src.clone();`);
+  lines.push(`    }`);
   lines.push(`    ${varName}.x = ${xPos};`);
 
   if (yMode === 'fixed') {
