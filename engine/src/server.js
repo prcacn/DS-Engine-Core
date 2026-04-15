@@ -1,4 +1,11 @@
 require('dotenv').config();
+// Verificar versión de intentParser al arrancar
+const _fs = require('fs');
+const _ip = require('path').join(__dirname, 'core/intentParser.js');
+const _firstLine = _fs.readFileSync(_ip, 'utf8').split('\n')[0];
+console.log('  [boot] intentParser:', _firstLine);
+// Limpiar cache de módulos para garantizar versión fresca
+delete require.cache[require.resolve('./core/intentParser')];
 const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
