@@ -1,31 +1,33 @@
 # button-secondary
 
 ## Node ID en Figma
-1:11
+185:3894
 
 ## Descripción
-Botón de acción secundaria. Representa una alternativa a la acción principal — normalmente "cancelar", "volver" o una acción de menor peso. Siempre aparece junto a un `button-primary`, nunca solo.
+Botón secundario para acciones de menor importancia que complementan la acción principal. Se usa para opciones alternativas, cancelar o acciones de soporte. Visualmente menos prominente que el botón primario, mantiene la jerarquía visual.
 
 ---
 
 ## Variantes
-Componente simple — sin variantes de tipo.
 
-| Node ID | Dimensiones | Uso |
-|---------|-------------|-----|
-| `1:11` | 83×48px (base) — se estira al ancho disponible | Acción alternativa o cancelación |
+| Nombre | Node ID | Dimensiones | Uso |
+|---|---|---|---|
+| `Predeterminada` | `1:11` | 83×48px | Estado normal del botón secundario, listo para interacción |
 
 ---
 
 ## Estructura visual
 ```
-┌──────────────────────────────────────┐
-│ ←16px  [label "Cancelar"]   16px→   │  48px altura · radius 8px · borde brand
-└──────────────────────────────────────┘
+┌─────────────────────────────┐ 83×48px
+│  ┌─────────────────────────┐  │
+│  │        LABEL TEXT       │  │ DM Sans Medium
+│  │      (Sky/100)          │  │ Color: Background/Info/Subtle
+│  └─────────────────────────┘  │
+└─────────────────────────────┘
+Border: stroke color
+Background: subtle fill
+Radius: 8px corners
 ```
-- Fondo: `#FFFFFF` — `Background/Default/Default`
-- Label: DM Sans Regular 12px · color `rgb(79,70,229)` — `Text/Brand/Default`
-- Layout: HORIZONTAL · padding H: 16px · padding V: 8px
 
 ---
 
@@ -33,7 +35,7 @@ Componente simple — sin variantes de tipo.
 
 | Propiedad | Tipo | Default | Editable |
 |---|---|---|---|
-| `label` | TEXT | `"Cancelar"` | Sí |
+| `State` | enum | `Predeterminada` | No |
 
 ---
 
@@ -42,50 +44,57 @@ Componente simple — sin variantes de tipo.
 | Propiedad | Valor |
 |---|---|
 | layoutMode | HORIZONTAL |
-| paddingLeft / Right | 16px → `Spacing/Padding/Horizontal/MD` |
-| paddingTop / Bottom | 8px → `Spacing/Padding/Vertical/MD` |
-| gap | 0px |
-| borderRadius | 8px → `Spacing/Radius/Component/SM` |
-| width | fill container |
+| paddingLeft / Right | 16px → Spacing/Padding/Horizontal/MD |
+| paddingTop / Bottom | 12px → Spacing/Padding/Vertical/LG |
+| gap | 8px → Spacing/Gap/MD |
+| borderRadius | 8px → Spacing/Radius/Component/SM |
+| width | 83px (hug contents) |
 | height | 48px |
 
 ---
 
-## Tokens aplicados
+## Tokens consumidos
 
 | Elemento | Token semántico | Valor |
 |---|---|---|
-| Fondo | `Background/Default/Default` | `#FFFFFF` |
-| Label | `Text/Brand/Default` | `rgb(79,70,229)` |
-| Fuente | DM Sans Regular 12px | `typography/label` |
-| Borde | `Border/Brand/Default` | `rgb(79,70,229)` |
+| container background | `Background/Info/Subtle` | `sky/100` |
+| container border | `Border/Secondary` | `stroke color` |
+| label text | `Background/Info/Subtle` | `sky/100` |
+| text typography | `Typography/Body/Medium` | `DM Sans Medium` |
 
 ---
 
 ## Cuándo usarlo
-- Como alternativa al `button-primary` en pantallas de confirmación (L3)
-- Para cancelar un flujo o volver al paso anterior
-- En formularios con opción de "Limpiar" o "Descartar"
+- Acompañar un botón primario como opción alternativa
+- Acciones de cancelar o cerrar en modales y formularios
+- Opciones secundarias en cards o listas que no requieren máxima prominencia
 
 ## Cuándo NO usarlo
-- Como único botón de la pantalla — siempre acompañando a `button-primary`
-- Para acciones destructivas sin confirmación
+- Acción principal de una pantalla — usar button-primary
+- Acciones destructivas — usar button-destructive
 
 ---
 
 ## Restricciones
-- Siempre va **debajo** del `button-primary`, nunca encima
-- El label SIEMPRE descriptivo: "Cancelar transferencia", nunca solo "Cancelar"
-- No usar como primer CTA de un flujo
+- Máximo 2 palabras en el label para mantener el ancho óptimo
+- No usar más de 2 botones secundarios juntos sin jerarquía clara
 
+---
+
+## Reglas de negocio
+
+| Regla | Descripción |
+|---|---|
+| jerarquia-visual | Siempre debe ser visualmente menos prominente que el botón primario cuando aparecen juntos |
+| accion-reversible | Preferentemente para acciones que se pueden deshacer o no son destructivas |
 ---
 
 ## Uso en patrones
 
-| Patrón | Posición | Notas |
+| Patrón | Posición | Repeticiones |
 |---|---|---|
-| `confirmacion` | Segundo botón en Actions zone, debajo del primary | Cancelar la acción |
-| `formulario-simple` | Opcional, bajo el primary | Limpiar o descartar |
+| `button-pair` | A la izquierda del botón primario en disposición horizontal | ×1 |
+| `modal-actions` | En footer de modales como acción de cancelar | ×1 |
 
 ---
 
@@ -93,5 +102,36 @@ Componente simple — sin variantes de tipo.
 
 | Error | Causa | Solución |
 |---|---|---|
-| Button-secondary solo en pantalla | Sin button-primary | Añadir button-primary o reconsiderar el flujo |
-| Encima del button-primary | Orden incorrecto | Siempre: primary arriba, secondary abajo |
+| Usar para acciones principales | Confundir jerarquía de botones | Usar button-primary para la acción más importante |
+| Textos muy largos que rompen el diseño | No considerar el ancho limitado | Usar máximo 2 palabras, abreviar si es necesario |
+
+---
+
+## Slots
+
+| Nombre | Contenido esperado |
+|---|---|
+| `label` | Texto del botón, preferentemente 1-2 palabras |
+
+## Eventos
+
+| Evento | Cuándo se emite | Payload |
+|---|---|---|
+| `onPress` | Usuario toca el botón | action type y context data |
+---
+
+## Navegación
+
+| Acción | Destino |
+|---|---|
+| click en botón | Acción secundaria o navegación alternativa según contexto |
+---
+
+## Zona en pantalla
+`content` — zona de contenido principal
+**Repetible:** puede aparecer N veces.
+
+---
+
+## Keywords para brief
+button, secondary, action, cancel, alternative
