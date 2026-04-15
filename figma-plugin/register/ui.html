@@ -98,6 +98,14 @@
   .deploy-label { font-size: 10px; color: var(--txt2); margin-bottom: 4px; }
   .copy-btn { font-size: 10px; color: var(--accent); cursor: pointer; margin-top: 4px; display: inline-block; }
 
+  textarea.field-input {
+    font-size: 12px; color: var(--txt); background: var(--surface2);
+    border: 1px solid var(--border2); border-radius: 5px; padding: 6px 9px;
+    width: 100%; outline: none; font-family: var(--sans);
+    resize: vertical; min-height: 64px; line-height: 1.5;
+  }
+  textarea.field-input:focus { border-color: var(--accent); }
+  .field-hint { font-size: 10px; color: var(--txt2); margin-top: 2px; line-height: 1.4; }
   .hidden { display: none; }
   .tags-row { display: flex; flex-wrap: wrap; gap: 4px; }
   .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; background: var(--surface2); color: var(--txt2); border: 1px solid var(--border); }
@@ -175,6 +183,11 @@
         <div class="field">
           <div class="field-label">Nombre canónico</div>
           <input class="field-input" id="editName" type="text" placeholder="ej: card-media"/>
+        </div>
+        <div class="field">
+          <div class="field-label">Descripción <span style="color:var(--accent)">*</span></div>
+          <textarea class="field-input" id="editDescription" placeholder="Para qué sirve este componente, cuándo usarlo y qué lo diferencia de otros similares. Cuanto más detalle, mejor contrato genera la IA."></textarea>
+          <div class="field-hint">Campo clave cuando el componente no tiene props ni tokens en Figma.</div>
         </div>
         <div class="field">
           <div class="field-label">Zona en pantalla</div>
@@ -304,11 +317,12 @@ function goStep3() {
   showStatus('loading', 'Generando contrato con IA...');
   document.getElementById('btnMain').disabled = true;
   var payload = {
-    name:      document.getElementById('editName').value.trim(),
-    zona:      document.getElementById('editZone').value,
-    full_width: document.getElementById('editFullWidth').value === 'true',
-    singleton:  document.getElementById('editSingleton').value === 'true',
-    keywords:  document.getElementById('editKeywords').value.split(',').map(function(k){ return k.trim(); }).filter(Boolean),
+    name:        document.getElementById('editName').value.trim(),
+    description: document.getElementById('editDescription').value.trim(),
+    zona:        document.getElementById('editZone').value,
+    full_width:  document.getElementById('editFullWidth').value === 'true',
+    singleton:   document.getElementById('editSingleton').value === 'true',
+    keywords:    document.getElementById('editKeywords').value.split(',').map(function(k){ return k.trim(); }).filter(Boolean),
   };
   parent.postMessage({ pluginMessage: { type: 'preview', payload: payload } }, '*');
 }
@@ -317,11 +331,12 @@ function goPublish() {
   showStatus('loading', 'Subiendo a GitHub...');
   document.getElementById('btnMain').disabled = true;
   var payload = {
-    name:      document.getElementById('editName').value.trim(),
-    zona:      document.getElementById('editZone').value,
-    full_width: document.getElementById('editFullWidth').value === 'true',
-    singleton:  document.getElementById('editSingleton').value === 'true',
-    keywords:  document.getElementById('editKeywords').value.split(',').map(function(k){ return k.trim(); }).filter(Boolean),
+    name:        document.getElementById('editName').value.trim(),
+    description: document.getElementById('editDescription').value.trim(),
+    zona:        document.getElementById('editZone').value,
+    full_width:  document.getElementById('editFullWidth').value === 'true',
+    singleton:   document.getElementById('editSingleton').value === 'true',
+    keywords:    document.getElementById('editKeywords').value.split(',').map(function(k){ return k.trim(); }).filter(Boolean),
   };
   parent.postMessage({ pluginMessage: { type: 'publish', payload: payload } }, '*');
 }
@@ -382,6 +397,7 @@ window.onmessage = function(event) {
 
     // Pre-rellenar step 2
     document.getElementById('editName').value = componentData.name;
+    document.getElementById('editDescription').value = '';
     var guessKeywords = componentData.name.replace(/-/g, ', ');
     document.getElementById('editKeywords').value = guessKeywords;
 
