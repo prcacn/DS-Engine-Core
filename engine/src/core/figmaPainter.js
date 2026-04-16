@@ -157,14 +157,14 @@ const PAINTER_META = {
     slot: 'chart', withMargin: true,
   },
   'card-accounts': {
-    nodeId: '307:1164',
-    texts: { title: 'title', account_number: 'title', balance: 'title' },
+    nodeId: '307:1184',
+    texts: { title: 'account-name', account_number: 'account-number', balance: 'balance' },
     slot: 'account-card', repeatable: true,
     withMargin: true, group: 'accounts',
     layout: 'grid-horizontal', gridCols: 2,
   },
   'movements-set': {
-    nodeId: '307:1165',
+    nodeId: '307:1185',
     texts: { header_title: 'title', header_date: 'title' },
     slot: 'movements', repeatable: true,
     fullWidth: true, group: 'movements',
