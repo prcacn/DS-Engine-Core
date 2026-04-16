@@ -203,7 +203,7 @@ function buildCompositionPlan(brief, intent, patternData, contracts, options) {
   const quantities = extractQuantities(brief);
   // Pasar el brief al intent para que buildSmartProps pueda usarlo
   intent._brief = brief;
-  const SINGLETON_COMPONENTS = ['navigation-header', 'filter-bar', 'modal-bottom-sheet', 'tab-bar'];
+  const SINGLETON_COMPONENTS = ['navigation-header', 'filter-bar', 'modal-bottom-sheet', 'tab-bar', 'movements-set', 'amount-display', 'chart-sparkline', 'notification-banner'];
   let order = 1;
 
   patternData.requiredComponents.forEach(function(req) {
@@ -217,6 +217,9 @@ function buildCompositionPlan(brief, intent, patternData, contracts, options) {
       // Sin cantidad explícita: usar estimated_items del intent si existe, sino 5 por defecto
       const estimated = intent.constraints && intent.constraints.estimated_items;
       count = estimated ? Math.min(estimated, 20) : 5;
+    } else if (req.component === 'card-accounts') {
+      // card-accounts: max 2 instancias si no hay cantidad explícita en el brief
+      count = quantities[req.component] ? Math.min(quantities[req.component], 5) : 2;
     }
     for (let i = 0; i < count; i++) {
       components.push({
