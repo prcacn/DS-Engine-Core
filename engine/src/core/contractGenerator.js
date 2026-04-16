@@ -522,69 +522,73 @@ function generatePainterPatch(payload, ai) {
 function generateRendererPatch(payload, ai) {
   const { name, nodeId, height, width } = payload;
 
-  // Nombre de función camelCase: card-accounts → renderCardAccounts
-  const fnName = 'render' + name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+  // camelCase: card-accounts -> renderCardAccounts
+  const fnName = 'render' + name.split('-').map(function(w) {
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join('');
 
-  // Inferir props editables para el renderer
-  const editableProps = (ai.propiedades || []).filter(p => p.editable);
+  const editableProps = (ai.propiedades || []).filter(function(p) { return p.editable; });
 
-  // Generar líneas de prop extraction
-  const propLines = editableProps.length > 0
-    ? editableProps.map(p => {
-        const fallback = p.default && p.default !== '—' ? `'${p.default}'` : `'${p.nombre}'`;
-        return `  const ${p.nombre.replace(/[^a-zA-Z0-9]/g, '_')} = escHtml(prop(p, '${p.nombre}', ${fallback}));`;
-      }).join('
-')
-    : "  const label = escHtml(prop(p, 'label', ''));";
+  // Líneas de extracción de props — sin template literals anidados
+  var propLines;
+  if (editableProps.length > 0) {
+    propLines = editableProps.map(function(p) {
+      var fallback = (p.default && p.default !== '—') ? "'" + p.default + "'" : "'" + p.nombre + "'";
+      var varName  = p.nombre.replace(/[^a-zA-Z0-9]/g, '_');
+      return "  const " + varName + " = escHtml(prop(p, '" + p.nombre + "', " + fallback + "));";
+    }).join('\n');
+  } else {
+    propLines = "  const label = escHtml(prop(p, 'label', ''));";
+  }
 
-  // Generar HTML interno básico desde estructura visual y propiedades
-  const propsHtmlLines = editableProps.length > 0
-    ? editableProps.map(p => {
-        const varName = p.nombre.replace(/[^a-zA-Z0-9]/g, '_');
-        return `      <div class="ds-${name}__${p.nombre}">\${${varName}}</div>`;
-      }).join('
-')
-    : `      <div class="ds-${name}__content"></div>`;
+  // HTML interno — sin template literals anidados
+  var innerHtml;
+  if (editableProps.length > 0) {
+    innerHtml = editableProps.map(function(p) {
+      var varName = p.nombre.replace(/[^a-zA-Z0-9]/g, '_');
+      return '      <div class="ds-' + name + '__' + p.nombre + '">${' + varName + '}</div>';
+    }).join('\n');
+  } else {
+    innerHtml = '      <div class="ds-' + name + '__content"></div>';
+  }
 
-  // CSS básico del componente
-  const cssIsFullW = ai.full_width;
-  const cssHeight  = height || 56;
+  // CSS básico — sin template literals anidados
+  var cssHeight = height || 56;
+  var cssWidth  = ai.full_width ? 'width: 100%;' : 'padding: 0 var(--ds-pad-h);';
+  var separator = '─'.repeat(Math.max(1, 44 - name.length));
+  var cssEntry  = '\n/* ── ' + name.toUpperCase() + ' ' + separator + ' */\n'
+    + '.ds-' + name + ' {\n'
+    + '  display: flex;\n'
+    + '  align-items: center;\n'
+    + '  ' + cssWidth + '\n'
+    + '  min-height: ' + cssHeight + 'px;\n'
+    + '  background: var(--ds-color-bg);\n'
+    + '  font-family: var(--ds-font);\n'
+    + '}\n'
+    + '.ds-' + name + '__content {\n'
+    + '  flex: 1;\n'
+    + '  font-size: var(--ds-size-body);\n'
+    + '  color: var(--ds-color-text-primary);\n'
+    + '}';
 
-  const cssEntry = `
-/* ── ${name.toUpperCase()} ${'─'.repeat(Math.max(1, 44 - name.length))} */
-.ds-${name} {
-  display: flex;
-  align-items: center;
-  ${cssIsFullW ? 'width: 100%;' : 'padding: 0 var(--ds-pad-h);'}
-  min-height: ${cssHeight}px;
-  background: var(--ds-color-bg);
-  font-family: var(--ds-font);
-}
-.ds-${name}__content {
-  flex: 1;
-  font-size: var(--ds-size-body);
-  color: var(--ds-color-text-primary);
-}`;
+  // Función render — construida con concatenación, sin backticks anidados
+  var renderFn = '\nfunction ' + fnName + '(comp) {\n'
+    + '  const p = comp.props || {};\n'
+    + propLines + '\n'
+    + '  return `<div class="ds-' + name + '">\n'
+    + innerHtml + '\n'
+    + '  </div>`;\n'
+    + '}';
 
-  const renderFn = `
-function ${fnName}(comp) {
-  const p = comp.props || {};
-${propLines}
-  return \`<div class="ds-${name}">
-${propsHtmlLines}
-  </div>\`;
-}`;
-
-  // Caso en el switch dispatcher
-  const switchCase = `    case '${name}':              return ${fnName}(comp);`;
+  // Caso en el switch
+  var switchCase = "    case '" + name + "':              return " + fnName + "(comp);";
 
   return {
-    entryKey:   name,
-    fnName,
-    renderFn,
-    switchCase,
-    cssEntry,
-    // Marcadores donde insertar en screenRenderer.js
+    entryKey:     name,
+    fnName:       fnName,
+    renderFn:     renderFn,
+    switchCase:   switchCase,
+    cssEntry:     cssEntry,
     fnMarker:     '// ─── RENDER SCREEN - punto de entrada',
     switchMarker: "    case 'modal-bottom-sheet':   return ''; // se gestiona aparte",
     cssMarker:    '/* ── RESET',
