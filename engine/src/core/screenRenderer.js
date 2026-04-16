@@ -85,6 +85,110 @@ const DS_CSS = `
   --ds-height-button:  48px;
   --ds-height-tab-bar: 56px;
 }
+/* ── AMOUNT DISPLAY ─────────────────────────── */
+.ds-amount-display {
+  padding: var(--ds-pad-v-md) var(--ds-pad-h);
+  background: var(--ds-color-bg);
+}
+.ds-amount-label {
+  font-size: var(--ds-size-caption);
+  color: var(--ds-color-text-secondary);
+  font-family: var(--ds-font);
+  margin-bottom: 4px;
+}
+.ds-amount-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ds-color-text-primary);
+  font-family: var(--ds-font);
+  letter-spacing: -0.5px;
+}
+.ds-amount-sublabel {
+  font-size: var(--ds-size-caption);
+  color: var(--ds-color-success);
+  font-family: var(--ds-font);
+  margin-top: 4px;
+}
+
+/* ── CHART SPARKLINE ────────────────────────── */
+.ds-chart-sparkline {
+  padding: 0 var(--ds-pad-h) var(--ds-gap-md);
+  background: var(--ds-color-bg);
+}
+.ds-sparkline-svg { width: 100%; height: 80px; }
+
+/* ── CARD ACCOUNTS ──────────────────────────── */
+.ds-card-accounts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: var(--ds-gap-md) var(--ds-pad-h);
+  background: var(--ds-color-bg);
+}
+.ds-card-account {
+  background: var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ds-account-initials {
+  width: 36px; height: 36px;
+  border-radius: var(--ds-radius-full);
+  background: #e0e7ff;
+  color: #4f46e5;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  font-family: var(--ds-font);
+}
+.ds-account-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-color-text-primary);
+  font-family: var(--ds-font);
+  line-height: 1.2;
+}
+.ds-account-number {
+  font-size: 11px;
+  color: var(--ds-color-text-neutral);
+  font-family: var(--ds-font);
+}
+.ds-account-balance {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-color-text-primary);
+  font-family: var(--ds-font);
+  margin-top: 4px;
+}
+
+/* ── MOVEMENTS SET ──────────────────────────── */
+.ds-movements-set {
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-color-bg);
+  flex: 1;
+}
+.ds-movements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--ds-pad-v-sm) var(--ds-pad-h);
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+}
+.ds-movements-date-label {
+  font-size: var(--ds-size-caption);
+  font-weight: 600;
+  color: var(--ds-color-text-primary);
+  font-family: var(--ds-font);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.ds-movements-date-right {
+  font-size: var(--ds-size-caption);
+  color: var(--ds-color-text-secondary);
+  font-family: var(--ds-font);
+}
 
 /* ── RESET ────────────────────────────────── */
 .ds-screen *, .ds-screen *::before, .ds-screen *::after {
@@ -628,6 +732,89 @@ function renderModalBottomSheet(comp) {
   </div>`;
 }
 
+
+function renderAmountDisplay(comp) {
+  const p = comp.props || {};
+  const label    = escHtml(prop(p, 'label',    'Saldo total'));
+  const amount   = escHtml(prop(p, 'amount',   '0,00'));
+  const currency = escHtml(prop(p, 'currency', '€'));
+  const sublabel = escHtml(prop(p, 'sublabel', ''));
+  return `<div class="ds-amount-display">
+    <div class="ds-amount-label">${label}</div>
+    <div class="ds-amount-value">${currency}${amount}</div>
+    ${sublabel ? `<div class="ds-amount-sublabel">${sublabel}</div>` : ''}
+  </div>`;
+}
+
+function renderChartSparkline(comp) {
+  return `<div class="ds-chart-sparkline">
+    <svg class="ds-sparkline-svg" viewBox="0 0 358 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="M0 65 C30 60 50 55 80 50 C110 45 130 42 160 38 C190 34 210 30 240 26 C270 22 300 20 330 16 L358 14 L358 80 L0 80 Z" fill="url(#sg)"/>
+      <path d="M0 65 C30 60 50 55 80 50 C110 45 130 42 160 38 C190 34 210 30 240 26 C270 22 300 20 330 16 L358 14" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>
+      <text x="0" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans, sans-serif">Ene</text>
+      <text x="140" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans, sans-serif">Feb</text>
+      <text x="290" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans, sans-serif">Mar</text>
+    </svg>
+  </div>`;
+}
+
+function renderCardAccounts(components) {
+  const cards = components.map(comp => {
+    const p = comp.props || {};
+    const name    = escHtml(prop(p, 'account-name', 'Cuenta'));
+    const number  = escHtml(prop(p, 'account-number', '•••• 0000'));
+    const balance = escHtml(prop(p, 'balance', '0,00 €'));
+    const parts   = name.toUpperCase().split(' ');
+    const initials = parts.length > 1 ? parts[0][0] + parts[1][0] : parts[0].substring(0, 2);
+    return `<div class="ds-card-account">
+      <div class="ds-account-initials">${initials}</div>
+      <div class="ds-account-name">${name}</div>
+      <div class="ds-account-number">${number}</div>
+      <div class="ds-account-balance">${balance}</div>
+    </div>`;
+  }).join('');
+  return `<div class="ds-card-accounts-grid">${cards}</div>`;
+}
+
+function renderMovementsSet(comp) {
+  const p = comp.props || {};
+  const headerTitle = escHtml(prop(p, 'header_title', 'Hoy'));
+  const headerDate  = escHtml(prop(p, 'header_date',  ''));
+  const movements = [
+    { name: 'Nómina Empresa',        sub: '15 mar · Transferencia',    value: '+€2.450,00', pos: true },
+    { name: 'Supermercado El Corte', sub: '16 mar · Tarjeta •4521', value: '-€87,50',    pos: false },
+    { name: 'Netflix',               sub: '16 mar · Suscripción',    value: '-€15,99',    pos: false },
+  ];
+  const rows = movements.map(m => {
+    const initial  = m.name.charAt(0);
+    const valColor = m.pos ? 'color:var(--ds-color-success)' : 'color:var(--ds-color-error)';
+    const avatarBg = m.pos ? 'background:#dcfce7;color:#16a34a' : 'background:#fef2f2;color:#dc2626';
+    return `<div class="ds-card-item">
+      <div class="ds-card-avatar" style="${avatarBg}">${initial}</div>
+      <div class="ds-card-body">
+        <div class="ds-card-title">${escHtml(m.name)}</div>
+        <div class="ds-card-subtitle">${escHtml(m.sub)}</div>
+      </div>
+      <div class="ds-card-right">
+        <div class="ds-card-value" style="${valColor}">${escHtml(m.value)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="ds-movements-set">
+    <div class="ds-movements-header">
+      <span class="ds-movements-date-label">${headerTitle}</span>
+      ${headerDate ? `<span class="ds-movements-date-right">${headerDate}</span>` : ''}
+    </div>
+    <div class="ds-card-list">${rows}</div>
+  </div>`;
+}
+
 // ─── RENDER SCREEN - punto de entrada ────────────────────────────────────────
 
 function renderScreen(data, options = {}) {
@@ -754,13 +941,33 @@ function renderScreen(data, options = {}) {
   // Reagrupar y renderizar segmentos
   const finalSegments = regroupSegments(segments);
 
+  // Agrupar card-accounts consecutivos para grid 2 columnas
+  const groupedSegments = [];
+  for (let gi = 0; gi < finalSegments.length; gi++) {
+    const seg = finalSegments[gi];
+    if (seg.type === 'single' && seg.comp.component === 'card-accounts') {
+      const group = [seg.comp];
+      while (gi + 1 < finalSegments.length &&
+             finalSegments[gi + 1].type === 'single' &&
+             finalSegments[gi + 1].comp.component === 'card-accounts') {
+        gi++;
+        group.push(finalSegments[gi].comp);
+      }
+      groupedSegments.push({ type: 'card-accounts-group', items: group });
+    } else {
+      groupedSegments.push(seg);
+    }
+  }
+
   let bodyHtml = '';
-  for (const seg of finalSegments) {
+  for (const seg of groupedSegments) {
     if (seg.type === 'form') {
       const innerHtml = seg.items.map(c => renderComponent(c, pattern)).join('\n');
       bodyHtml += `<div class="ds-form">${innerHtml}</div>`;
     } else if (seg.type === 'card-composition-group') {
       bodyHtml += renderCardCompositionGroup(seg.items);
+    } else if (seg.type === 'card-accounts-group') {
+      bodyHtml += renderCardAccounts(seg.items);
     } else {
       bodyHtml += renderComponent(seg.comp, pattern);
     }
@@ -781,6 +988,9 @@ function renderComponent(comp, pattern) {
   if (!comp || !comp.component) return '';
   switch (comp.component) {
     case 'navigation-header':    return renderNavigationHeader(comp);
+    case 'amount-display':       return renderAmountDisplay(comp);
+    case 'chart-sparkline':      return renderChartSparkline(comp);
+    case 'movements-set':        return renderMovementsSet(comp);
     case 'input-text':           return renderInputText(comp);
     case 'button-primary':       return renderButtonPrimary(comp);
     case 'button-secondary':     return renderButtonSecondary(comp);
@@ -793,6 +1003,7 @@ function renderComponent(comp, pattern) {
     case 'empty-state':          return renderEmptyState(comp);
     case 'tab-bar':              return renderTabBar(comp);
     case 'modal-bottom-sheet':   return ''; // se gestiona aparte
+    case 'card-accounts':        return ''; // se gestiona en grupo
     default:                     return '';
   }
 }
