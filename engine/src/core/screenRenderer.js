@@ -734,85 +734,85 @@ function renderModalBottomSheet(comp) {
 
 
 function renderAmountDisplay(comp) {
-  const p = comp.props || {};
-  const label    = escHtml(prop(p, 'label',    'Saldo total'));
-  const amount   = escHtml(prop(p, 'amount',   '0,00'));
-  const currency = escHtml(prop(p, 'currency', '€'));
-  const sublabel = escHtml(prop(p, 'sublabel', ''));
-  return `<div class="ds-amount-display">
-    <div class="ds-amount-label">${label}</div>
-    <div class="ds-amount-value">${currency}${amount}</div>
-    ${sublabel ? `<div class="ds-amount-sublabel">${sublabel}</div>` : ''}
-  </div>`;
+  var p = comp.props || {};
+  var label    = escHtml(prop(p, 'label',    'Saldo total'));
+  var amount   = escHtml(prop(p, 'amount',   '0,00'));
+  var currency = escHtml(prop(p, 'currency', 'EUR'));
+  var sublabel = escHtml(prop(p, 'sublabel', ''));
+  var sublabelHtml = sublabel ? '<div class="ds-amount-sublabel">' + sublabel + '</div>' : '';
+  return '<div class="ds-amount-display">'
+    + '<div class="ds-amount-label">' + label + '</div>'
+    + '<div class="ds-amount-value">' + currency + ' ' + amount + '</div>'
+    + sublabelHtml
+    + '</div>';
 }
 
 function renderChartSparkline(comp) {
-  return `<div class="ds-chart-sparkline">
-    <svg class="ds-sparkline-svg" viewBox="0 0 358 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.15"/>
-          <stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <path d="M0 65 C30 60 50 55 80 50 C110 45 130 42 160 38 C190 34 210 30 240 26 C270 22 300 20 330 16 L358 14 L358 80 L0 80 Z" fill="url(#sg)"/>
-      <path d="M0 65 C30 60 50 55 80 50 C110 45 130 42 160 38 C190 34 210 30 240 26 C270 22 300 20 330 16 L358 14" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>
-      <text x="0" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans, sans-serif">Ene</text>
-      <text x="140" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans, sans-serif">Feb</text>
-      <text x="290" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans, sans-serif">Mar</text>
-    </svg>
-  </div>`;
+  return '<div class="ds-chart-sparkline">'
+    + '<svg class="ds-sparkline-svg" viewBox="0 0 358 80" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#4f46e5" stop-opacity="0.15"/>'
+    + '<stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>'
+    + '</linearGradient></defs>'
+    + '<path d="M0 65 C30 60 50 55 80 50 C110 45 130 42 160 38 C190 34 210 30 240 26 C270 22 300 20 330 16 L358 14 L358 80 L0 80 Z" fill="url(#sg)"/>'
+    + '<path d="M0 65 C30 60 50 55 80 50 C110 45 130 42 160 38 C190 34 210 30 240 26 C270 22 300 20 330 16 L358 14" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>'
+    + '<text x="0" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans,sans-serif">Ene</text>'
+    + '<text x="140" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans,sans-serif">Feb</text>'
+    + '<text x="290" y="76" font-size="10" fill="#94a3b8" font-family="DM Sans,sans-serif">Mar</text>'
+    + '</svg>'
+    + '</div>';
 }
 
 function renderCardAccounts(components) {
-  const cards = components.map(comp => {
-    const p = comp.props || {};
-    const name    = escHtml(prop(p, 'account-name', 'Cuenta'));
-    const number  = escHtml(prop(p, 'account-number', '•••• 0000'));
-    const balance = escHtml(prop(p, 'balance', '0,00 €'));
-    const parts   = name.toUpperCase().split(' ');
-    const initials = parts.length > 1 ? parts[0][0] + parts[1][0] : parts[0].substring(0, 2);
-    return `<div class="ds-card-account">
-      <div class="ds-account-initials">${initials}</div>
-      <div class="ds-account-name">${name}</div>
-      <div class="ds-account-number">${number}</div>
-      <div class="ds-account-balance">${balance}</div>
-    </div>`;
+  var cards = components.map(function(comp) {
+    var p       = comp.props || {};
+    var name    = escHtml(prop(p, 'account-name',   'Cuenta'));
+    var number  = escHtml(prop(p, 'account-number', '**** 0000'));
+    var balance = escHtml(prop(p, 'balance',         '0,00 EUR'));
+    var parts   = name.toUpperCase().split(' ');
+    var initials = parts.length > 1 ? parts[0][0] + parts[1][0] : parts[0].substring(0, 2);
+    return '<div class="ds-card-account">'
+      + '<div class="ds-account-initials">' + initials + '</div>'
+      + '<div class="ds-account-name">' + name + '</div>'
+      + '<div class="ds-account-number">' + number + '</div>'
+      + '<div class="ds-account-balance">' + balance + '</div>'
+      + '</div>';
   }).join('');
-  return `<div class="ds-card-accounts-grid">${cards}</div>`;
+  return '<div class="ds-card-accounts-grid">' + cards + '</div>';
 }
 
 function renderMovementsSet(comp) {
-  const p = comp.props || {};
-  const headerTitle = escHtml(prop(p, 'header_title', 'Hoy'));
-  const headerDate  = escHtml(prop(p, 'header_date',  ''));
-  const movements = [
-    { name: 'Nómina Empresa',        sub: '15 mar · Transferencia',    value: '+€2.450,00', pos: true },
-    { name: 'Supermercado El Corte', sub: '16 mar · Tarjeta •4521', value: '-€87,50',    pos: false },
-    { name: 'Netflix',               sub: '16 mar · Suscripción',    value: '-€15,99',    pos: false },
+  var p           = comp.props || {};
+  var headerTitle = escHtml(prop(p, 'header_title', 'Hoy'));
+  var headerDate  = escHtml(prop(p, 'header_date',  ''));
+  var movements = [
+    { name: 'Nomina Empresa',        sub: '15 mar - Transferencia', value: '+2.450,00 EUR', pos: true  },
+    { name: 'Supermercado',          sub: '16 mar - Tarjeta',       value: '-87,50 EUR',    pos: false },
+    { name: 'Netflix',               sub: '16 mar - Suscripcion',   value: '-15,99 EUR',    pos: false },
   ];
-  const rows = movements.map(m => {
-    const initial  = m.name.charAt(0);
-    const valColor = m.pos ? 'color:var(--ds-color-success)' : 'color:var(--ds-color-error)';
-    const avatarBg = m.pos ? 'background:#dcfce7;color:#16a34a' : 'background:#fef2f2;color:#dc2626';
-    return `<div class="ds-card-item">
-      <div class="ds-card-avatar" style="${avatarBg}">${initial}</div>
-      <div class="ds-card-body">
-        <div class="ds-card-title">${escHtml(m.name)}</div>
-        <div class="ds-card-subtitle">${escHtml(m.sub)}</div>
-      </div>
-      <div class="ds-card-right">
-        <div class="ds-card-value" style="${valColor}">${escHtml(m.value)}</div>
-      </div>
-    </div>`;
+  var rows = movements.map(function(m) {
+    var initial   = m.name.charAt(0);
+    var valColor  = m.pos ? 'color:var(--ds-color-success)' : 'color:var(--ds-color-error)';
+    var avatarBg  = m.pos ? 'background:#dcfce7;color:#16a34a' : 'background:#fef2f2;color:#dc2626';
+    return '<div class="ds-card-item">'
+      + '<div class="ds-card-avatar" style="' + avatarBg + '">' + initial + '</div>'
+      + '<div class="ds-card-body">'
+      + '<div class="ds-card-title">' + escHtml(m.name) + '</div>'
+      + '<div class="ds-card-subtitle">' + escHtml(m.sub) + '</div>'
+      + '</div>'
+      + '<div class="ds-card-right">'
+      + '<div class="ds-card-value" style="' + valColor + '">' + escHtml(m.value) + '</div>'
+      + '</div>'
+      + '</div>';
   }).join('');
-  return `<div class="ds-movements-set">
-    <div class="ds-movements-header">
-      <span class="ds-movements-date-label">${headerTitle}</span>
-      ${headerDate ? `<span class="ds-movements-date-right">${headerDate}</span>` : ''}
-    </div>
-    <div class="ds-card-list">${rows}</div>
-  </div>`;
+  var dateHtml = headerDate ? '<span class="ds-movements-date-right">' + headerDate + '</span>' : '';
+  return '<div class="ds-movements-set">'
+    + '<div class="ds-movements-header">'
+    + '<span class="ds-movements-date-label">' + headerTitle + '</span>'
+    + dateHtml
+    + '</div>'
+    + '<div class="ds-card-list">' + rows + '</div>'
+    + '</div>';
 }
 
 // ─── RENDER SCREEN - punto de entrada ────────────────────────────────────────
