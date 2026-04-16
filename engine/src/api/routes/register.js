@@ -104,7 +104,7 @@ router.post('/', async (req, res, next) => {
 
     // 1. Generar contrato, patches y descripción IA
     const generated = await generateAll(payload);
-    const { contractMd, spacingPatch, pluginPatch, aiData } = generated;
+    const { contractMd, spacingPatch, pluginPatch, painterPatch, rendererPatch, aiData } = generated;
 
     // Solo generar - no subir. El plugin pide preview primero.
     if (req.body.preview_only) {
@@ -114,6 +114,8 @@ router.post('/', async (req, res, next) => {
         contractMd,
         spacingPatch,
         pluginPatch,
+        painterPatch,
+        rendererPatch,
         aiData,
         meta:         generated.meta,
       });
@@ -153,11 +155,48 @@ router.post('/', async (req, res, next) => {
       `feat: plugin - anadir ${payload.name} a HEIGHT_MAP`
     );
 
+    // 6. Parchear figmaPainter.js — PAINTER_META
+    const painterResult = await patchJsFile(
+      'engine/src/core/figmaPainter.js',
+      painterPatch.marker,
+      { key: payload.name, code: painterPatch.entryCode },
+      `feat: figmaPainter - anadir ${payload.name} a PAINTER_META`
+    );
+
+    // 7. Parchear screenRenderer.js — CSS + función render + switch case
+    // 7a. CSS
+    const rendererCssResult = await patchJsFile(
+      'engine/src/core/screenRenderer.js',
+      rendererPatch.cssMarker,
+      { key: payload.name + '_css', code: rendererPatch.cssEntry },
+      `feat: screenRenderer CSS - anadir ${payload.name}`
+    );
+
+    // 7b. Función render — insertar antes del bloque renderScreen
+    const rendererFnResult = await patchJsFile(
+      'engine/src/core/screenRenderer.js',
+      rendererPatch.fnMarker,
+      { key: 'function ' + rendererPatch.fnName, code: rendererPatch.renderFn },
+      `feat: screenRenderer fn - anadir ${rendererPatch.fnName}`
+    );
+
+    // 7c. Caso en el switch dispatcher
+    const rendererSwitchResult = await patchJsFile(
+      'engine/src/core/screenRenderer.js',
+      rendererPatch.switchMarker,
+      { key: "case '" + payload.name + "'", code: rendererPatch.switchCase },
+      `feat: screenRenderer switch - anadir ${payload.name}`
+    );
+
     const results = {
-      contract:       { ok: contractOk,              path: contractPath },
-      spacingRegistry: { ok: spacingResult.ok,        error: spacingResult.error },
-      pluginNodeIds:  { ok: pluginNodeResult.ok,      error: pluginNodeResult.error },
-      pluginHeight:   { ok: pluginHeightResult.ok,    error: pluginHeightResult.error },
+      contract:        { ok: contractOk,                  path: contractPath },
+      spacingRegistry: { ok: spacingResult.ok,            error: spacingResult.error },
+      pluginNodeIds:   { ok: pluginNodeResult.ok,         error: pluginNodeResult.error },
+      pluginHeight:    { ok: pluginHeightResult.ok,       error: pluginHeightResult.error },
+      figmaPainter:    { ok: painterResult.ok,            error: painterResult.error },
+      rendererCss:     { ok: rendererCssResult.ok,        error: rendererCssResult.error },
+      rendererFn:      { ok: rendererFnResult.ok,         error: rendererFnResult.error },
+      rendererSwitch:  { ok: rendererSwitchResult.ok,     error: rendererSwitchResult.error },
     };
 
     const allOk = Object.values(results).every(r => r.ok);
@@ -171,6 +210,7 @@ router.post('/', async (req, res, next) => {
       aiData,
       contractPath,
       meta:     generated.meta,
+      propagated_to: ['contracts/', 'spacingRegistry.js', 'figma-plugin/code.js', 'figmaPainter.js', 'screenRenderer.js'],
       deploy_command: `cd '/Users/pablo.reguera/DS Engine Core/engine' && git pull --rebase && railway up`,
     });
 
