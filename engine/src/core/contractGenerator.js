@@ -466,14 +466,146 @@ function generatePluginPatch(payload, ai) {
   };
 }
 
+
+// ─── GENERAR PATCH figmaPainter.js ───────────────────────────────────────────
+function generatePainterPatch(payload, ai) {
+  const { name, nodeId, height, width } = payload;
+
+  // Inferir slot desde zona
+  const slotMap = {
+    header:  'header',
+    bottom:  'tab-bar',
+    content: 'list-item',
+  };
+  const slot = slotMap[ai.zona] || 'content';
+
+  // Inferir layout — si tiene grid o es card de cuentas
+  const isGrid    = name.includes('account') || name.includes('card-grid');
+  const isFullW   = ai.full_width;
+  const hasMargin = !isFullW;
+
+  // Construir texts desde propiedades editables
+  const editableProps = (ai.propiedades || []).filter(p => p.editable && p.tipo === 'TEXT');
+  const textsEntries  = editableProps.map(p => `'${p.nombre}': '${p.nombre}'`).join(', ');
+  const textsBlock    = textsEntries ? `{ ${textsEntries} }` : '{}';
+
+  const layoutBlock = isGrid
+    ? `,
+    layout: 'grid-horizontal', gridCols: 2, gridGap: 8`
+    : '';
+
+  const stickyBlock = ai.zona === 'header'
+    ? `,
+    sticky: 'top'`
+    : ai.zona === 'bottom'
+    ? `,
+    sticky: 'bottom'`
+    : '';
+
+  const entryCode = `
+  '${name}': {
+    nodeId: '${nodeId}',
+    texts: ${textsBlock},
+    slot: '${slot}'${stickyBlock},
+    ${isFullW ? 'fullWidth: true' : 'withMargin: true'},
+    group: '${name.split('-')[0]}'${layoutBlock},
+  },`;
+
+  return {
+    entryKey: name,
+    entryCode,
+    marker: "// ── API PÚBLICA ───────────────────────────────────────────────────────────────",
+  };
+}
+
+// ─── GENERAR PATCH screenRenderer.js ─────────────────────────────────────────
+function generateRendererPatch(payload, ai) {
+  const { name, nodeId, height, width } = payload;
+
+  // Nombre de función camelCase: card-accounts → renderCardAccounts
+  const fnName = 'render' + name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+
+  // Inferir props editables para el renderer
+  const editableProps = (ai.propiedades || []).filter(p => p.editable);
+
+  // Generar líneas de prop extraction
+  const propLines = editableProps.length > 0
+    ? editableProps.map(p => {
+        const fallback = p.default && p.default !== '—' ? `'${p.default}'` : `'${p.nombre}'`;
+        return `  const ${p.nombre.replace(/[^a-zA-Z0-9]/g, '_')} = escHtml(prop(p, '${p.nombre}', ${fallback}));`;
+      }).join('
+')
+    : "  const label = escHtml(prop(p, 'label', ''));";
+
+  // Generar HTML interno básico desde estructura visual y propiedades
+  const propsHtmlLines = editableProps.length > 0
+    ? editableProps.map(p => {
+        const varName = p.nombre.replace(/[^a-zA-Z0-9]/g, '_');
+        return `      <div class="ds-${name}__${p.nombre}">\${${varName}}</div>`;
+      }).join('
+')
+    : `      <div class="ds-${name}__content"></div>`;
+
+  // CSS básico del componente
+  const cssIsFullW = ai.full_width;
+  const cssHeight  = height || 56;
+
+  const cssEntry = `
+/* ── ${name.toUpperCase()} ${'─'.repeat(Math.max(1, 44 - name.length))} */
+.ds-${name} {
+  display: flex;
+  align-items: center;
+  ${cssIsFullW ? 'width: 100%;' : 'padding: 0 var(--ds-pad-h);'}
+  min-height: ${cssHeight}px;
+  background: var(--ds-color-bg);
+  font-family: var(--ds-font);
+}
+.ds-${name}__content {
+  flex: 1;
+  font-size: var(--ds-size-body);
+  color: var(--ds-color-text-primary);
+}`;
+
+  const renderFn = `
+function ${fnName}(comp) {
+  const p = comp.props || {};
+${propLines}
+  return \`<div class="ds-${name}">
+${propsHtmlLines}
+  </div>\`;
+}`;
+
+  // Caso en el switch dispatcher
+  const switchCase = `    case '${name}':              return ${fnName}(comp);`;
+
+  return {
+    entryKey:   name,
+    fnName,
+    renderFn,
+    switchCase,
+    cssEntry,
+    // Marcadores donde insertar en screenRenderer.js
+    fnMarker:     '// ─── RENDER SCREEN - punto de entrada',
+    switchMarker: "    case 'modal-bottom-sheet':   return ''; // se gestiona aparte",
+    cssMarker:    '/* ── RESET',
+  };
+}
+
 // ─── FUNCIÓN PRINCIPAL ────────────────────────────────────────────────────────
 async function generateAll(payload) {
   console.log(`  → [contractGenerator] Generando documentación para: ${payload.name}`);
-  const aiData      = await generateDescription(payload);
-  const contractMd  = generateContractMd(payload, aiData);
-  const spacingPatch = generateSpacingPatch(payload, aiData);
-  const pluginPatch  = generatePluginPatch(payload, aiData);
-  return { contractMd, spacingPatch, pluginPatch, aiData, meta: { name: payload.name, nodeId: payload.nodeId, generatedAt: new Date().toISOString() } };
+  const aiData        = await generateDescription(payload);
+  const contractMd    = generateContractMd(payload, aiData);
+  const spacingPatch  = generateSpacingPatch(payload, aiData);
+  const pluginPatch   = generatePluginPatch(payload, aiData);
+  const painterPatch  = generatePainterPatch(payload, aiData);
+  const rendererPatch = generateRendererPatch(payload, aiData);
+  return {
+    contractMd, spacingPatch, pluginPatch,
+    painterPatch, rendererPatch,
+    aiData,
+    meta: { name: payload.name, nodeId: payload.nodeId, generatedAt: new Date().toISOString() }
+  };
 }
 
-module.exports = { generateAll, generateDescription, generateContractMd };
+module.exports = { generateAll, generateDescription, generateContractMd, generatePainterPatch, generateRendererPatch };
