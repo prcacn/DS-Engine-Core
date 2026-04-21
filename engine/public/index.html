@@ -1454,6 +1454,31 @@
       case 'card-composition':
         return renderCardComposition(comp, ctx);
 
+      case 'movements-set':
+        var msTitle = t('header_title', 'Hoy');
+        var msDate  = p.header_date ? '<span style="font-size:10px;color:#94a3b8;font-family:var(--sans)">'+p.header_date+'</span>' : '';
+        var msMovs = [
+          { name:'Nomina Empresa', sub:'Transferencia', value:'+2.450,00 €', pos:true  },
+          { name:'Supermercado',   sub:'Tarjeta',       value:'-87,50 €',    pos:false },
+          { name:'Netflix',        sub:'Suscripción',   value:'-15,99 €',    pos:false },
+          { name:'Bizum recibido', sub:'Transferencia', value:'+50,00 €',    pos:true  },
+        ];
+        var msHtml = '<div style="background:white">';
+        msHtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px 6px;border-bottom:1px solid #f1f5f9">';
+        msHtml += '<span style="font-size:11px;font-weight:700;color:#0f172a;font-family:var(--sans);text-transform:uppercase;letter-spacing:0.04em">'+msTitle+'</span>'+msDate+'</div>';
+        msMovs.forEach(function(m) {
+          var init = m.name.charAt(0);
+          var avatarBg = m.pos ? 'background:#dcfce7;color:#16a34a' : 'background:#fef2f2;color:#dc2626';
+          var valColor = m.pos ? '#16a34a' : '#dc2626';
+          msHtml += '<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #f8fafc">';
+          msHtml += '<div style="width:34px;height:34px;border-radius:50%;'+avatarBg+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;font-family:var(--sans);flex-shrink:0">'+init+'</div>';
+          msHtml += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:#0f172a;font-family:var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.name+'</div>';
+          msHtml += '<div style="font-size:11px;color:#94a3b8;font-family:var(--sans)">'+m.sub+'</div></div>';
+          msHtml += '<div style="font-size:13px;font-weight:600;color:'+valColor+';font-family:var(--sans);flex-shrink:0">'+m.value+'</div></div>';
+        });
+        msHtml += '</div>';
+        return msHtml;
+
       default:
         return ''; // componente no reconocido — no mostrar nada
         // return '<div style="padding:12px 16px;font-family:var(--sans);font-size:12px;color:#64748b;background:white;border-bottom:1px solid #f1f5f9">'+comp.component+'</div>';
