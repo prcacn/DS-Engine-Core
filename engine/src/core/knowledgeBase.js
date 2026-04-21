@@ -124,7 +124,8 @@ async function search(query, {
     .map(m => ({
       id:                       m.id,
       score:                    m.score,
-      content:                  m.metadata?.content || '',
+      text:                     m.metadata?.text    || m.metadata?.content || '',
+      content:                  m.metadata?.text    || m.metadata?.content || '',
       tipo:                     m.metadata?.tipo,
       geografia:                m.metadata?.geografia,
       autor:                    m.metadata?.autor,
