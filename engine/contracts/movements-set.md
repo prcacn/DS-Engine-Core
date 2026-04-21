@@ -26,8 +26,13 @@ figma_id: 307:1165
 | header_date | string | — | "10 Abr. 2026" |
 | items | array | card-item/financial[] | — |
 
+## Instancias
+singleton: true — máximo 1 instancia por pantalla en patrones dashboard y detalle.
+En historial (lista-con-filtros) puede repetirse máximo 3 veces (una por grupo de fecha).
+
 ## Restricciones
 - Siempre mostrar header_title y header_date juntos
 - Los items del grupo deben pertenecer al mismo día
 - header_title puede ser relativo (Hoy, Ayer) o el nombre del día
 - No mezclar movimientos de distintas fechas en el mismo movements-set
+- NUNCA generar más de 1 instancia en un dashboard — usar 1 movements-set con header_title "Últimos movimientos"
