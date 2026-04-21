@@ -35,6 +35,8 @@ REGLAS ESTRICTAS:
 2. Para componentes añadidos, usa ÚNICAMENTE nombres de la lista de contratos disponibles
 3. NO inventes componentes que no estén en los contratos (card-summary, amount-display, chart-sparkline, etc. solo si están en la lista)
 4. Si el delta está vacío (add/remove/modify todos vacíos), devuelve la base tal cual sin cambios
+5. NUNCA repitas el mismo componente más veces de las que aparece en la base, salvo que el delta lo pida explícitamente
+6. movements-set, tab-bar, navigation-header y amount-display son SINGLETON — máximo 1 instancia por pantalla
 
 Responde ÚNICAMENTE con JSON válido:
 {
