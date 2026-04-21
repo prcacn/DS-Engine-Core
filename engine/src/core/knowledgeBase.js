@@ -38,6 +38,7 @@ async function save({
   // Campos base siempre presentes
   const baseMetadata = {
     content,
+    text: content,   // alias — algunos vectores leen 'text', otros 'content'
     tipo,
     geografia:  metadata.geo || geografia,
     tags:       Array.isArray(tags) ? tags.join(',') : tags,
