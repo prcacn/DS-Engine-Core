@@ -1141,13 +1141,24 @@
         lastResult = data;
         if (data.flow_type === 'variant' && data.is_proposal) {
           renderVariantReview(data);
-          renderScreen(data);
+          // Usar HTML del servidor si viene — cubre card-accounts y componentes avanzados
+          if (data.html) {
+            var sc = document.getElementById('phoneScreen');
+            if (sc) sc.innerHTML = data.html;
+          } else {
+            renderScreen(data);
+          }
           renderAnalysis(data);
         } else if (data.flow_type === 'multiscreen' && data.screens && data.screens.length > 0) {
           initFlow(data);
         } else {
           hideVariantReview();
-          renderScreen(data);
+          if (data.html) {
+            var sc2 = document.getElementById('phoneScreen');
+            if (sc2) sc2.innerHTML = data.html;
+          } else {
+            renderScreen(data);
+          }
           renderAnalysis(data);
         }
         return;
