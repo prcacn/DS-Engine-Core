@@ -221,8 +221,26 @@ router.post('/feedback', async (req, res) => {
     // y las modificaciones con un aprendizaje explícito. Sin listas de componentes
     // que generen falsos positivos semánticos.
     if (status === 'approved') {
-      // No guardamos en KB - el ejemplo aprobado va a /examples via templateLoader
-      console.log('  [KB/feedback] approved - no se guarda en Pinecone (evitar screen-doc noise)');
+      // B2 revisado: guardamos la DECISIÓN estructurada, no la lista de componentes.
+      // Así mantenemos trazabilidad sin generar ruido semántico en búsquedas.
+      const decision_id = 'dec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+      entries.push({
+        text: 'DECISIÓN APROBADA: Brief "' + brief.substring(0, 80) + '"'
+          + (pattern ? '. Patrón: ' + pattern : '')
+          + '. Validado por el equipo como referencia para futuros briefs similares.',
+        categoria: 'ds-pattern',
+        prioridad: 'media',
+        tipo: 'decision',
+        autor: 'feedback-loop',
+        geografia: 'global',
+        decision_id,
+        action: 'approve',
+        screen_id: screen_id || '',
+        pattern: pattern || '',
+        brief_full: brief || '',
+        source: 'feedback-loop',
+      });
+      console.log('  [KB/feedback] approved - decisión estructurada guardada:', decision_id);
     } else if (status === 'rejected' && motivo) {
       // Solo guardamos el motivo de rechazo como regla, sin mencionar componentes
       entries.push({
