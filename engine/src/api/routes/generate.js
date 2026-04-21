@@ -17,6 +17,7 @@ const { enrichBriefWithKnowledge }               = require('../../core/briefEnri
 const { detect: detectVariant, loadApprovedExamples } = require('../../core/variantParser');
 const { apply: applyDelta }                       = require('../../core/deltaEngine');
 const { getNavLevel }                             = require('../../core/globalRulesParser');
+const { renderScreen }                            = require('../../core/screenRenderer');
 
 // ── Navigation & Pattern maps ─────────────────────────────────────────────────
 const { INTENT_TO_LEVEL, INTENT_TO_PATTERN, MULTISCREEN_INTENTS, inferNavLevelFromBrief } = require('../../core/navigationMaps');
@@ -198,6 +199,14 @@ router.post('/', async function(req, res, next) {
         contracts,
       });
 
+      const variantComponents = deltaResult.proposal || [];
+      let variantHtml = '';
+      try {
+        variantHtml = renderScreen({ components: variantComponents, pattern: variantResult.base.pattern }, { withCSS: true });
+      } catch(e) {
+        console.warn('  ⚠ [generate] renderScreen variant error:', e.message);
+      }
+
       return res.json({
         screen_id:    'var_' + Date.now(),
         brief:        brief.trim(),
@@ -209,7 +218,8 @@ router.post('/', async function(req, res, next) {
         variant_reasoning: variantResult.reasoning,
         diff:         deltaResult.diff,
         diff_summary: deltaResult.diff_summary,
-        components:   deltaResult.proposal,
+        components:   variantComponents,
+        html:         variantHtml,
         status:       'NEEDS_REVIEW',
         confidence:   { global: variantResult.confidence, status: 'NEEDS_REVIEW' },
         violations:   [],
