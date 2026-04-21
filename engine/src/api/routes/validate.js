@@ -195,7 +195,7 @@ function calculateValidationScore(components, intent, contracts, kbViolations, s
       contracts:  Object.values(contracts),
     });
     precedent_score = scoreResult.signals?.precedent ?? 0.30;
-  } catch (e) { /* baseline */ }
+  } catch (e) { console.warn('  ⚠ [validate] calculateScore error:', e.message); }
 
   // ── SIGNAL 4: RULES (20%) ────────────────────────────────────────────────
   // Errores estructurales + violaciones KB + detaches

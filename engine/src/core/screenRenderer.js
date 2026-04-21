@@ -526,6 +526,7 @@ const DS_CSS = `
 .ds-modal-actions {
   display: flex; flex-direction: column; gap: var(--ds-gap-md);
 }
+/* [DS_CSS_END] */
 `;
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -984,6 +985,7 @@ function renderScreen(data, options = {}) {
 
 // ─── DISPATCHER ──────────────────────────────────────────────────────────────
 
+// [RENDERER_FNS_END]
 function renderComponent(comp, pattern) {
   if (!comp || !comp.component) return '';
   switch (comp.component) {
@@ -1004,6 +1006,7 @@ function renderComponent(comp, pattern) {
     case 'tab-bar':              return renderTabBar(comp);
     case 'modal-bottom-sheet':   return ''; // se gestiona aparte
     case 'card-accounts':        return ''; // se gestiona en grupo
+    // [RENDERER_SWITCH_END]
     default:                     return '';
   }
 }

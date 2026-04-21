@@ -134,7 +134,7 @@ router.post('/', async (req, res, next) => {
     // 3. Parchear spacingRegistry.js
     const spacingResult = await patchJsFile(
       'engine/src/core/spacingRegistry.js',
-      '\n};',
+      spacingPatch.marker,
       { key: payload.name, code: spacingPatch.entryCode },
       `feat: spacingRegistry - anadir ${payload.name}`
     );

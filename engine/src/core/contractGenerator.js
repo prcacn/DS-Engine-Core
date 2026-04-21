@@ -177,7 +177,7 @@ decisiones_tecnicas (solo si hay divergencia documentable respecto al contrato e
 
   try {
     const resp = await getClient().messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: process.env.ANTHROPIC_MODEL_REGISTER || process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
       max_tokens: 2500,
       messages: [{ role: 'user', content: prompt }],
     });
@@ -440,6 +440,7 @@ function generateSpacingPatch(payload, ai) {
   const { name, nodeId, height } = payload;
   const gapAfter = ai.zona === 'header' ? 0 : ai.zona === 'bottom' ? 0 : 8;
   return {
+    marker:   '  // [COMPONENT_REGISTRY_END]',
     entryKey: name,
     entryCode: `
   '${name}': {
@@ -514,7 +515,7 @@ function generatePainterPatch(payload, ai) {
   return {
     entryKey: name,
     entryCode,
-    marker: "// ── API PÚBLICA ───────────────────────────────────────────────────────────────",
+    marker: "  // [PAINTER_META_END]",
   };
 }
 
@@ -589,9 +590,9 @@ function generateRendererPatch(payload, ai) {
     renderFn:     renderFn,
     switchCase:   switchCase,
     cssEntry:     cssEntry,
-    fnMarker:     '// ─── RENDER SCREEN - punto de entrada',
-    switchMarker: "    case 'modal-bottom-sheet':   return ''; // se gestiona aparte",
-    cssMarker:    '/* ── RESET',
+    fnMarker:     '// [RENDERER_FNS_END]',
+    switchMarker: '    // [RENDERER_SWITCH_END]',
+    cssMarker:    '/* [DS_CSS_END] */',
   };
 }
 

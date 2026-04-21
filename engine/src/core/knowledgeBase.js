@@ -123,8 +123,7 @@ async function search(query, {
     .map(m => ({
       id:                       m.id,
       score:                    m.score,
-      text:                     m.metadata?.text    || m.metadata?.content || '',
-      content:                  m.metadata?.text    || m.metadata?.content || '',
+      content:                  m.metadata?.content || '',
       tipo:                     m.metadata?.tipo,
       geografia:                m.metadata?.geografia,
       autor:                    m.metadata?.autor,

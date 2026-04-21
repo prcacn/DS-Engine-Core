@@ -117,7 +117,7 @@ async function parseIntent(brief) {
     const anthropic = getClient();
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
       max_tokens: 768,
       system: SYSTEM_PROMPT,
       messages: [
@@ -308,7 +308,7 @@ function fallbackParse(brief) {
     });
   }
 
-  if (b.includes('filtro') && intent_type === 'formulario-simple') {
+  if (b.includes('filtro') && intent_type === 'formulario-default') {
     brief_violations.push({
       rule: 'filter-bar-in-form',
       detail: 'filter-bar no se usa en pantallas de formulario.',
@@ -329,12 +329,12 @@ function fallbackParse(brief) {
     domain: intent_type === 'transferencia-bancaria' ? 'transferencias'
            : intent_type === 'dashboard' ? 'home'
            : intent_type === 'lista-con-filtros' ? 'listados'
-           : intent_type === 'formulario-simple' ? 'formularios'
+           : intent_type === 'formulario-default' ? 'formularios'
            : 'general',
     required_capabilities: intent_type === 'transferencia-bancaria' ? ['multi-screen-flow', 'form-validation', 'confirmation'] : [],
     constraints: {
       has_filters:         intent_type === 'lista-con-filtros',
-      has_form_fields:     intent_type === 'transferencia-bancaria' || intent_type === 'formulario-simple',
+      has_form_fields:     intent_type === 'transferencia-bancaria' || intent_type === 'formulario-default' || intent_type === 'formulario-producto',
       is_destructive:      intent_type === 'confirmacion' || intent_type === 'transferencia-bancaria',
       needs_confirmation:  intent_type === 'confirmacion' || intent_type === 'transferencia-bancaria',
       estimated_items:     null,

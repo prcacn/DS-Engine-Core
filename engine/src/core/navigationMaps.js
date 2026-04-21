@@ -112,8 +112,8 @@ function inferNavLevelFromBrief(intentType, brief) {
     return 'L1'; // default para lista-con-filtros
   }
 
-  // formulario-simple: siempre L2 (accesible desde acción en L1)
-  if (intentType === 'formulario-simple') return 'L2';
+  // formulario-default: siempre L2 (accesible desde acción en L1)
+  if (intentType === 'formulario-default') return 'L2';
 
   return baseLevel;
 }

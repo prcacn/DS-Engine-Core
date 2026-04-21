@@ -279,6 +279,7 @@ const COMPONENT_REGISTRY = {
     singleton:           true,
   },
 
+  // [COMPONENT_REGISTRY_END]
 };
 
 // ─── LÓGICA DE PAINT - REGLAS DE POSICIONAMIENTO ─────────────────────────────

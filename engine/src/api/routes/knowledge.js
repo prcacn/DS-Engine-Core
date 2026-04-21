@@ -154,10 +154,13 @@ router.post('/ingest', async (req, res) => {
 
     // 2. Persistir en Pinecone
     if (cfg()) {
-      const dim    = parseInt(process.env.PINECONE_DIMENSION || '1024');
-      const vector = (await embed(ruleText)) || new Array(dim).fill(0.001);
-      const saved  = await pcUpsert(id, vector, entry);
-      console.log(`  ✓ [KB/ingest] ${id} → Pinecone: ${saved ? '✓' : '✗'}`);
+      const vector = await embed(ruleText);
+      if (!vector) {
+        console.warn('  ⚠ [KB/ingest] embed() falló — entrada guardada solo en memoria, NO en Pinecone:', id);
+      } else {
+        const saved = await pcUpsert(id, vector, entry);
+        console.log(`  ✓ [KB/ingest] ${id} → Pinecone: ${saved ? '✓' : '✗'}`);
+      }
     } else {
       console.log(`  ✓ [KB/ingest] ${id} → memoria`);
     }
@@ -252,9 +255,12 @@ router.post('/feedback', async (req, res) => {
       };
       memoryStore.push(fullEntry);
       if (cfg()) {
-        const dim    = parseInt(process.env.PINECONE_DIMENSION || '1024');
-        const vector = (await embed(entry.text)) || new Array(dim).fill(0.001);
-        await pcUpsert(id, vector, fullEntry);
+        const vector = await embed(entry.text);
+        if (!vector) {
+          console.warn('  ⚠ [KB/feedback] embed() falló — guardado solo en memoria:', id);
+        } else {
+          await pcUpsert(id, vector, fullEntry);
+        }
       }
       saved.push(id);
       console.log('  [KB/feedback] ' + status + ' guardado: ' + id);

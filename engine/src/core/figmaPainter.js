@@ -183,6 +183,7 @@ const PAINTER_META = {
     slot: 'list-item', repeatable: true,
     fullWidth: true, group: 'list',
   },
+  // [PAINTER_META_END]
 };
 
 // Fusión de los dos registries - painter_meta gana en caso de conflicto de nodeId
