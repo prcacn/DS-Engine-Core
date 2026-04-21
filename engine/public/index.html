@@ -1267,7 +1267,19 @@
         html += '<div class="sc-form">' + formGroup + '</div>';
       } else { html += renderComponent(comp, { domain, hasFilters, isDestructive, data }); i++; }
     }
-    html = '<div class="sc-screen"><div class="sc-scroll-body">' + html + '</div>' + (modalComp ? renderModal(modalComp, isDestructive) : '') + '</div>';
+    // Separar tab-bar del resto para pegarla al fondo
+    var tabBarHtml = '';
+    var tabBarComp = null;
+    for (var tbi = 0; tbi < bgComponents.length; tbi++) {
+      if (bgComponents[tbi].component === 'tab-bar') { tabBarComp = bgComponents[tbi]; break; }
+    }
+    if (tabBarComp) {
+      tabBarHtml = renderComponent(tabBarComp, { domain, hasFilters, isDestructive, data });
+      // Quitar tab-bar del html generado
+      var tabBarRendered = renderComponent(tabBarComp, { domain, hasFilters, isDestructive, data });
+      html = html.replace(tabBarRendered, '');
+    }
+    html = '<div class="sc-screen"><div class="sc-scroll-body">' + html + '</div>' + tabBarHtml + (modalComp ? renderModal(modalComp, isDestructive) : '') + '</div>';
     screen.innerHTML = html;
     document.getElementById('patternBadgeText').textContent = data.pattern + ' · ' + data.components.length + ' componentes';
     document.getElementById('patternBadge').style.display = 'block';
