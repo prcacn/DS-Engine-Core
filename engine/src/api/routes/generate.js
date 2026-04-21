@@ -200,12 +200,26 @@ router.post('/', async function(req, res, next) {
       });
 
       const variantComponents = deltaResult.proposal || [];
+
+      // Renderizar HTML con el renderer del servidor
       let variantHtml = '';
       try {
         variantHtml = renderScreen({ components: variantComponents, pattern: variantResult.base.pattern }, { withCSS: true });
       } catch(e) {
         console.warn('  ⚠ [generate] renderScreen variant error:', e.message);
       }
+
+      // Buscar reglas KB para enriquecer la respuesta (igual que flujo normal)
+      const variantKbRules = await kbSearch(brief, { topK: 5, minScore: 0.60 }).catch(() => []);
+
+      // Calcular signals para el score (igual que flujo normal)
+      const variantContracts = Object.values(loadContracts());
+      const variantScore = calculateScore({
+        pattern:   variantResult.base.pattern,
+        components: variantComponents,
+        intent:    { intent_type: variantResult.base.pattern, confidence: variantResult.confidence, constraints: {} },
+        contracts: variantContracts,
+      });
 
       return res.json({
         screen_id:    'var_' + Date.now(),
@@ -220,8 +234,10 @@ router.post('/', async function(req, res, next) {
         diff_summary: deltaResult.diff_summary,
         components:   variantComponents,
         html:         variantHtml,
+        kb_rules:     variantKbRules,
+        kb_changes:   [],
         status:       'NEEDS_REVIEW',
-        confidence:   { global: variantResult.confidence, status: 'NEEDS_REVIEW' },
+        confidence:   variantScore,
         violations:   [],
         meta: {
           engine_version: '1.0.0',
