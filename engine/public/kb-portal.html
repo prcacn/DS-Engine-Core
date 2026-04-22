@@ -1,55 +1,80 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DS Knowledge Base — Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,300;1,14..32,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #07080a;
-      --bg2:      #0d0f13;
-      --surface:  #12151a;
-      --surface2: #181c23;
-      --border:   #1f242d;
-      --border2:  #272d38;
-
-      --restriccion:   #ff4757;
-      --recomendacion: #7c6af7;
-      --normativa:     #f0a500;
-      --dspattern:     #00c97a;
-
-      --txt:  #dde3ed;
-      --txt2: #566070;
-      --txt3: #8a95a3;
-
-      --mono: 'IBM Plex Mono', monospace;
-      --sans: 'IBM Plex Sans', sans-serif;
-
-      --row-h: 52px;
+      --font: 'Inter', -apple-system, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', ui-monospace, monospace;
     }
 
-    /* ── BODY ── */
-    html, body { height: 100%; }
+    [data-theme="light"] {
+      --bg:            #FAFAF8;
+      --bg-surface:    #FFFFFF;
+      --bg-raised:     #F7F6F3;
+      --border:        rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.13);
+      --text:          #1A1A1A;
+      --text-2:        #6B6B6B;
+      --text-3:        #A8A3A0;
+      --nav-bg:        rgba(250,250,248,0.9);
+      --green:         #2A7A4B;
+      --green-bg:      rgba(42,122,75,0.09);
+      --amber:         #A05A00;
+      --amber-bg:      rgba(160,90,0,0.09);
+      --red:           #B03030;
+      --red-bg:        rgba(176,48,48,0.09);
+      --blue:          #1A4A8A;
+      --blue-bg:       rgba(26,74,138,0.09);
+    }
+
+    [data-theme="dark"] {
+      --bg:            #111110;
+      --bg-surface:    #1A1A18;
+      --bg-raised:     #222220;
+      --border:        rgba(255,255,255,0.07);
+      --border-strong: rgba(255,255,255,0.12);
+      --text:          #EDECEA;
+      --text-2:        #7A7672;
+      --text-3:        #4A4744;
+      --nav-bg:        rgba(17,17,16,0.92);
+      --green:         #4ABA7A;
+      --green-bg:      rgba(74,186,122,0.1);
+      --amber:         #D4830A;
+      --amber-bg:      rgba(212,131,10,0.1);
+      --red:           #E06060;
+      --red-bg:        rgba(224,96,96,0.1);
+      --blue:          #6AA0E8;
+      --blue-bg:       rgba(106,160,232,0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+
     body {
+      font-family: var(--font);
       background: var(--bg);
-      color: var(--txt);
-      font-family: var(--sans);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
       display: grid;
       grid-template-rows: auto 1fr;
-      min-height: 100vh;
-      overflow-x: hidden;
+      transition: background 0.25s, color 0.25s;
     }
 
-    /* scanline subtle */
-    body::after {
+    /* Noise */
+    body::before {
       content: '';
-      position: fixed; inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.008) 4px);
-      pointer-events: none; z-index: 9999;
+      position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      opacity: 0.02;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px;
     }
 
     /* ── TOPBAR ── */
@@ -58,431 +83,306 @@
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
       padding: 0 32px;
-      height: 52px;
+      height: 56px;
       border-bottom: 1px solid var(--border);
-      background: rgba(7,8,10,0.9);
-      backdrop-filter: blur(16px);
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       position: sticky; top: 0; z-index: 100;
+      transition: background 0.25s, border-color 0.25s;
     }
+
     .topbar-left { display: flex; align-items: center; gap: 16px; }
+
     .topbar-logo {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      color: var(--txt);
-      display: flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 600; letter-spacing: -0.3px;
+      color: var(--text); display: flex; align-items: center; gap: 8px;
+      text-decoration: none;
     }
-    .logo-kb {
-      width: 26px; height: 26px;
-      background: var(--recomendacion);
-      border-radius: 4px;
+
+    .logo-mark {
+      width: 22px; height: 22px;
+      background: var(--text); border-radius: 5px;
       display: grid; place-items: center;
-      font-size: 11px; font-weight: 700; color: white;
-      font-family: var(--mono);
+      transition: background 0.25s;
     }
-    .topbar-sep { width: 1px; height: 18px; background: var(--border2); }
-    .engine-link {
-      font-family: var(--mono); font-size: 10px; color: var(--txt2);
-      text-decoration: none; transition: color 0.15s; letter-spacing: 0.05em;
+    .logo-mark svg { width: 11px; height: 11px; stroke: var(--bg); fill: none; stroke-width: 1.5; stroke-linecap: round; transition: stroke 0.25s; }
+
+    .topbar-sep { width: 1px; height: 18px; background: var(--border-strong); }
+
+    .back-link {
+      font-size: 12.5px; color: var(--text-2);
+      text-decoration: none; letter-spacing: -0.1px;
+      display: flex; align-items: center; gap: 5px;
+      transition: color 0.15s;
     }
-    .engine-link:hover { color: var(--txt3); }
+    .back-link:hover { color: var(--text); }
+    .back-link svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
 
     .topbar-center {
-      font-family: var(--mono); font-size: 10px;
-      color: var(--txt2); letter-spacing: 0.12em;
-      text-transform: uppercase; text-align: center;
+      font-size: 10px; font-weight: 500; letter-spacing: 0.9px;
+      text-transform: uppercase; color: var(--text-3); text-align: center;
     }
 
     .topbar-right { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-    .status-pill {
-      display: flex; align-items: center; gap: 6px;
-      font-family: var(--mono); font-size: 10px; color: var(--txt2);
+
+    .status-pill { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); font-weight: 500; letter-spacing: -0.1px; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .theme-btn {
+      width: 32px; height: 32px; border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-surface);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--text-2); transition: all 0.15s;
     }
-    .status-dot {
-      width: 5px; height: 5px; border-radius: 50%;
-      background: var(--dspattern);
-      animation: blink 2.5s ease-in-out infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+    .theme-btn:hover { color: var(--text); border-color: var(--text-2); }
+    .theme-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
 
     /* ── LAYOUT ── */
     .app {
       display: grid;
-      grid-template-columns: 260px 1fr 340px;
-      height: calc(100vh - 52px);
+      grid-template-columns: 240px 1fr 320px;
+      height: calc(100vh - 56px);
       overflow: hidden;
     }
 
-    /* ── SIDEBAR IZQUIERDA — Filtros ── */
-    .sidebar-left {
+    /* ── SIDEBAR ── */
+    .sidebar {
       border-right: 1px solid var(--border);
-      padding: 24px 20px;
+      padding: 24px 16px;
       display: flex; flex-direction: column; gap: 24px;
       overflow-y: auto;
+      transition: border-color 0.25s;
     }
-    .sidebar-left::-webkit-scrollbar { width: 2px; }
-    .sidebar-left::-webkit-scrollbar-thumb { background: var(--border2); }
+    .sidebar::-webkit-scrollbar { width: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
 
-    .section-label {
-      font-family: var(--mono); font-size: 9px;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--txt2); margin-bottom: 10px;
-    }
-
-    /* Filtros de categoria */
-    .cat-filters { display: flex; flex-direction: column; gap: 4px; }
-    .cat-btn {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 12px; border-radius: 6px;
-      border: none; cursor: pointer;
-      background: transparent; width: 100%;
-      font-family: var(--sans); font-size: 12px;
-      color: var(--txt3); transition: all 0.15s;
-      text-align: left;
-    }
-    .cat-btn:hover { background: var(--surface); color: var(--txt); }
-    .cat-btn.active { background: var(--surface2); color: var(--txt); }
-    .cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .cat-count {
-      margin-left: auto;
-      font-family: var(--mono); font-size: 10px;
-      color: var(--txt2); min-width: 20px; text-align: right;
+    .sidebar-section-label {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--text-3); margin-bottom: 8px;
     }
 
-    /* Filtro prioridad */
-    .pri-filters { display: flex; flex-direction: column; gap: 4px; }
-    .pri-btn {
-      display: flex; align-items: center; gap: 8px;
-      padding: 7px 12px; border-radius: 6px;
-      border: none; cursor: pointer;
-      background: transparent; width: 100%;
-      font-family: var(--mono); font-size: 11px;
-      color: var(--txt2); transition: all 0.15s; text-align: left;
-    }
-    .pri-btn:hover { background: var(--surface); color: var(--txt); }
-    .pri-btn.active { background: var(--surface2); }
-    .pri-btn.active.alta  { color: var(--restriccion); }
-    .pri-btn.active.media { color: var(--normativa); }
-    .pri-btn.active.baja  { color: var(--txt3); }
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; }
+    .stat-cell { background: var(--bg-surface); padding: 12px 13px; transition: background 0.25s; }
+    .stat-value { font-size: 22px; font-weight: 300; letter-spacing: -1.2px; color: var(--text); line-height: 1; margin-bottom: 3px; }
+    .stat-label { font-size: 11px; color: var(--text-3); letter-spacing: -0.1px; line-height: 1.3; }
 
-    /* Stats sidebar */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 12px 10px;
-      display: flex; flex-direction: column; gap: 3px;
+    /* Type filters */
+    .type-filters { display: flex; flex-direction: column; gap: 3px; }
+    .type-filter {
+      display: flex; align-items: center; gap: 9px;
+      padding: 7px 9px; border-radius: 6px;
+      cursor: pointer; transition: all 0.15s;
+      font-size: 12.5px; color: var(--text-2);
+      border: none; background: none; text-align: left;
+      font-family: var(--font); letter-spacing: -0.1px;
     }
-    .stat-num { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--txt); line-height: 1; }
-    .stat-lbl { font-family: var(--mono); font-size: 9px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.08em; }
+    .type-filter:hover { background: var(--border); color: var(--text); }
+    .type-filter.active { background: var(--bg-raised); color: var(--text); font-weight: 500; }
+    .type-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .type-count { margin-left: auto; font-size: 11px; font-family: var(--mono); color: var(--text-3); }
 
-    /* Config */
-    .config-fields { display: flex; flex-direction: column; gap: 8px; }
-    .cfg-item { display: flex; flex-direction: column; gap: 4px; }
-    .cfg-label { font-family: var(--mono); font-size: 9px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.08em; }
-    .cfg-input {
-      background: var(--surface); border: 1px solid var(--border2);
-      border-radius: 5px; padding: 7px 10px;
-      font-family: var(--mono); font-size: 11px; color: var(--txt);
-      outline: none; width: 100%;
+    /* Geo filters */
+    .geo-filters { display: flex; flex-wrap: wrap; gap: 5px; }
+    .geo-chip {
+      padding: 4px 10px; border-radius: 16px; font-size: 11.5px;
+      cursor: pointer; border: 1px solid var(--border-strong);
+      color: var(--text-2); background: var(--bg-surface);
+      font-family: var(--font); transition: all 0.12s; letter-spacing: -0.1px;
     }
-    .cfg-input:focus { border-color: var(--recomendacion); }
-    .cfg-input::placeholder { color: var(--txt2); }
+    .geo-chip:hover { color: var(--text); border-color: var(--text-2); }
+    .geo-chip.active { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 500; }
 
-    /* ── CENTRO — Lista de entradas ── */
-    .main-content {
-      display: flex; flex-direction: column;
-      overflow: hidden;
+    /* ── MAIN CONTENT ── */
+    .main {
+      overflow-y: auto; padding: 24px 28px;
+      transition: background 0.25s;
     }
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
 
-    /* Barra de búsqueda + acciones */
-    .toolbar {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .search-wrap {
-      flex: 1; position: relative;
-    }
-    .search-icon {
-      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-      font-family: var(--mono); font-size: 11px; color: var(--txt2);
-    }
+    .main-header { margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+    .main-title { font-size: 14px; font-weight: 300; letter-spacing: -0.6px; color: var(--text); }
+    .main-title strong { font-weight: 600; }
+    .main-count { font-size: 11.5px; color: var(--text-3); font-family: var(--mono); letter-spacing: -0.1px; }
+
+    /* Search */
+    .search-wrap { position: relative; margin-bottom: 20px; }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
+    .search-icon svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
     .search-input {
-      width: 100%; background: var(--surface);
-      border: 1px solid var(--border2); border-radius: 6px;
-      padding: 8px 12px 8px 30px;
-      font-family: var(--mono); font-size: 12px;
-      color: var(--txt); outline: none;
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 7px;
+      padding: 9px 12px 9px 36px;
+      font-size: 13px; font-family: var(--font);
+      color: var(--text); outline: none;
+      transition: border-color 0.15s, background 0.25s;
+      letter-spacing: -0.1px;
     }
-    .search-input:focus { border-color: var(--recomendacion); }
-    .search-input::placeholder { color: var(--txt2); }
+    .search-input::placeholder { color: var(--text-3); }
+    .search-input:focus { border-color: var(--text-2); }
 
-    .btn-add {
-      display: flex; align-items: center; gap: 7px;
-      padding: 8px 14px;
-      background: var(--recomendacion);
-      border: none; border-radius: 6px;
-      font-family: var(--mono); font-size: 11px; font-weight: 700;
-      color: white; cursor: pointer; white-space: nowrap;
-      transition: opacity 0.15s; letter-spacing: 0.04em;
-    }
-    .btn-add:hover { opacity: 0.85; }
-
-    .toolbar-count {
-      font-family: var(--mono); font-size: 10px; color: var(--txt2);
-      white-space: nowrap;
-    }
-
-    /* Lista */
-    .entries-list {
-      flex: 1; overflow-y: auto;
-      padding: 0;
-    }
-    .entries-list::-webkit-scrollbar { width: 2px; }
-    .entries-list::-webkit-scrollbar-thumb { background: var(--border2); }
+    /* Entry grid */
+    .entry-grid { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border-strong); border-radius: 9px; overflow: hidden; }
 
     .entry-row {
-      display: grid;
-      grid-template-columns: 8px 1fr auto;
-      gap: 0;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.1s;
-      animation: rowIn 0.25s ease forwards;
-      opacity: 0;
+      background: var(--bg-surface);
+      padding: 14px 18px;
+      cursor: pointer; transition: background 0.12s;
+      display: flex; flex-direction: column; gap: 6px;
     }
-    @keyframes rowIn { to { opacity: 1; } }
-    .entry-row:hover { background: var(--surface); }
-    .entry-row.selected { background: var(--surface2); }
+    .entry-row:hover { background: var(--bg-raised); }
 
-    .entry-stripe { width: 8px; flex-shrink: 0; }
-    .entry-stripe.restriccion   { background: var(--restriccion); }
-    .entry-stripe.recomendacion { background: var(--recomendacion); }
-    .entry-stripe.normativa     { background: var(--normativa); }
-    .entry-stripe.ds-pattern    { background: var(--dspattern); }
+    .entry-row-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .entry-row-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
 
-    .entry-body { padding: 14px 16px; flex: 1; min-width: 0; }
-    .entry-content {
-      font-size: 13px; color: var(--txt); line-height: 1.5;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      margin-bottom: 6px;
+    .entry-type-badge {
+      font-size: 9.5px; font-weight: 600;
+      padding: 2px 7px; border-radius: 3px;
+      text-transform: uppercase; letter-spacing: 0.3px;
+      flex-shrink: 0;
     }
-    .entry-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .tag-cat {
-      font-family: var(--mono); font-size: 9px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px;
-      padding: 2px 6px; border-radius: 3px;
-    }
-    .tag-cat.restriccion   { background: rgba(255,71,87,0.12);   color: var(--restriccion); }
-    .tag-cat.recomendacion { background: rgba(124,106,247,0.12); color: var(--recomendacion); }
-    .tag-cat.normativa     { background: rgba(240,165,0,0.12);   color: var(--normativa); }
-    .tag-cat.ds-pattern    { background: rgba(0,201,122,0.12);   color: var(--dspattern); }
-    .tag-pri {
-      font-family: var(--mono); font-size: 9px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px;
-      padding: 2px 6px; border-radius: 3px;
-    }
-    .tag-pri.alta  { background: rgba(255,71,87,0.08);  color: #ff7a85; }
-    .tag-pri.media { background: rgba(240,165,0,0.08);  color: #f0c060; }
-    .tag-pri.baja  { background: rgba(138,149,163,0.1); color: var(--txt2); }
-    .tag-geo {
-      font-family: var(--mono); font-size: 9px;
-      color: var(--txt2); padding: 2px 6px;
-      background: var(--surface2); border-radius: 3px;
-    }
-    .tag-autor {
-      font-family: var(--mono); font-size: 9px; color: var(--txt2);
-      font-style: italic;
-    }
-    .tag-date { font-family: var(--mono); font-size: 9px; color: var(--border2); margin-left: auto; }
+    .badge-restriccion   { background: var(--red-bg);   color: var(--red);   }
+    .badge-recomendacion { background: var(--green-bg);  color: var(--green); }
+    .badge-normativa     { background: var(--amber-bg);  color: var(--amber); }
+    .badge-ds-pattern    { background: var(--blue-bg);   color: var(--blue);  }
+    .badge-screen-doc    { background: var(--border);    color: var(--text-2); border: 1px solid var(--border-strong); }
 
-    .entry-actions { padding: 14px 12px; display: flex; align-items: center; }
-    .btn-del {
-      width: 24px; height: 24px; border-radius: 4px;
-      border: 1px solid var(--border2); background: transparent;
-      cursor: pointer; font-size: 12px; color: var(--txt2);
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s; opacity: 0;
-    }
-    .entry-row:hover .btn-del { opacity: 1; }
-    .btn-del:hover { border-color: var(--restriccion); color: var(--restriccion); background: rgba(255,71,87,0.08); }
+    .entry-geo { font-size: 11px; color: var(--text-3); letter-spacing: -0.1px; flex-shrink: 0; }
+    .entry-priority { font-size: 11px; font-weight: 500; letter-spacing: -0.1px; flex-shrink: 0; }
+    .pri-alta { color: var(--red); }
+    .pri-media { color: var(--amber); }
+    .pri-baja { color: var(--text-3); }
 
-    /* Empty state */
-    .empty-state {
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      height: 100%; gap: 10px; opacity: 0.4;
-    }
-    .empty-state.visible { display: flex; }
-    .empty-state-icon { font-size: 32px; }
-    .empty-state-txt { font-family: var(--mono); font-size: 11px; color: var(--txt2); text-align: center; }
+    .entry-text { font-size: 12.5px; color: var(--text); line-height: 1.55; letter-spacing: -0.1px; }
+    .entry-text.truncated { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* ── SIDEBAR DERECHA — Formulario ── */
-    .sidebar-right {
+    .entry-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 2px; }
+    .entry-tag { font-size: 10.5px; padding: 2px 7px; border-radius: 4px; background: var(--border); color: var(--text-3); letter-spacing: -0.1px; }
+
+    .entry-row-meta { display: flex; align-items: center; justify-content: space-between; }
+    .entry-id { font-size: 10px; color: var(--text-3); font-family: var(--mono); }
+    .entry-del-btn {
+      background: none; border: none; color: var(--text-3);
+      cursor: pointer; font-size: 14px; padding: 0 2px;
+      opacity: 0.4; transition: opacity 0.12s, color 0.12s;
+    }
+    .entry-del-btn:hover { opacity: 1; color: var(--red); }
+
+    /* Empty/loading state */
+    .list-empty {
+      padding: 60px 24px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .list-empty-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--border); display: flex; align-items: center; justify-content: center; }
+    .list-empty-icon svg { width: 18px; height: 18px; stroke: var(--text-3); fill: none; stroke-width: 1.5; stroke-linecap: round; }
+    .list-empty-title { font-size: 13.5px; font-weight: 500; color: var(--text-2); letter-spacing: -0.2px; }
+    .list-empty-desc { font-size: 12px; color: var(--text-3); letter-spacing: -0.1px; }
+
+    /* ── RIGHT PANEL — Ingest ── */
+    .panel-right {
       border-left: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      overflow: hidden;
+      padding: 24px 20px;
+      display: flex; flex-direction: column; gap: 16px;
+      overflow-y: auto; transition: border-color 0.25s;
     }
+    .panel-right::-webkit-scrollbar { width: 3px; }
+    .panel-right::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
 
-    .form-header {
-      padding: 18px 20px 14px;
+    .panel-section-label {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--text-3); padding-bottom: 12px;
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0;
     }
-    .form-title { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--txt); }
-    .form-subtitle { font-family: var(--mono); font-size: 9px; color: var(--txt2); margin-top: 2px; }
-    .form-mode-badge {
-      font-family: var(--mono); font-size: 9px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.06em;
-      padding: 3px 8px; border-radius: 3px;
-    }
-    .form-mode-badge.add    { background: rgba(124,106,247,0.15); color: var(--recomendacion); }
-    .form-mode-badge.detail { background: rgba(0,201,122,0.1);    color: var(--dspattern); }
 
-    .form-body {
-      flex: 1; overflow-y: auto;
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 14px;
-    }
-    .form-body::-webkit-scrollbar { width: 2px; }
-    .form-body::-webkit-scrollbar-thumb { background: var(--border2); }
+    .field-block { display: flex; flex-direction: column; gap: 5px; }
+    .field-label { font-size: 10px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-3); }
 
-    .field { display: flex; flex-direction: column; gap: 5px; }
-    .field-label { font-family: var(--mono); font-size: 9px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.1em; }
-    .field-input, .field-textarea, .field-select {
-      background: var(--surface); border: 1px solid var(--border2);
-      border-radius: 6px; padding: 10px 12px;
-      font-family: var(--sans); font-size: 13px; color: var(--txt);
-      outline: none; transition: border-color 0.2s; width: 100%;
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .type-pill {
+      padding: 8px 6px; border-radius: 6px; text-align: center;
+      cursor: pointer; border: 1px solid var(--border-strong);
+      background: var(--bg-surface); transition: all 0.12s;
     }
-    .field-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
-    .field-input:focus, .field-textarea:focus, .field-select:focus { border-color: var(--recomendacion); }
-    .field-input::placeholder, .field-textarea::placeholder { color: var(--txt2); }
-    .field-select { cursor: pointer; }
-    .field-select option { background: var(--surface2); }
+    .type-pill:hover { border-color: var(--text-2); }
+    .type-pill.sel { background: var(--bg-raised); border-color: var(--text); }
+    .tp-dot { width: 7px; height: 7px; border-radius: 50%; margin: 0 auto 4px; }
+    .tp-name { font-size: 11px; color: var(--text-2); font-weight: 400; letter-spacing: -0.1px; }
+    .type-pill.sel .tp-name { color: var(--text); font-weight: 500; }
 
-    .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .frow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-    /* Color pills para categoria */
-    .cat-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .cat-pill {
-      padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border2);
-      cursor: pointer; font-family: var(--mono); font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.05em; color: var(--txt2);
-      background: transparent; transition: all 0.15s; text-align: center;
+    select, textarea {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      font-family: var(--font);
+      color: var(--text); outline: none;
+      transition: border-color 0.15s, background 0.25s;
+      -webkit-appearance: none;
     }
-    .cat-pill:hover { border-color: var(--border2); background: var(--surface2); }
-    .cat-pill.active.restriccion   { border-color: var(--restriccion);   color: var(--restriccion);   background: rgba(255,71,87,0.08); }
-    .cat-pill.active.recomendacion { border-color: var(--recomendacion); color: var(--recomendacion); background: rgba(124,106,247,0.08); }
-    .cat-pill.active.normativa     { border-color: var(--normativa);     color: var(--normativa);     background: rgba(240,165,0,0.08); }
-    .cat-pill.active.ds-pattern    { border-color: var(--dspattern);     color: var(--dspattern);     background: rgba(0,201,122,0.08); }
+    textarea { resize: none; }
+    textarea::placeholder { color: var(--text-3); }
+    select:focus, textarea:focus { border-color: var(--text-2); }
 
-    /* Pri pills */
-    .pri-pills { display: flex; gap: 6px; }
-    .pri-pill {
-      flex: 1; padding: 7px; border-radius: 6px; border: 1px solid var(--border2);
-      cursor: pointer; font-family: var(--mono); font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.05em; color: var(--txt2);
-      background: transparent; transition: all 0.15s; text-align: center;
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '';
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid var(--text-3);
+      pointer-events: none;
     }
-    .pri-pill:hover { background: var(--surface2); }
-    .pri-pill.active.alta  { border-color: var(--restriccion);   color: var(--restriccion);   background: rgba(255,71,87,0.08); }
-    .pri-pill.active.media { border-color: var(--normativa);     color: var(--normativa);     background: rgba(240,165,0,0.08); }
-    .pri-pill.active.baja  { border-color: var(--txt3);          color: var(--txt3);          background: rgba(138,149,163,0.06); }
 
-    .form-footer {
-      padding: 14px 20px;
-      border-top: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 8px;
-      flex-shrink: 0;
+    .btn-primary {
+      width: 100%; background: var(--text); color: var(--bg);
+      border: none; border-radius: 7px; padding: 11px 16px;
+      font-size: 13px; font-weight: 500; font-family: var(--font);
+      letter-spacing: -0.2px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      transition: opacity 0.15s, transform 0.15s;
     }
-    .btn-submit {
-      width: 100%; padding: 12px;
-      background: var(--recomendacion); border: none; border-radius: 6px;
-      font-family: var(--mono); font-size: 12px; font-weight: 700;
-      letter-spacing: 0.06em; color: white; cursor: pointer;
-      transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-submit:hover:not(:disabled) { opacity: 0.85; }
-    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-reset {
-      width: 100%; padding: 9px;
-      background: transparent; border: 1px solid var(--border2); border-radius: 6px;
-      font-family: var(--mono); font-size: 11px;
-      color: var(--txt2); cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-reset:hover { border-color: var(--txt2); color: var(--txt); }
+    .btn-primary:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+    .btn-primary svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .status-msg { padding: 9px 11px; border-radius: 6px; font-size: 12px; line-height: 1.45; display: none; letter-spacing: -0.1px; }
+    .status-msg.show    { display: flex; align-items: center; gap: 7px; }
+    .status-msg.loading { background: var(--bg-raised); color: var(--text-2); border: 1px solid var(--border); }
+    .status-msg.success { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(42,122,75,0.25); }
+    .status-msg.error   { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(176,48,48,0.25); }
+    .status-msg svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; stroke-linecap: round; stroke-linejoin: round; }
 
     /* Spinner */
-    .spin { width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:sp 0.7s linear infinite;display:none; }
-    @keyframes sp { to { transform:rotate(360deg); } }
+    .spinner { display: inline-block; width: 12px; height: 12px; border: 1.5px solid var(--border-strong); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 24px; right: 24px;
-      background: var(--surface2); border: 1px solid var(--border2);
-      border-radius: 8px; padding: 12px 16px;
-      font-family: var(--mono); font-size: 12px; color: var(--txt);
-      display: flex; align-items: center; gap: 8px;
-      transform: translateY(20px); opacity: 0;
-      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-      z-index: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    /* Detail panel (right-side selected entry) */
+    .entry-detail {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px; padding: 14px;
+      display: flex; flex-direction: column; gap: 10px;
     }
-    .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.ok { border-color: rgba(0,201,122,0.3); }
-    .toast.error { border-color: rgba(255,71,87,0.3); }
-    .toast.toast-warn { border-color: rgba(255,165,0,0.4); min-width: 420px; gap: 12px; }
-    .toast-icon { font-size: 14px; }
-
-    /* Detail view en sidebar derecha */
-    .detail-body {
-      flex: 1; overflow-y: auto; padding: 20px;
-      display: flex; flex-direction: column; gap: 16px;
-    }
-    .detail-content {
-      font-size: 14px; color: var(--txt); line-height: 1.7;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 16px;
-    }
-    .detail-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 0; border-bottom: 1px solid var(--border);
-      font-family: var(--mono);
-    }
-    .detail-row:last-child { border-bottom: none; }
-    .detail-key { font-size: 9px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.1em; }
-    .detail-val { font-size: 11px; color: var(--txt); font-weight: 500; }
-    .detail-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-
-    .btn-detail-del {
-      width: 100%; padding: 10px;
-      background: transparent; border: 1px solid rgba(255,71,87,0.3); border-radius: 6px;
-      font-family: var(--mono); font-size: 11px; font-weight: 700;
-      color: var(--restriccion); cursor: pointer;
-      transition: all 0.15s; margin-top: 4px;
-    }
-    .btn-detail-del:hover { background: rgba(255,71,87,0.08); border-color: var(--restriccion); }
-    .btn-new-entry {
-      width: 100%; padding: 10px;
-      background: transparent; border: 1px solid var(--border2); border-radius: 6px;
-      font-family: var(--mono); font-size: 11px;
-      color: var(--txt2); cursor: pointer; transition: all 0.15s;
-    }
-    .btn-new-entry:hover { border-color: var(--recomendacion); color: var(--recomendacion); }
-
-    /* Divider label */
-    .form-divider {
-      display: flex; align-items: center; gap: 8px;
-      font-family: var(--mono); font-size: 9px;
-      color: var(--txt2); text-transform: uppercase; letter-spacing: 0.1em;
-    }
-    .form-divider::before, .form-divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
+    .detail-header { display: flex; align-items: center; gap: 8px; }
+    .detail-full-text { font-size: 12.5px; color: var(--text); line-height: 1.6; letter-spacing: -0.1px; }
+    .detail-meta { display: flex; flex-direction: column; gap: 4px; }
+    .detail-meta-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); letter-spacing: -0.1px; }
+    .detail-meta-row strong { color: var(--text-2); font-weight: 500; }
+    .divider { height: 1px; background: var(--border); }
   </style>
 </head>
 <body>
@@ -490,562 +390,426 @@
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-left">
-    <div class="topbar-logo">
-      <div class="logo-kb">KB</div>
-      DS KNOWLEDGE BASE
-    </div>
+    <a href="/" class="topbar-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 13 13"><path d="M2 2.5h9M2 6.5h6M2 10.5h8"/></svg>
+      </div>
+      Simple
+    </a>
     <div class="topbar-sep"></div>
-    <a class="engine-link" href="/" title="Volver al Screen Generator">← screen generator</a>
+    <a href="/" class="back-link">
+      <svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>
+      Engine
+    </a>
   </div>
-  <div class="topbar-center">// portal de gestión</div>
+  <div class="topbar-center">Knowledge Base</div>
   <div class="topbar-right">
     <div class="status-pill">
       <div class="status-dot" id="statusDot"></div>
-      <span id="statusText">conectando...</span>
+      <span id="statusText">Conectando…</span>
     </div>
+    <button class="theme-btn" id="themeBtn" title="Cambiar tema">
+      <svg id="themeIcon" viewBox="0 0 16 16">
+        <circle cx="8" cy="8" r="3" stroke-width="1.5"/>
+        <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06" stroke-width="1.5"/>
+      </svg>
+    </button>
   </div>
 </div>
 
 <!-- APP -->
 <div class="app">
 
-  <!-- SIDEBAR IZQUIERDA -->
-  <div class="sidebar-left">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
     <div>
-      <div class="section-label">// categorías</div>
-      <div class="cat-filters">
-        <button class="cat-btn active" data-cat="" onclick="setCatFilter(this)">
-          <span class="cat-dot" style="background:var(--txt2)"></span>
+      <div class="sidebar-section-label">Resumen</div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-cell"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Reglas totales</div></div>
+        <div class="stat-cell"><div class="stat-value" id="statHigh">—</div><div class="stat-label">Alta prioridad</div></div>
+        <div class="stat-cell"><div class="stat-value" id="statGeos">—</div><div class="stat-label">Geografías</div></div>
+        <div class="stat-cell"><div class="stat-value" id="statTypes">—</div><div class="stat-label">Categorías</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar-section-label">Categoría</div>
+      <div class="type-filters" id="typeFilters">
+        <button class="type-filter active" data-cat="all">
+          <div class="type-dot" style="background:var(--text-3)"></div>
           Todas
-          <span class="cat-count" id="cnt-all">—</span>
+          <span class="type-count" id="cnt-all">—</span>
         </button>
-        <button class="cat-btn" data-cat="restriccion" onclick="setCatFilter(this)">
-          <span class="cat-dot" style="background:var(--restriccion)"></span>
+        <button class="type-filter" data-cat="restriccion">
+          <div class="type-dot" style="background:var(--red)"></div>
           Restricción
-          <span class="cat-count" id="cnt-restriccion">0</span>
+          <span class="type-count" id="cnt-restriccion">—</span>
         </button>
-        <button class="cat-btn" data-cat="recomendacion" onclick="setCatFilter(this)">
-          <span class="cat-dot" style="background:var(--recomendacion)"></span>
+        <button class="type-filter" data-cat="recomendacion">
+          <div class="type-dot" style="background:var(--green)"></div>
           Recomendación
-          <span class="cat-count" id="cnt-recomendacion">0</span>
+          <span class="type-count" id="cnt-recomendacion">—</span>
         </button>
-        <button class="cat-btn" data-cat="normativa" onclick="setCatFilter(this)">
-          <span class="cat-dot" style="background:var(--normativa)"></span>
+        <button class="type-filter" data-cat="normativa">
+          <div class="type-dot" style="background:var(--amber)"></div>
           Normativa
-          <span class="cat-count" id="cnt-normativa">0</span>
+          <span class="type-count" id="cnt-normativa">—</span>
         </button>
-        <button class="cat-btn" data-cat="ds-pattern" onclick="setCatFilter(this)">
-          <span class="cat-dot" style="background:var(--dspattern)"></span>
+        <button class="type-filter" data-cat="ds-pattern">
+          <div class="type-dot" style="background:var(--blue)"></div>
           DS Pattern
-          <span class="cat-count" id="cnt-ds-pattern">0</span>
+          <span class="type-count" id="cnt-ds-pattern">—</span>
+        </button>
+        <button class="type-filter" data-cat="screen-doc">
+          <div class="type-dot" style="background:var(--text-3)"></div>
+          Screen Doc
+          <span class="type-count" id="cnt-screen-doc">—</span>
         </button>
       </div>
     </div>
 
     <div>
-      <div class="section-label">// prioridad</div>
-      <div class="pri-filters">
-        <button class="pri-btn active" data-pri="" onclick="setPriFilter(this)">Todas las prioridades</button>
-        <button class="pri-btn alta" data-pri="alta" onclick="setPriFilter(this)">↑ Alta</button>
-        <button class="pri-btn media" data-pri="media" onclick="setPriFilter(this)">→ Media</button>
-        <button class="pri-btn baja" data-pri="baja" onclick="setPriFilter(this)">↓ Baja</button>
+      <div class="sidebar-section-label">Geografía</div>
+      <div class="geo-filters" id="geoFilters">
+        <button class="geo-chip active" data-geo="all">Todas</button>
+        <button class="geo-chip" data-geo="españa">España</button>
+        <button class="geo-chip" data-geo="mexico">México</button>
+        <button class="geo-chip" data-geo="colombia">Colombia</button>
+        <button class="geo-chip" data-geo="global">Global</button>
       </div>
     </div>
 
-    <div>
-      <div class="section-label">// estadísticas</div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-num" id="stat-total">—</div>
-          <div class="stat-lbl">entradas</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-header">
+      <div class="main-title">Base de <strong>Conocimiento</strong></div>
+      <div class="main-count" id="mainCount">— reglas</div>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-icon"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg></div>
+      <input class="search-input" id="searchInput" type="text" placeholder="Buscar reglas, geografías, componentes…">
+    </div>
+
+    <div id="entryGrid" class="entry-grid">
+      <div class="list-empty">
+        <div class="list-empty-icon"><div class="spinner"></div></div>
+        <div class="list-empty-title">Cargando reglas…</div>
+        <div class="list-empty-desc">Conectando con Pinecone</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel-right">
+    <div class="panel-section-label">Añadir regla</div>
+
+    <div class="field-block">
+      <div class="field-label">Tipo</div>
+      <div class="type-grid">
+        <div class="type-pill sel" data-cat="restriccion" onclick="selType(this)">
+          <div class="tp-dot" style="background:var(--red)"></div>
+          <div class="tp-name">Restricción</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-alta">—</div>
-          <div class="stat-lbl">prioridad alta</div>
+        <div class="type-pill" data-cat="recomendacion" onclick="selType(this)">
+          <div class="tp-dot" style="background:var(--green)"></div>
+          <div class="tp-name">Recom.</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-restriccion">—</div>
-          <div class="stat-lbl">restricciones</div>
+        <div class="type-pill" data-cat="normativa" onclick="selType(this)">
+          <div class="tp-dot" style="background:var(--amber)"></div>
+          <div class="tp-name">Normativa</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-expiran">—</div>
-          <div class="stat-lbl">próx. expirar</div>
+        <div class="type-pill" data-cat="ds-pattern" onclick="selType(this)">
+          <div class="tp-dot" style="background:var(--blue)"></div>
+          <div class="tp-name">DS Pattern</div>
         </div>
       </div>
     </div>
 
-    <div>
-      <div class="section-label">// configuración</div>
-      <div class="config-fields">
-        <div class="cfg-item">
-          <div class="cfg-label">Engine URL</div>
-          <input class="cfg-input" id="cfgUrl" value="https://ds-ia-ready-engine-production.up.railway.app">
+    <div class="frow2">
+      <div class="field-block">
+        <div class="field-label">Prioridad</div>
+        <div class="select-wrap">
+          <select id="newPriority">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Media</option>
+            <option value="baja">Baja</option>
+          </select>
         </div>
-        <div class="cfg-item">
-          <div class="cfg-label">API Key</div>
-          <input class="cfg-input" id="cfgKey" value="dev-key-local-2025" type="password">
+      </div>
+      <div class="field-block">
+        <div class="field-label">Geografía</div>
+        <div class="select-wrap">
+          <select id="newGeo">
+            <option value="global">Global</option>
+            <option value="españa">España</option>
+            <option value="mexico">México</option>
+            <option value="colombia">Colombia</option>
+          </select>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- CENTRO — Lista -->
-  <div class="main-content">
-    <div class="toolbar">
-      <div class="search-wrap">
-        <span class="search-icon">⌕</span>
-        <input class="search-input" id="searchInput" placeholder="buscar en knowledge base..." oninput="applyFilters()">
-      </div>
-      <span class="toolbar-count" id="toolbarCount">— entradas</span>
-      <button class="btn-add" onclick="showAddForm()">
-        <span>+</span> NUEVA ENTRADA
-      </button>
+    <div class="field-block">
+      <div class="field-label">Regla o decisión</div>
+      <textarea id="newText" style="height:90px" placeholder="Describe la regla, normativa o patrón de diseño…"></textarea>
     </div>
 
-    <div class="entries-list" id="entriesList">
-      <div class="empty-state visible" id="emptyState">
-        <div class="empty-state-icon">◈</div>
-        <div class="empty-state-txt">Cargando knowledge base...</div>
-      </div>
-    </div>
-  </div>
+    <button class="btn-primary" id="btnAdd">
+      Añadir a KB
+      <svg viewBox="0 0 13 13"><path d="M6.5 2v9M2 6.5h9"/></svg>
+    </button>
 
-  <!-- SIDEBAR DERECHA — Formulario / Detalle -->
-  <div class="sidebar-right" id="sidebarRight">
-    <!-- Formulario de nueva entrada -->
-    <div id="formView" style="display:flex;flex-direction:column;height:100%">
-      <div class="form-header">
-        <div>
-          <div class="form-title">NUEVA ENTRADA</div>
-          <div class="form-subtitle">Añadir conocimiento a la KB</div>
-        </div>
-        <div class="form-mode-badge add">nueva</div>
-      </div>
-      <div class="form-body">
+    <div class="status-msg" id="addStatus"></div>
 
-        <div class="field">
-          <div class="field-label">Regla / Conocimiento *</div>
-          <textarea class="field-textarea" id="fContent" placeholder="Describe la regla, restricción o conocimiento que quieres que el engine conozca..."></textarea>
-        </div>
+    <div class="divider" id="detailDivider" style="display:none"></div>
 
-        <div class="form-divider">categoría</div>
-        <div class="field">
-          <div class="cat-pills">
-            <button class="cat-pill active recomendacion" data-val="recomendacion" onclick="selectCat(this)">Recomendación</button>
-            <button class="cat-pill" data-val="restriccion" onclick="selectCat(this)">Restricción</button>
-            <button class="cat-pill" data-val="normativa" onclick="selectCat(this)">Normativa</button>
-            <button class="cat-pill" data-val="ds-pattern" onclick="selectCat(this)">DS Pattern</button>
-          </div>
-        </div>
-
-        <div class="form-divider">prioridad</div>
-        <div class="field">
-          <div class="pri-pills">
-            <button class="pri-pill active media" data-val="media" onclick="selectPri(this)">Media</button>
-            <button class="pri-pill" data-val="alta" onclick="selectPri(this)">Alta</button>
-            <button class="pri-pill" data-val="baja" onclick="selectPri(this)">Baja</button>
-          </div>
-        </div>
-
-        <div class="form-divider">metadatos</div>
-
-        <div class="fields-row">
-          <div class="field">
-            <div class="field-label">Tipo</div>
-            <input class="field-input" id="fTipo" placeholder="regla-de-negocio">
-          </div>
-          <div class="field">
-            <div class="field-label">Geografía</div>
-            <input class="field-input" id="fGeo" placeholder="Colombia">
-          </div>
-        </div>
-
-        <div class="field">
-          <div class="field-label">Autor / Equipo</div>
-          <input class="field-input" id="fAutor" placeholder="equipo-research">
-        </div>
-
-        <div class="field">
-          <div class="field-label">Fecha de expiración <span style="color:var(--txt2);font-weight:300">(opcional)</span></div>
-          <input class="field-input" id="fExpira" type="date">
-        </div>
-
-        <div class="field">
-          <div class="field-label">Fuente / Referencia <span style="color:var(--txt2);font-weight:300">(opcional)</span></div>
-          <input class="field-input" id="fFuente" placeholder="Estudio de usuario Q1 2025">
-        </div>
-
-      </div>
-      <div class="form-footer">
-        <button class="btn-submit" id="submitBtn" onclick="submitEntry()">
-          <div class="spin" id="submitSpin"></div>
-          <span id="submitTxt">GUARDAR EN KB</span>
-        </button>
-        <button class="btn-reset" onclick="resetForm()">Limpiar formulario</button>
-      </div>
-    </div>
-
-    <!-- Vista de detalle de una entrada -->
-    <div id="detailView" style="display:none;flex-direction:column;height:100%">
-      <div class="form-header">
-        <div>
-          <div class="form-title" id="detailTitle">DETALLE</div>
-          <div class="form-subtitle" id="detailId">—</div>
-        </div>
-        <div class="form-mode-badge detail">entrada</div>
-      </div>
-      <div class="detail-body" id="detailBody"></div>
-      <div class="form-footer">
-        <button class="btn-new-entry" onclick="showAddForm()">+ Nueva entrada</button>
-        <button class="btn-detail-del" id="detailDelBtn">✕ Eliminar esta entrada</button>
-      </div>
+    <div id="entryDetail" style="display:none">
+      <!-- populated on click -->
     </div>
   </div>
 
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <span class="toast-icon" id="toastIcon"></span>
-  <span id="toastMsg"></span>
 </div>
 
 <script>
-  var allEntries = [];
-  var filteredEntries = [];
-  var selectedEntry = null;
-  var activeCat = '';
-  var activePri = '';
-  var currentDeleteId = null;
+const API = 'https://ds-ia-ready-engine-production.up.railway.app';
+const KEY = 'dev-key-local-2025';
 
-  function getUrl()  { return document.getElementById('cfgUrl').value.replace(/\/$/, ''); }
-  function getKey()  { return document.getElementById('cfgKey').value; }
-  function headers() { return { 'Content-Type': 'application/json', 'X-API-Key': getKey() }; }
+let allEntries = [];
+let activeType = 'all';
+let activeGeo  = 'all';
+let searchQuery = '';
+let selectedCat = 'restriccion';
 
-  // ── HEALTH ─────────────────────────────────────────────────────────────────
-  async function checkHealth() {
-    var dot = document.getElementById('statusDot');
-    var txt = document.getElementById('statusText');
-    try {
-      var r = await fetch(getUrl() + '/health', { signal: AbortSignal.timeout(4000) });
-      if (r.ok) {
-        dot.style.background = 'var(--dspattern)';
-        txt.textContent = 'engine online';
-      } else {
-        dot.style.background = 'var(--normativa)';
-        txt.textContent = 'engine degraded';
-      }
-    } catch {
-      dot.style.background = 'var(--restriccion)';
-      txt.textContent = 'engine offline';
-    }
+// ── THEME ──
+const html = document.documentElement;
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  const icon = document.getElementById('themeIcon');
+  if (isDark) {
+    icon.innerHTML = '<path d="M13.5 8.5A5.5 5.5 0 017 2c0-.28.02-.55.06-.82A6 6 0 1014 9.94c-.27.04-.54.06-.82.06a5.5 5.5 0 01-.68-.5z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  } else {
+    icon.innerHTML = '<circle cx="8" cy="8" r="3" stroke-width="1.5"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06" stroke-width="1.5"/>';
   }
+});
 
-  // ── LOAD LIST ───────────────────────────────────────────────────────────────
-  async function loadEntries() {
-    try {
-      var r = await fetch(getUrl() + '/knowledge/list', { headers: headers() });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      var data = await r.json();
-      allEntries = data.entries || data.results || data || [];
-      applyFilters();
-      updateStats();
-    } catch(e) {
-      document.getElementById("entriesList").innerHTML = "<div class=\"empty-state visible\"><div class=\"empty-state-icon\">⚠</div><div class=\"empty-state-txt\">No se pudo cargar la KB — revisa la URL y API Key</div></div>"; document.getElementById("toolbarCount").textContent = "0 entradas";
-    }
+// ── HEALTH ──
+(async () => {
+  try {
+    const r = await fetch(API + '/health');
+    const d = await r.json();
+    const ok = d.status === 'ok';
+    document.getElementById('statusDot').style.background = ok ? 'var(--green)' : 'var(--red)';
+    document.getElementById('statusText').textContent = ok ? 'Engine activo' : 'Error';
+    document.getElementById('statusText').style.color = ok ? 'var(--green)' : 'var(--red)';
+  } catch {
+    document.getElementById('statusDot').style.background = 'var(--red)';
+    document.getElementById('statusText').textContent = 'Offline';
   }
+})();
 
-  // ── FILTROS ─────────────────────────────────────────────────────────────────
-  function setCatFilter(btn) {
-    document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    activeCat = btn.dataset.cat;
-    applyFilters();
+// ── LOAD ENTRIES ──
+async function loadEntries() {
+  showEmpty('Cargando…', 'Conectando con Pinecone');
+  try {
+    // Paginate through all vectors
+    let allVectors = [];
+    let paginationToken = null;
+    const PINECONE_HOST = null; // Will use API endpoint
+
+    const r = await fetch(API + '/knowledge/list', { headers: { 'X-API-Key': KEY } });
+    const data = await r.json();
+    allEntries = data.entries || [];
+    updateStats();
+    renderEntries();
+    document.getElementById('statusText').textContent = 'KB activa · ' + allEntries.length + ' reglas';
+  } catch (e) {
+    showEmpty('Error al cargar', e.message);
   }
+}
 
-  function setPriFilter(btn) {
-    document.querySelectorAll('.pri-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    activePri = btn.dataset.pri;
-    applyFilters();
-  }
+function updateStats() {
+  document.getElementById('statTotal').textContent = allEntries.length;
+  document.getElementById('statHigh').textContent = allEntries.filter(e => e.prioridad === 'alta').length;
+  const geos = new Set(allEntries.map(e => e.geografia).filter(Boolean));
+  document.getElementById('statGeos').textContent = geos.size || '—';
+  const cats = new Set(allEntries.map(e => e.categoria).filter(Boolean));
+  document.getElementById('statTypes').textContent = cats.size || '—';
 
-  function applyFilters() {
-    var q = document.getElementById('searchInput').value.toLowerCase().trim();
-    filteredEntries = allEntries.filter(function(e) {
-      if (activeCat && e.categoria !== activeCat) return false;
-      if (activePri && e.prioridad !== activePri) return false;
-      var txt = (e.text || e.content || '').toLowerCase();
-      if (q && !txt.includes(q) && !(e.autor||'').toLowerCase().includes(q) && !(e.geografia||'').toLowerCase().includes(q)) return false;
-      return true;
-    });
-    renderList();
-  }
-
-  // ── RENDER LIST ─────────────────────────────────────────────────────────────
-  function renderList() {
-    var list = document.getElementById('entriesList');
-    var empty = document.getElementById('emptyState');
-    var count = document.getElementById('toolbarCount');
-    count.textContent = filteredEntries.length + ' entrada' + (filteredEntries.length !== 1 ? 's' : '');
-
-    if (filteredEntries.length === 0) {
-      list.innerHTML = '';
-      list.appendChild(empty);
-      empty.className = 'empty-state visible';
-      empty.querySelector('.empty-state-txt').textContent = allEntries.length === 0 ? 'La KB está vacía. Añade la primera entrada →' : 'No hay resultados para esta búsqueda';
-      return;
-    }
-
-    empty.className = 'empty-state';
-    var html = '';
-    filteredEntries.forEach(function(e, i) {
-      var cat   = e.categoria  || 'recomendacion';
-      var pri   = e.prioridad  || 'media';
-      var txt   = e.text || e.content || '';
-      var geo   = e.geografia  ? '<span class="tag-geo">' + e.geografia + '</span>' : '';
-      var autor = e.autor      ? '<span class="tag-autor">— ' + e.autor + '</span>' : '';
-      var fecha = e.created_at ? '<span class="tag-date">' + fmtDate(e.created_at) + '</span>' : '';
-      html += '<div class="entry-row" data-id="' + (e.id||i) + '" data-idx="' + i + '" style="animation-delay:' + (i*30) + 'ms" onclick="selectEntry(' + i + ')">' +
-        '<div class="entry-stripe ' + cat + '"></div>' +
-        '<div class="entry-body">' +
-          '<div class="entry-content">' + txt + '</div>' +
-          '<div class="entry-meta">' +
-            '<span class="tag-cat ' + cat + '">' + cat + '</span>' +
-            '<span class="tag-pri ' + pri + '">' + pri + '</span>' +
-            geo + autor + fecha +
-          '</div>' +
-        '</div>' +
-        '<div class="entry-actions">' +
-          '<button class="btn-del" title="Eliminar" onclick="deleteEntry(event, \'' + (e.id||'') + '\')">✕</button>' +
-        '</div>' +
-      '</div>';
-    });
-    list.innerHTML = html;
-  }
-
-  function fmtDate(d) {
-    if (!d) return '';
-    try { return new Date(d).toLocaleDateString('es-ES', { day:'2-digit', month:'short' }); } catch { return ''; }
-  }
-
-  // ── STATS ────────────────────────────────────────────────────────────────────
-  function updateStats() {
-    document.getElementById('stat-total').textContent = allEntries.length;
-    document.getElementById('stat-alta').textContent = allEntries.filter(function(e){ return e.prioridad === 'alta'; }).length;
-    document.getElementById('stat-restriccion').textContent = allEntries.filter(function(e){ return e.categoria === 'restriccion'; }).length;
-
-    var now = Date.now();
-    var soon = allEntries.filter(function(e) {
-      if (!e.expira) return false;
-      var d = new Date(e.expira).getTime();
-      return d > now && d - now < 30 * 24 * 3600 * 1000;
-    }).length;
-    document.getElementById('stat-expiran').textContent = soon;
-
-    // Contadores sidebar
-    var cats = { restriccion: 0, recomendacion: 0, normativa: 0, 'ds-pattern': 0 };
-    allEntries.forEach(function(e) { if (cats[e.categoria] !== undefined) cats[e.categoria]++; });
-    document.getElementById('cnt-all').textContent = allEntries.length;
-    document.getElementById('cnt-restriccion').textContent   = cats.restriccion;
-    document.getElementById('cnt-recomendacion').textContent = cats.recomendacion;
-    document.getElementById('cnt-normativa').textContent     = cats.normativa;
-    document.getElementById('cnt-ds-pattern').textContent    = cats['ds-pattern'];
-  }
-
-  // ── SELECCIONAR ENTRADA ──────────────────────────────────────────────────────
-  function selectEntry(idx) {
-    var e = filteredEntries[idx];
-    if (!e) return;
-    selectedEntry = e;
-    currentDeleteId = e.id;
-
-    // Marcar fila activa
-    document.querySelectorAll('.entry-row').forEach(function(r) { r.classList.remove('selected'); });
-    document.querySelector('.entry-row[data-idx="' + idx + '"]').classList.add('selected');
-
-    // Mostrar detalle
-    document.getElementById('formView').style.display   = 'none';
-    document.getElementById('detailView').style.display = 'flex';
-
-    var cat = e.categoria || 'recomendacion';
-    var pri = e.prioridad || 'media';
-    document.getElementById('detailTitle').textContent = cat.toUpperCase();
-    document.getElementById('detailId').textContent    = e.id || '—';
-
-    var rows = [
-      { k: 'categoría', v: '<span class="tag-cat ' + cat + '">' + cat + '</span>' },
-      { k: 'prioridad', v: '<span class="tag-pri ' + pri + '">' + pri + '</span>' },
-    ];
-    if (e.tipo)       rows.push({ k: 'tipo',       v: e.tipo });
-    if (e.geografia)  rows.push({ k: 'geografía',  v: e.geografia });
-    if (e.autor)      rows.push({ k: 'autor',      v: e.autor });
-    if (e.fuente)     rows.push({ k: 'fuente',     v: e.fuente });
-    if (e.expira)     rows.push({ k: 'expira',     v: fmtDate(e.expira) });
-    if (e.created_at) rows.push({ k: 'creado',     v: fmtDate(e.created_at) });
-
-    document.getElementById('detailBody').innerHTML =
-      '<div class="detail-content">' + (e.text || e.content || '') + '</div>' +
-      '<div class="detail-block">' +
-        rows.map(function(r) { return '<div class="detail-row"><div class="detail-key">' + r.k + '</div><div class="detail-val">' + r.v + '</div></div>'; }).join('') +
-      '</div>';
-
-    document.getElementById('detailDelBtn').onclick = function() {
-      deleteEntry(null, currentDeleteId, true);
-    };
-  }
-
-  // ── FORMULARIO ───────────────────────────────────────────────────────────────
-  function showAddForm() {
-    document.getElementById('formView').style.display   = 'flex';
-    document.getElementById('detailView').style.display = 'none';
-    document.querySelectorAll('.entry-row').forEach(function(r) { r.classList.remove('selected'); });
-    document.getElementById('fContent').focus();
-  }
-
-  var _selectedCat = 'recomendacion';
-  var _selectedPri = 'media';
-
-  function selectCat(btn) {
-    document.querySelectorAll('.cat-pill').forEach(function(b) { b.className = 'cat-pill'; });
-    _selectedCat = btn.dataset.val;
-    btn.className = 'cat-pill active ' + _selectedCat;
-  }
-
-  function selectPri(btn) {
-    document.querySelectorAll('.pri-pill').forEach(function(b) { b.className = 'pri-pill'; });
-    _selectedPri = btn.dataset.val;
-    btn.className = 'pri-pill active ' + _selectedPri;
-  }
-
-  function resetForm() {
-    ['fContent','fTipo','fGeo','fAutor','fExpira','fFuente'].forEach(function(id) {
-      var el = document.getElementById(id); if (el) el.value = '';
-    });
-    _selectedCat = 'recomendacion';
-    _selectedPri = 'media';
-    document.querySelectorAll('.cat-pill').forEach(function(b) { b.className = 'cat-pill'; });
-    var catEl = document.querySelector('.cat-pill[data-val="recomendacion"]');
-    if (catEl) catEl.className = 'cat-pill active recomendacion';
-    document.querySelectorAll('.pri-pill').forEach(function(b) { b.className = 'pri-pill'; });
-    var priEl = document.querySelector('.pri-pill[data-val="media"]');
-    if (priEl) priEl.className = 'pri-pill active media';
-  }
-
-  // ── SUBMIT ───────────────────────────────────────────────────────────────────
-  async function submitEntry() {
-    var content = document.getElementById('fContent').value.trim();
-    if (!content) { toast('error', '✕', 'El campo de regla es obligatorio'); document.getElementById('fContent').focus(); return; }
-
-    var payload = {
-      text:       content,
-      categoria:  _selectedCat,
-      prioridad:  _selectedPri,
-      tipo:       document.getElementById('fTipo').value.trim()   || 'regla-de-negocio',
-      geografia:  document.getElementById('fGeo').value.trim()    || undefined,
-      autor:      document.getElementById('fAutor').value.trim()  || undefined,
-      fuente:     document.getElementById('fFuente').value.trim() || undefined,
-    };
-    var expira = document.getElementById('fExpira').value;
-    if (expira) payload.expira = new Date(expira).toISOString();
-
-    // Limpiar undefined
-    Object.keys(payload).forEach(function(k) { if (payload[k] === undefined) delete payload[k]; });
-
-    var btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    document.getElementById('submitSpin').style.display = 'block';
-    document.getElementById('submitTxt').textContent    = 'GUARDANDO...';
-
-    try {
-      var r = await fetch(getUrl() + '/knowledge/ingest', {
-        method: 'POST', headers: headers(), body: JSON.stringify(payload)
-      });
-      var data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
-      toast('ok', '✓', 'Entrada guardada en la KB');
-      resetForm();
-      // Resetear filtros para que la nueva entrada sea visible
-      activeCat = '';
-      activePri = '';
-      document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
-      var allBtn = document.querySelector('.cat-btn[data-cat=""]');
-      if (allBtn) allBtn.classList.add('active');
-      document.querySelectorAll('.pri-btn').forEach(function(b) { b.classList.remove('active'); });
-      var allPriBtn = document.querySelector('.pri-btn[data-pri=""]');
-      if (allPriBtn) allPriBtn.classList.add('active');
-      await loadEntries();
-    } catch(e) {
-      toast('error', '✕', 'Error al guardar: ' + e.message);
-    } finally {
-      btn.disabled = false;
-      document.getElementById('submitSpin').style.display = 'none';
-      document.getElementById('submitTxt').textContent    = 'GUARDAR EN KB';
-    }
-  }
-
-  // ── DELETE ───────────────────────────────────────────────────────────────────
-  async function deleteEntry(evt, id, fromDetail) {
-    if (evt) { evt.stopPropagation(); evt.preventDefault(); }
-    if (!id) { toast('error', '✕', 'ID de entrada no disponible'); return; }
-
-    // Confirmar con toast inline — evita confirm() nativo que puede bloquearse
-    var confirmed = await new Promise(function(resolve) {
-      var toastEl = document.getElementById('toast');
-      toastEl.className = 'toast toast-warn show';
-      toastEl.innerHTML =
-        '<span style="font-size:18px">⚠</span>' +
-        '<div style="flex:1"><strong>¿Eliminar esta entrada?</strong><br><span style="opacity:.7;font-size:11px">Esta acción no se puede deshacer</span></div>' +
-        '<button onclick="window._delResolve(true)"  style="background:#ff4757;border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px">ELIMINAR</button>' +
-        '<button onclick="window._delResolve(false)" style="background:transparent;border:1px solid #555;color:#aaa;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:6px">Cancelar</button>';
-      window._delResolve = function(val) {
-        toastEl.className = 'toast';
-        toastEl.innerHTML = '';
-        delete window._delResolve;
-        resolve(val);
-      };
-    });
-
-    if (!confirmed) return;
-
-    try {
-      var r = await fetch(getUrl() + '/knowledge/delete/' + id, {
-        method: 'DELETE', headers: headers()
-      });
-      var data = await r.json().catch(function(){ return {}; });
-      if (r.ok && data.ok) {
-        toast('ok', '✓', 'Entrada eliminada correctamente');
-        if (fromDetail) showAddForm();
-        await loadEntries();
-      } else {
-        toast('error', '✕', 'No se pudo eliminar: ' + (data.error || data.message || 'HTTP ' + r.status));
-      }
-    } catch(e) {
-      toast('error', '✕', 'Error al eliminar: ' + e.message);
-    }
-  }
-
-  // ── TOAST ────────────────────────────────────────────────────────────────────
-  var toastTimer = null;
-  function toast(type, icon, msg) {
-    var el = document.getElementById('toast');
-    document.getElementById('toastIcon').textContent = icon;
-    document.getElementById('toastMsg').textContent  = msg;
-    el.className = 'toast show ' + type;
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function() { el.className = 'toast'; }, 3500);
-  }
-
-  // ── INIT ─────────────────────────────────────────────────────────────────────
-  checkHealth();
-  setInterval(checkHealth, 12000);
-  loadEntries();
-  setInterval(loadEntries, 60000); // auto-refresh cada minuto
-
-  // Enter en textarea → no envía, deja escribir
-  document.getElementById('fContent').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitEntry();
+  // Update counts
+  const types = ['all','restriccion','recomendacion','normativa','ds-pattern','screen-doc'];
+  types.forEach(t => {
+    const el = document.getElementById('cnt-' + t);
+    if (el) el.textContent = t === 'all' ? allEntries.length : allEntries.filter(e => e.categoria === t).length;
   });
+}
+
+function renderEntries() {
+  let filtered = allEntries;
+  if (activeType !== 'all') filtered = filtered.filter(e => e.categoria === activeType);
+  if (activeGeo  !== 'all') filtered = filtered.filter(e => (e.geografia || '').toLowerCase() === activeGeo);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(e =>
+      (e.text || '').toLowerCase().includes(q) ||
+      (e.categoria || '').toLowerCase().includes(q) ||
+      (e.geografia || '').toLowerCase().includes(q)
+    );
+  }
+
+  document.getElementById('mainCount').textContent = filtered.length + (filtered.length === 1 ? ' regla' : ' reglas');
+
+  if (!filtered.length) {
+    showEmpty('Sin resultados', 'Prueba a cambiar los filtros o la búsqueda');
+    return;
+  }
+
+  const BADGE = { restriccion:'badge-restriccion', recomendacion:'badge-recomendacion', normativa:'badge-normativa', 'ds-pattern':'badge-ds-pattern', 'screen-doc':'badge-screen-doc' };
+  const PRI   = { alta:'pri-alta', media:'pri-media', baja:'pri-baja' };
+
+  document.getElementById('entryGrid').innerHTML = filtered.map(entry => {
+    const cat  = entry.categoria || '—';
+    const geo  = entry.geografia || 'global';
+    const pri  = entry.prioridad || '';
+    const text = (entry.text || '').slice(0, 140) + ((entry.text||'').length > 140 ? '…' : '');
+    const id   = entry.id || '';
+    return `<div class="entry-row" onclick="showDetail('${id}')">
+      <div class="entry-row-top">
+        <div class="entry-row-left">
+          <span class="entry-type-badge ${BADGE[cat]||'badge-screen-doc'}">${cat}</span>
+          <span class="entry-geo">${geo}</span>
+        </div>
+        ${pri ? `<span class="entry-priority ${PRI[pri]||''}">${pri}</span>` : ''}
+      </div>
+      <div class="entry-text">${text}</div>
+      <div class="entry-row-meta">
+        <span class="entry-id">${id.slice(-8)}</span>
+        <button class="entry-del-btn" onclick="event.stopPropagation(); deleteEntry('${id}')">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showEmpty(title, desc) {
+  document.getElementById('entryGrid').innerHTML = `
+    <div class="list-empty">
+      <div class="list-empty-icon"><svg viewBox="0 0 18 18"><path d="M4 9h10M9 4v10" stroke-linecap="round"/></svg></div>
+      <div class="list-empty-title">${title}</div>
+      <div class="list-empty-desc">${desc}</div>
+    </div>`;
+}
+
+function showDetail(id) {
+  const e = allEntries.find(x => x.id === id);
+  if (!e) return;
+  const BADGE = { restriccion:'badge-restriccion', recomendacion:'badge-recomendacion', normativa:'badge-normativa', 'ds-pattern':'badge-ds-pattern', 'screen-doc':'badge-screen-doc' };
+  const PRI   = { alta:'pri-alta', media:'pri-media', baja:'pri-baja' };
+
+  document.getElementById('detailDivider').style.display = 'block';
+  document.getElementById('entryDetail').style.display   = 'block';
+  document.getElementById('entryDetail').innerHTML = `
+    <div class="entry-detail">
+      <div class="detail-header">
+        <span class="entry-type-badge ${BADGE[e.categoria||'']||'badge-screen-doc'}">${e.categoria||'—'}</span>
+        ${e.prioridad ? `<span class="entry-priority ${PRI[e.prioridad]||''}">${e.prioridad}</span>` : ''}
+      </div>
+      <div class="detail-full-text">${e.text || '—'}</div>
+      <div class="divider"></div>
+      <div class="detail-meta">
+        <div class="detail-meta-row"><span>Geografía</span><strong>${e.geografia||'global'}</strong></div>
+        <div class="detail-meta-row"><span>Prioridad</span><strong>${e.prioridad||'—'}</strong></div>
+        <div class="detail-meta-row"><span>Autor</span><strong>${e.autor||'—'}</strong></div>
+        <div class="detail-meta-row"><span>ID</span><strong style="font-family:var(--mono);font-size:10px;">${(e.id||'').slice(-12)}</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+// ── FILTERS ──
+document.getElementById('typeFilters').addEventListener('click', e => {
+  const btn = e.target.closest('.type-filter');
+  if (!btn) return;
+  document.querySelectorAll('.type-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeType = btn.dataset.cat;
+  renderEntries();
+});
+
+document.getElementById('geoFilters').addEventListener('click', e => {
+  const btn = e.target.closest('.geo-chip');
+  if (!btn) return;
+  document.querySelectorAll('.geo-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeGeo = btn.dataset.geo;
+  renderEntries();
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  renderEntries();
+});
+
+// ── TYPE SELECT (ingest panel) ──
+function selType(el) {
+  document.querySelectorAll('.type-pill').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedCat = el.dataset.cat;
+}
+
+// ── ADD ENTRY ──
+document.getElementById('btnAdd').addEventListener('click', async () => {
+  const text     = document.getElementById('newText').value.trim();
+  const priority = document.getElementById('newPriority').value;
+  const geo      = document.getElementById('newGeo').value;
+  if (!text) { setStatus('addStatus', 'error', '<svg viewBox="0 0 12 12"><path d="M6 2v4M6 9v1"/></svg>Escribe el contenido de la regla'); return; }
+
+  document.getElementById('btnAdd').disabled = true;
+  setStatus('addStatus', 'loading', '<div class="spinner"></div>Añadiendo a Pinecone…');
+
+  try {
+    const r = await fetch(API + '/knowledge/ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY },
+      body: JSON.stringify({ text, categoria: selectedCat, prioridad: priority, geografia: geo, autor: 'kb-portal', tipo: selectedCat }),
+    });
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error || 'Error desconocido');
+    setStatus('addStatus', 'success', '<svg viewBox="0 0 12 12"><path d="M2 6l2.5 2.5 5.5-5"/></svg>Regla añadida correctamente');
+    document.getElementById('newText').value = '';
+    await loadEntries();
+  } catch (e) {
+    setStatus('addStatus', 'error', '<svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8"/></svg>' + e.message);
+  } finally {
+    document.getElementById('btnAdd').disabled = false;
+  }
+});
+
+async function deleteEntry(id) {
+  if (!confirm('¿Eliminar esta regla de la KB?')) return;
+  try {
+    await fetch(API + '/knowledge/delete/' + id, { method: 'DELETE', headers: { 'X-API-Key': KEY } });
+    allEntries = allEntries.filter(e => e.id !== id);
+    updateStats();
+    renderEntries();
+    document.getElementById('detailDivider').style.display = 'none';
+    document.getElementById('entryDetail').style.display   = 'none';
+  } catch (e) { alert('Error al eliminar: ' + e.message); }
+}
+
+function setStatus(id, type, html = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!type) { el.className = 'status-msg'; return; }
+  el.className = 'status-msg show ' + type;
+  el.innerHTML = html;
+}
+
+// ── INIT ──
+loadEntries();
 </script>
 </body>
 </html>
