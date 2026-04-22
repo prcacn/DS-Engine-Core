@@ -42,7 +42,7 @@ body.dark {
   --red-border:   rgba(224,96,96,0.25);
   --blue:         #6AA0E8;
   --blue-bg:      rgba(106,160,232,0.1);
-  --mono: 'SF Mono','Fira Code',monospace;
+  --mono: 'Inter', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
 }
@@ -68,11 +68,15 @@ body.light {
   --red-border:   rgba(176,48,48,0.25);
   --blue:         #1A4A8A;
   --blue-bg:      rgba(26,74,138,0.09);
-  --mono: 'SF Mono','Fira Code',monospace;
+  --mono: 'Inter', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
 }
 
+
+
+/* ── FORCE INTER EVERYWHERE ── */
+* { font-family: 'Inter', -apple-system, sans-serif !important; }
 /* ── TITLEBAR ── */
 .titlebar {
   background: var(--nav-bg);
@@ -432,7 +436,7 @@ textarea:focus, select:focus { border-color: var(--text-2); }
   display: flex; align-items: center; justify-content: space-between;
 }
 .comp-block-label { font-size: 10px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-3); }
-.comp-block-count { font-size: 10.5px; font-family: var(--mono); color: var(--text-3); }
+.comp-block-count { font-size: 10.5px; color: var(--text-3); letter-spacing: -0.1px; }
 
 .comp-row {
   display: flex; align-items: center; gap: 8px;
@@ -442,9 +446,9 @@ textarea:focus, select:focus { border-color: var(--text-2); }
 }
 .comp-row:last-child { border-bottom: none; }
 .comp-row:hover { background: var(--bg-raised); }
-.comp-index { font-size: 10px; color: var(--text-3); width: 16px; flex-shrink: 0; font-family: var(--mono); }
+.comp-index { font-size: 10px; color: var(--text-3); width: 16px; flex-shrink: 0; }
 .comp-info { flex: 1; min-width: 0; }
-.comp-name { font-size: 11.5px; font-weight: 500; color: var(--text); letter-spacing: -0.1px; font-family: var(--mono); font-size: 11px; }
+.comp-name { font-size: 11px; font-weight: 500; color: var(--text); letter-spacing: -0.2px; }
 .comp-variant { font-size: 10.5px; color: var(--text-3); letter-spacing: -0.1px; }
 .comp-tags { display: flex; gap: 3px; flex-shrink: 0; }
 .ctag { font-size: 9.5px; font-weight: 500; padding: 1px 5px; border-radius: 3px; }
@@ -563,7 +567,7 @@ textarea:focus, select:focus { border-color: var(--text-2); }
   border-radius: 6px; padding: 9px 11px;
   font-size: 10.5px; color: var(--text-2);
   line-height: 1.6; max-height: 90px;
-  overflow-y: auto; font-family: var(--mono);
+  overflow-y: auto; font-family: 'Inter', sans-serif;
   white-space: pre-wrap;
 }
 
