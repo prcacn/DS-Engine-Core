@@ -302,6 +302,20 @@ textarea:focus, select:focus { border-color: var(--text-2); }
 .btn-paint:disabled { opacity: 0.3; cursor: not-allowed; }
 .btn-paint svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
 
+.btn-save-base {
+  width: 100%;
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
+  color: var(--green);
+  border-radius: 7px; padding: 9px;
+  font-family: var(--font); font-size: 12px; font-weight: 500;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all 0.15s; letter-spacing: -0.1px;
+}
+.btn-save-base:hover:not(:disabled) { opacity: 0.8; }
+.btn-save-base:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-save-base svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+
 /* ── NOTE BOX ── */
 .note-box {
   background: var(--bg-raised);
@@ -1091,6 +1105,10 @@ function renderGenerateResult(data) {
       </svg>
       Paint in Figma
     </button>
+    <button class="btn-save-base" id="btnSaveBase" disabled>
+      <svg viewBox="0 0 13 13"><path d="M1.5 10l3.5-3.5 2 2 4-4M10.5 3v3M10.5 3h-3"/></svg>
+      Guardar como base aprobada
+    </button>
     <div class="action-note">La respuesta se registra como aprendizaje en KB</div>
   `;
 
@@ -1105,9 +1123,46 @@ function renderGenerateResult(data) {
     parent.postMessage({ pluginMessage: { type: 'paint', data: state.lastResult } }, '*');
   });
 
+  document.getElementById('btnSaveBase')?.addEventListener('click', () => {
+    saveAsApprovedBase();
+  });
+
   document.getElementById('kbStripToggle')?.addEventListener('click', () => {
     document.getElementById('kbDrawer')?.classList.toggle('open');
   });
+}
+
+// ── GUARDAR COMO BASE APROBADA ──
+async function saveAsApprovedBase() {
+  if (!state.lastResult) return;
+  const btn = document.getElementById('btnSaveBase');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+  try {
+    const res = await fetch(ENGINE_URL + '/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': ENGINE_KEY },
+      body: JSON.stringify({
+        action: 'approve',
+        screen_id: state.lastResult.screen_id || ('plugin_' + Date.now()),
+        brief: state.lastResult.brief || '',
+        base_id: state.lastResult.base_id || null,
+        components: state.lastResult.components || [],
+        diff: state.lastResult.diff || null,
+        approved_by: 'plugin',
+        pattern: state.lastResult.pattern || '',
+      }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      if (btn) { btn.textContent = '✓ Guardada como base'; btn.style.opacity = '0.6'; }
+      setStatus('genStatus', 'success', '<svg viewBox="0 0 12 12"><path d="M2 6l2.5 2.5 5.5-5"/></svg>Base aprobada guardada · próximas variantes parten de aquí');
+    } else {
+      throw new Error(data.message || 'Error al guardar');
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 13 13"><path d="M1.5 10l3.5-3.5 2 2 4-4M10.5 3v3M10.5 3h-3"/></svg>Guardar como base aprobada'; }
+    setStatus('genStatus', 'error', '<svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8"/></svg>' + e.message);
+  }
 }
 
 // ── FEEDBACK ──
