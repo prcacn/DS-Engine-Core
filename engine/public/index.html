@@ -1747,21 +1747,28 @@
   }
 
   // ── APPROVAL ─────────────────────────────────────────
+  function _getActiveResult() {
+    // El Review Panel usa datos de demostración (RESULTS[currentExample]).
+    // Extraemos los campos necesarios para /approve.
+    const r = (typeof RESULTS !== 'undefined' && RESULTS[currentExample]) ? RESULTS[currentExample] : null;
+    if (!r) return null;
+    return {
+      screen_id: r.screen_id || ('panel_' + currentExample + '_' + Date.now()),
+      brief: r.brief || r.title || ('Pantalla ' + currentExample),
+      base_id: r.base_id || null,
+      components: (r.components || []).map(c => ({ component: c.name || c.component, variant: c.variant, props: { title: c.copy || '' }, pattern: r.pattern || '' })),
+      diff: r.diff || null,
+      pattern: r.pattern || '',
+    };
+  }
+
   function handleApprove() {
-    if (!currentResult) { showToast('Sin resultado para aprobar'); return; }
+    const result = _getActiveResult();
+    if (!result) { showToast('Sin resultado para aprobar'); return; }
     fetch('/approve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': 'dev-key-local-2025' },
-      body: JSON.stringify({
-        action: 'approve',
-        screen_id: currentResult.screen_id || ('panel_' + Date.now()),
-        brief: currentResult.brief || '',
-        base_id: currentResult.base_id || null,
-        components: currentResult.components || [],
-        diff: currentResult.diff || null,
-        approved_by: 'review-panel',
-        pattern: currentResult.pattern || '',
-      }),
+      body: JSON.stringify({ action: 'approve', ...result, approved_by: 'review-panel' }),
     }).then(r => r.json()).then(d => {
       if (d.ok) { showToast('✓ Aprobado y guardado en KB'); resetToIdle(); }
       else showToast('Error: ' + (d.message || 'desconocido'));
@@ -1769,25 +1776,17 @@
   }
 
   function handleSaveBase() {
-    if (!currentResult) { showToast('Sin resultado para guardar'); return; }
+    const result = _getActiveResult();
+    if (!result) { showToast('Sin resultado para guardar'); return; }
     const btn = document.getElementById('btnSaveBasePanel');
     if (btn) btn.disabled = true;
     fetch('/approve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': 'dev-key-local-2025' },
-      body: JSON.stringify({
-        action: 'approve',
-        screen_id: currentResult.screen_id || ('base_' + Date.now()),
-        brief: currentResult.brief || '',
-        base_id: currentResult.base_id || null,
-        components: currentResult.components || [],
-        diff: currentResult.diff || null,
-        approved_by: 'review-panel',
-        pattern: currentResult.pattern || '',
-      }),
+      body: JSON.stringify({ action: 'approve', ...result, screen_id: 'base_' + Date.now(), approved_by: 'review-panel' }),
     }).then(r => r.json()).then(d => {
       if (d.ok) {
-        if (btn) { btn.textContent = '✓ Base guardada'; }
+        if (btn) { btn.innerHTML = '<svg viewBox="0 0 12 12"><path d="M1.5 6.5l2.5 2.5 6-6"/></svg> Base guardada'; }
         showToast('✓ Guardada como base aprobada · próximas variantes parten de aquí');
       } else {
         if (btn) btn.disabled = false;
