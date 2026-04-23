@@ -768,6 +768,20 @@
     }
     .btn-approve:hover { opacity: 0.8; }
 
+    .btn-save-base {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 10px 14px; border-radius: 7px; width: 100%;
+      font-family: var(--font); font-size: 12.5px; font-weight: 500;
+      letter-spacing: -0.1px; cursor: pointer;
+      background: color-mix(in srgb, var(--green) 8%, transparent);
+      color: var(--green);
+      border: 1px dashed color-mix(in srgb, var(--green) 35%, transparent);
+      transition: all 0.15s;
+    }
+    .btn-save-base:hover { opacity: 0.8; }
+    .btn-save-base:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-save-base svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
     .btn-reject {
       background: var(--red-bg); color: var(--red);
       border-color: color-mix(in srgb, var(--red) 25%, transparent);
@@ -1143,6 +1157,10 @@
         <button class="btn-reject" onclick="handleReject()">
           <svg viewBox="0 0 12 12"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
           Rechazar
+        </button>
+        <button class="btn-save-base" id="btnSaveBasePanel" onclick="handleSaveBase()">
+          <svg viewBox="0 0 12 12"><path d="M1.5 9.5l3-3 2 2 3.5-3.5M9.5 3v2.5M9.5 3H7"/></svg>
+          Guardar como base aprobada
         </button>
         <div class="approval-note">La respuesta se registra como aprendizaje en KB</div>
       </div>
@@ -1730,9 +1748,54 @@
 
   // ── APPROVAL ─────────────────────────────────────────
   function handleApprove() {
-    showToast('Aprobado · guardado como base en KB');
-    resetToIdle();
+    if (!currentResult) { showToast('Sin resultado para aprobar'); return; }
+    fetch('/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': 'dev-key-local-2025' },
+      body: JSON.stringify({
+        action: 'approve',
+        screen_id: currentResult.screen_id || ('panel_' + Date.now()),
+        brief: currentResult.brief || '',
+        base_id: currentResult.base_id || null,
+        components: currentResult.components || [],
+        diff: currentResult.diff || null,
+        approved_by: 'review-panel',
+        pattern: currentResult.pattern || '',
+      }),
+    }).then(r => r.json()).then(d => {
+      if (d.ok) { showToast('✓ Aprobado y guardado en KB'); resetToIdle(); }
+      else showToast('Error: ' + (d.message || 'desconocido'));
+    }).catch(e => showToast('Error: ' + e.message));
   }
+
+  function handleSaveBase() {
+    if (!currentResult) { showToast('Sin resultado para guardar'); return; }
+    const btn = document.getElementById('btnSaveBasePanel');
+    if (btn) btn.disabled = true;
+    fetch('/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': 'dev-key-local-2025' },
+      body: JSON.stringify({
+        action: 'approve',
+        screen_id: currentResult.screen_id || ('base_' + Date.now()),
+        brief: currentResult.brief || '',
+        base_id: currentResult.base_id || null,
+        components: currentResult.components || [],
+        diff: currentResult.diff || null,
+        approved_by: 'review-panel',
+        pattern: currentResult.pattern || '',
+      }),
+    }).then(r => r.json()).then(d => {
+      if (d.ok) {
+        if (btn) { btn.textContent = '✓ Base guardada'; }
+        showToast('✓ Guardada como base aprobada · próximas variantes parten de aquí');
+      } else {
+        if (btn) btn.disabled = false;
+        showToast('Error: ' + (d.message || 'desconocido'));
+      }
+    }).catch(e => { if (btn) btn.disabled = false; showToast('Error: ' + e.message); });
+  }
+
   function handleModify() {
     showToast('Modificación registrada como regla implícita');
     resetToIdle();
