@@ -221,6 +221,8 @@ router.post('/', async function(req, res, next) {
         contracts: variantContracts,
       });
 
+      // Si el delta está vacío, no retornar — caer al flujo normal de generación
+      if (variantComponents.length > 0) {
       return res.json({
         screen_id:    'var_' + Date.now(),
         brief:        brief.trim(),
@@ -245,6 +247,7 @@ router.post('/', async function(req, res, next) {
           generated_at:   new Date().toISOString(),
         }
       });
+      } // end if variantComponents.length > 0
     }
 
     // ── LEVEL 4.0: enriquecer brief con KB ANTES de parseIntent ─────────────
