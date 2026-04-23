@@ -1198,7 +1198,7 @@ document.getElementById('btnValidate').addEventListener('click', () => {
 window.addEventListener('message', async (event) => {
   const msg = event.data?.pluginMessage;
   if (!msg) return;
-  if (msg.type === 'paint-done') setStatus('genStatus', 'success', '<svg viewBox="0 0 12 12"><path d="M2 6l2.5 2.5 5.5-5"/></svg>Pintado en Figma · ' + msg.score + '%');
+  if (msg.type === 'paint-done') { setStatus('genStatus', 'success', '<svg viewBox="0 0 12 12"><path d="M2 6l2.5 2.5 5.5-5"/></svg>Pintado en Figma · ' + msg.score + '%'); const _btnSB = document.getElementById('btnSaveBase'); if (_btnSB) _btnSB.disabled = false; }
   if (msg.type === 'selection-data') await runValidation(msg.components, msg.frameId);
   if (msg.type === 'selection-empty') { setStatus('studioStatus', 'warn', '<svg viewBox="0 0 12 12"><path d="M6 2v4M6 9v1"/></svg>Selecciona un frame del engine en Figma'); document.getElementById('btnValidate').disabled = false; }
   if (msg.type === 'export-done') setStatus('exportStatus', 'success', '<svg viewBox="0 0 12 12"><path d="M2 6l2.5 2.5 5.5-5"/></svg>' + msg.message);
