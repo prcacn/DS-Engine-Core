@@ -87,7 +87,7 @@ app.get('/debug/intent-version', (req, res) => {
 app.use(errorHandler);
 
 // ── Arrancar servidor ──────────────────────────────────────────────────────
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log('');
   console.log('  ╔═══════════════════════════════════════════════════╗');
   console.log('  ║   DS IA-Ready — Engine Core v2.0 · Level 5.0     ║');
